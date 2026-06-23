@@ -1,0 +1,51 @@
+.field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.label {
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.selectShell {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  height: 50px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.selectShell:focus-within {
+  border-color: var(--brand-secondary);
+  box-shadow: 0 0 0 4px rgba(237, 161, 47, 0.12);
+}
+
+.select {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  appearance: none;
+  border: 0;
+  outline: 0;
+  padding: 0 40px 0 14px;
+  color: var(--foreground);
+  background: transparent;
+  font-family: var(--font-roboto), sans-serif;
+  font-size: 14px;
+}
+
+.chevron {
+  pointer-events: none;
+  position: absolute;
+  right: 14px;
+  color: var(--muted);
+}

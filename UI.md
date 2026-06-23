@@ -38,7 +38,7 @@ We use a curated, warm neutral palette balanced with high-contrast, premium bran
 ```
 
 ### Centralized TypeScript Constants (`src/shared/constants/colors.ts`)
-To support future dynamic **Theme Switching** (e.g., Light / Dark mode), all inline React styles must use the type-safe `COLORS` constant rather than hardcoded hex values or raw CSS variable string literals.
+Prefer CSS Modules for production UI. When inline styles are necessary, use the type-safe `COLORS` constant rather than hardcoded hex values or raw CSS variable string literals.
 
 ```typescript
 import { COLORS } from "@/shared/constants/colors";
@@ -123,3 +123,308 @@ To achieve a **simple and elegant** look, avoid cluttered color sections. Follow
 - **Less is More**: Eliminate multi-colored indicators (e.g. mix of purple, indigo, blue, green). Standardize on `brand-primary` and `brand-secondary` for color accents.
 - **White Space**: Provide ample padding and line height to let text breathe. Avoid cramming information.
 - **Micro-interactions**: Use transitions (`150ms` to `200ms` with ease curve) for hover states on buttons, cards, and text links to make the app feel tactile and premium.
+
+---
+
+## 6. Implementation Standard
+
+### Preferred Styling Method
+
+- Use **CSS Modules** for reusable UI and module UI.
+- Use inline styles only for very small one-off values or dynamic values that are awkward in CSS.
+- Do not create global CSS for module-specific layouts.
+- Do not hardcode hex colors in module UI. Use CSS variables in CSS Modules or `COLORS` in inline styles.
+
+Recommended structure:
+
+```txt
+src/shared/components/
+  ui/
+  layout/
+
+src/modules/<module>/
+  components/
+  hooks/
+  api/
+  types/
+```
+
+### Shared UI Import
+
+Use shared UI primitives from:
+
+```ts
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  EmptyState,
+  LoadingState,
+  PageHeader,
+  Select,
+  TextInput,
+} from "@/shared/components";
+```
+
+Do not recreate a new button/input/card style inside a feature module unless the shared primitive cannot support the case.
+
+### Utility Classnames
+
+Use:
+
+```ts
+import { cn } from "@/shared/lib";
+```
+
+Example:
+
+```tsx
+<div className={cn(styles.panel, isActive && styles.active)} />
+```
+
+---
+
+## 7. App Shell & Route Layouts
+
+Workspace routes use the shared app shell:
+
+```txt
+src/app/admin/layout.tsx
+src/app/student/layout.tsx
+src/app/mentor/layout.tsx
+```
+
+The shell provides:
+
+- Sidebar navigation.
+- Topbar with current workspace and active page.
+- Session guard.
+- Role guard.
+- Sign out action.
+
+Do not build a custom sidebar/topbar inside individual pages. Pages should render only their module content.
+
+Route prefixes:
+
+```txt
+/admin/users
+/admin/imports
+/admin/problems
+
+/student/dashboard
+/student/groups
+/student/tasks
+/student/problems
+
+/mentor/groups
+/mentor/availability
+```
+
+---
+
+## 8. Shared UI Components
+
+### Button
+
+```tsx
+import { Plus } from "lucide-react";
+import { Button } from "@/shared/components";
+
+<Button icon={<Plus size={16} />}>Create</Button>
+<Button variant="secondary">Cancel</Button>
+<Button variant="danger">Delete</Button>
+```
+
+Variants:
+
+- `primary`: main action.
+- `secondary`: outline action.
+- `ghost`: quiet action in headers/toolbars.
+- `danger`: destructive action.
+
+Sizes:
+
+- `sm`
+- `md`
+- `lg`
+
+### TextInput
+
+```tsx
+import { Search } from "lucide-react";
+import { TextInput } from "@/shared/components";
+
+<TextInput
+  icon={<Search size={16} />}
+  label="Search"
+  placeholder="Search by name or email"
+/>
+```
+
+### Select
+
+```tsx
+import { Select } from "@/shared/components";
+
+<Select label="Role">
+  <option value="">All roles</option>
+  <option value="ADMIN">Admin</option>
+  <option value="STUDENT">Student</option>
+  <option value="MENTOR">Mentor</option>
+</Select>
+```
+
+### Badge
+
+```tsx
+import { Badge } from "@/shared/components";
+
+<Badge tone="success">Active</Badge>
+<Badge tone="warning">Pending</Badge>
+<Badge tone="danger">Locked</Badge>
+```
+
+### Card
+
+```tsx
+import { Card, CardContent, CardHeader } from "@/shared/components";
+
+<Card>
+  <CardHeader
+    title="Users"
+    description="Manage accounts and access."
+    actions={<Button>Create user</Button>}
+  />
+  <CardContent>{/* table or form */}</CardContent>
+</Card>
+```
+
+### PageHeader
+
+```tsx
+import { PageHeader } from "@/shared/components";
+
+<PageHeader
+  eyebrow="Admin"
+  title="Users"
+  description="Manage accounts, statuses, and password resets."
+  actions={<Button>Create user</Button>}
+/>
+```
+
+### EmptyState & LoadingState
+
+```tsx
+import { EmptyState, LoadingState } from "@/shared/components";
+
+<LoadingState title="Loading users" />
+<EmptyState title="No users found" description="Try changing your filters." />
+```
+
+---
+
+## 9. Page Composition Rules
+
+Use this order for management pages:
+
+1. `PageHeader`
+2. Filter/search toolbar
+3. Main data surface (`Card`, table, board, or list)
+4. Empty/loading/error states
+5. Modal/drawer only when the action requires focused input
+
+Page example:
+
+```tsx
+<div className={styles.page}>
+  <PageHeader
+    eyebrow="Admin"
+    title="Users"
+    description="Manage accounts, roles, and statuses."
+    actions={<Button>Create user</Button>}
+  />
+
+  <Card>
+    <CardContent>
+      {/* filters + table */}
+    </CardContent>
+  </Card>
+</div>
+```
+
+Recommended page CSS:
+
+```css
+.page {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+```
+
+---
+
+## 10. Icons
+
+- Use `lucide-react` icons.
+- Buttons that trigger clear actions should include an icon when possible.
+- Common mappings:
+  - Create: `Plus`
+  - Edit: `Pencil`
+  - Delete: `Trash2`
+  - Search: `Search`
+  - Filter: `SlidersHorizontal`
+  - Save: `Save`
+  - Upload: `Upload`
+  - Download: `Download`
+  - Calendar/time: `CalendarClock`
+  - Users/groups: `Users`
+  - Tasks: `ClipboardList`
+  - Problems/docs: `BookOpen`
+
+Do not hand-draw SVG icons if a Lucide icon exists.
+
+---
+
+## 11. Responsive Rules
+
+- App shell owns sidebar/topbar responsiveness.
+- Pages should use CSS Grid with `minmax(0, 1fr)` and wrap controls naturally.
+- Toolbar controls should stack on mobile.
+- Avoid viewport-width font scaling. Use fixed sizes or `clamp` only for true page headings.
+- Text must not overflow buttons, cards, or table cells. Use `min-width: 0`, wrapping, or ellipsis where appropriate.
+
+Example toolbar:
+
+```css
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(160px, 220px));
+  gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+```
+
+---
+
+## 12. AI Coding Rules For UI
+
+When an AI agent builds UI in this repo, it must:
+
+1. Read `UI.md`.
+2. Read `TEAM_WORKFLOW.md`.
+3. Use `src/shared/components/ui` primitives first.
+4. Use `src/shared/components/layout/AppShell` only through route layouts, not inside individual pages.
+5. Keep module-specific UI inside `src/modules/<module>/components`.
+6. Use CSS Modules for module page styling.
+7. Use `lucide-react` icons.
+8. Avoid custom palettes, gradients, decorative blobs, and unrelated hero sections.
+9. Run `npm run typecheck`.
+10. Run `npm run lint`.

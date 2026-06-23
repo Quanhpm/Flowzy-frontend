@@ -10,4 +10,5 @@ export {
   apiUpload,
   setApiAccessTokenResolver,
 } from "./api-client";
+export { cn } from "./classnames";
 export { queryKeys } from "./query-keys";

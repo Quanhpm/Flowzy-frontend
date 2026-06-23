@@ -15,6 +15,7 @@ import { FormEvent, useState } from "react";
 
 import { useGoogleLogin } from "../hooks/use-google-login";
 import { useLogin } from "../hooks/use-login";
+import type { AuthUser } from "../types/auth.types";
 import { BrandLogo } from "./brand-logo";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import styles from "./login.module.css";
@@ -31,6 +32,12 @@ type FormErrors = {
   email?: string;
   password?: string;
 };
+
+function getDefaultWorkspacePath(role: AuthUser["role"]) {
+  if (role === "ADMIN") return "/admin/users";
+  if (role === "MENTOR") return "/mentor/groups";
+  return "/student/dashboard";
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -69,7 +76,10 @@ export function LoginForm() {
     if (!validate()) return;
 
     try {
-      await loginMutation.mutateAsync({ email: email.trim(), password });
+      const session = await loginMutation.mutateAsync({
+        email: email.trim(),
+        password,
+      });
 
       if (rememberMe) {
         localStorage.setItem(REMEMBERED_EMAIL_KEY, email.trim());
@@ -77,7 +87,7 @@ export function LoginForm() {
         localStorage.removeItem(REMEMBERED_EMAIL_KEY);
       }
 
-      router.replace("/dashboard");
+      router.replace(getDefaultWorkspacePath(session.user.role));
     } catch (error) {
       setFormMessage(
         error instanceof ApiError
@@ -91,8 +101,8 @@ export function LoginForm() {
     setFormMessage("");
 
     try {
-      await googleLoginMutation.mutateAsync(idToken);
-      router.replace("/dashboard");
+      const session = await googleLoginMutation.mutateAsync(idToken);
+      router.replace(getDefaultWorkspacePath(session.user.role));
     } catch (error) {
       setFormMessage(
         error instanceof ApiError
