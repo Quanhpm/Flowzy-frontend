@@ -8,6 +8,7 @@
   --border-warm: #e6dacb;
   --muted: #737373;
   --brand-primary: #F05423;
+  --brand-primary-hover: #d84315;
   --brand-secondary: #EDA12F;
   --brand: var(--brand-primary);
 }

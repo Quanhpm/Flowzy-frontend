@@ -1,0 +1,53 @@
+type QueryFilters = Record<string, unknown> | undefined;
+
+export const queryKeys = {
+  auth: {
+    all: ["auth"] as const,
+    me: ["auth", "me"] as const,
+  },
+  users: {
+    all: ["admin-users"] as const,
+    lists: () => [...queryKeys.users.all, "list"] as const,
+    list: (filters?: QueryFilters) =>
+      [...queryKeys.users.lists(), filters ?? {}] as const,
+    detail: (id: number) => [...queryKeys.users.all, "detail", id] as const,
+  },
+  imports: {
+    all: ["imports"] as const,
+    batch: (id: number) => [...queryKeys.imports.all, "batch", id] as const,
+    batchErrors: (id: number) =>
+      [...queryKeys.imports.batch(id), "errors"] as const,
+  },
+  groups: {
+    all: ["groups"] as const,
+    lists: () => [...queryKeys.groups.all, "list"] as const,
+    list: (filters?: QueryFilters) =>
+      [...queryKeys.groups.lists(), filters ?? {}] as const,
+    detail: (id: number) => [...queryKeys.groups.all, "detail", id] as const,
+  },
+  mentoring: {
+    all: ["mentoring"] as const,
+    availability: () => [...queryKeys.mentoring.all, "availability"] as const,
+    meetings: (groupId: number) =>
+      [...queryKeys.mentoring.all, "groups", groupId, "meetings"] as const,
+  },
+  problems: {
+    all: ["problems"] as const,
+    lists: () => [...queryKeys.problems.all, "list"] as const,
+    list: (filters?: QueryFilters) =>
+      [...queryKeys.problems.lists(), filters ?? {}] as const,
+    detail: (id: number) => [...queryKeys.problems.all, "detail", id] as const,
+    domains: (filters?: QueryFilters) =>
+      [...queryKeys.problems.all, "domains", filters ?? {}] as const,
+    criteria: () => [...queryKeys.problems.all, "criteria"] as const,
+  },
+  tasks: {
+    all: ["tasks"] as const,
+    board: (groupId: number, filters?: QueryFilters) =>
+      ["groups", groupId, "board", filters ?? {}] as const,
+    detail: (groupId: number, taskId: number) =>
+      ["groups", groupId, "tasks", taskId] as const,
+    mine: (filters?: QueryFilters) =>
+      [...queryKeys.tasks.all, "me", filters ?? {}] as const,
+  },
+} as const;

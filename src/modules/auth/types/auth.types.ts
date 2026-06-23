@@ -1,8 +1,6 @@
-export type ApiResponse<T> = {
-  code: number;
-  message: string;
-  data: T;
-};
+import type { UserRole, UserStatus } from "@/shared/types";
+
+export type { ApiResponse, UserRole, UserStatus } from "@/shared/types";
 
 export type LoginCredentials = {
   email: string;
@@ -19,10 +17,6 @@ export type AuthTokens = {
   tokenType: string;
   expiresIn: number;
 };
-
-export type UserRole = "ADMIN" | "STUDENT" | "MENTOR" | "INSTRUCTOR";
-
-export type UserStatus = "ACTIVE" | "INACTIVE" | "LOCKED";
 
 export type AuthUser = {
   id: number;

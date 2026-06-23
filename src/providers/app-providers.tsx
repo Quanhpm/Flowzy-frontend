@@ -2,7 +2,10 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { useAuthStore } from "@/modules/auth/stores/auth.store";
+import { setApiAccessTokenResolver } from "@/shared/lib";
 
 type AppProvidersProps = Readonly<{
   children: ReactNode;
@@ -23,6 +26,14 @@ export function AppProviders({ children }: AppProvidersProps) {
         },
       }),
   );
+
+  useEffect(() => {
+    setApiAccessTokenResolver(
+      () => useAuthStore.getState().session?.tokens.accessToken ?? null,
+    );
+
+    return () => setApiAccessTokenResolver(null);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

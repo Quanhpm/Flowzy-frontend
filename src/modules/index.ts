@@ -4,6 +4,7 @@ import { CHECKPOINTS_MODULE } from "./checkpoints";
 import { DASHBOARDS_MODULE } from "./dashboards";
 import { GRADING_MODULE } from "./grading";
 import { GROUPS_MODULE } from "./groups";
+import { IMPORTS_MODULE } from "./imports";
 import { MENTORING_MODULE } from "./mentoring";
 import { OUTCOMES_MODULE } from "./outcomes";
 import { PROBLEMS_MODULE } from "./problems";
@@ -13,6 +14,7 @@ import { USERS_MODULE } from "./users";
 export const MODULES = [
   AUTH_MODULE,
   USERS_MODULE,
+  IMPORTS_MODULE,
   ACADEMICS_MODULE,
   GROUPS_MODULE,
   PROBLEMS_MODULE,

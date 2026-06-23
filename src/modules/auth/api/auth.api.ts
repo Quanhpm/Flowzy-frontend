@@ -1,7 +1,7 @@
-import { apiRequest } from "@/shared/lib";
+import { apiGet, apiPost } from "@/shared/lib";
+import type { ApiResponse } from "@/shared/types";
 
 import type {
-  ApiResponse,
   AuthTokens,
   AuthUser,
   GoogleLoginCredentials,
@@ -9,21 +9,33 @@ import type {
 } from "../types/auth.types";
 
 export function login(credentials: LoginCredentials) {
-  return apiRequest<ApiResponse<AuthTokens>>("/api/auth/login", {
-    method: "POST",
-    body: JSON.stringify(credentials),
+  return apiPost<ApiResponse<AuthTokens>>("/api/auth/login", credentials, {
+    auth: false,
   });
 }
 
 export function loginWithGoogle(credentials: GoogleLoginCredentials) {
-  return apiRequest<ApiResponse<AuthTokens>>("/api/auth/google", {
-    method: "POST",
-    body: JSON.stringify(credentials),
+  return apiPost<ApiResponse<AuthTokens>>("/api/auth/google", credentials, {
+    auth: false,
   });
 }
 
-export function getCurrentUser(accessToken: string) {
-  return apiRequest<ApiResponse<AuthUser>>("/api/auth/me", {
+export function refreshAccessToken(refreshToken: string) {
+  return apiPost<ApiResponse<AuthTokens>>(
+    "/api/auth/refresh",
+    { refreshToken },
+    { auth: false },
+  );
+}
+
+export function logout(accessToken?: string) {
+  return apiPost<ApiResponse<null>>("/api/auth/logout", undefined, {
+    accessToken,
+  });
+}
+
+export function getCurrentUser(accessToken?: string) {
+  return apiGet<ApiResponse<AuthUser>>("/api/auth/me", {
     accessToken,
   });
 }

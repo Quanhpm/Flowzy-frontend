@@ -20,7 +20,7 @@ We use a curated, warm neutral palette balanced with high-contrast, premium bran
 | `border-warm` | `#e6dacb` | ![#e6dacb](https://via.placeholder.com/15/e6dacb/000000?text=+) | Borders for cards or blocks sitting on warm-beige backgrounds. |
 | `muted` | `#737373` | ![#737373](https://via.placeholder.com/15/737373/000000?text=+) | Descriptions, labels, icons, metadata, and placeholder text. |
 
-### Global CSS CSS Custom Properties
+### Global CSS Custom Properties
 ```css
 :root {
   --background: #F5F5F5;
@@ -31,10 +31,30 @@ We use a curated, warm neutral palette balanced with high-contrast, premium bran
   --border-warm: #e6dacb;
   --muted: #737373;
   --brand-primary: #F05423;
+  --brand-primary-hover: #d84315;
   --brand-secondary: #EDA12F;
   --brand: var(--brand-primary);
 }
 ```
+
+### Centralized TypeScript Constants (`src/shared/constants/colors.ts`)
+To support future dynamic **Theme Switching** (e.g., Light / Dark mode), all inline React styles must use the type-safe `COLORS` constant rather than hardcoded hex values or raw CSS variable string literals.
+
+```typescript
+import { COLORS } from "@/shared/constants/colors";
+
+// Example Usage in React component inline styles:
+const myStyle = {
+  background: COLORS.background,
+  color: COLORS.foreground,
+  borderColor: COLORS.borderWarm
+};
+```
+
+#### Theme Switching Strategy
+1. **CSS Files**: Target class-based selectors (e.g., `body[data-theme="dark"]` or `.dark-theme`) to override the root CSS custom properties.
+2. **TS/JS Inline Styles**: By referencing `COLORS` (e.g., `COLORS.background` which evaluates to `"var(--background)"`), any runtime changes to the body's CSS properties will instantly and automatically apply to the inline-styled elements without requiring React state re-renders.
+
 
 ---
 
