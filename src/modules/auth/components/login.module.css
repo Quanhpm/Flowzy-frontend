@@ -3,7 +3,8 @@
   grid-template-columns: minmax(560px, 1fr) minmax(560px, 1fr);
   min-height: 100svh;
   overflow: hidden;
-  background: #fff;
+  background: var(--surface);
+  font-family: var(--font-roboto), sans-serif;
 }
 
 .formPanel {
@@ -15,7 +16,7 @@
   min-width: 0;
   min-height: 100svh;
   padding: 58px 68px 42px;
-  background: #fff;
+  background: var(--surface);
 }
 
 .formHeader,
@@ -35,11 +36,11 @@
   display: inline-flex;
   align-items: center;
   gap: 11px;
-  color: #121a45;
-  font-family: var(--font-outfit), sans-serif;
-  font-size: 27px;
-  font-weight: 750;
-  letter-spacing: -0.045em;
+  color: var(--foreground);
+  font-family: var(--font-roboto), sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .brandMark {
@@ -47,28 +48,28 @@
   width: 38px;
   height: 38px;
   place-items: center;
-  border: 2px solid #4f46e5;
+  border: 2px solid var(--brand-primary);
   border-radius: 50%;
-  color: #4f46e5;
-  transform: rotate(-8deg);
+  color: var(--brand-primary);
+  transform: rotate(-6deg);
 }
 
 .brandInverse {
-  color: #fff;
+  color: var(--foreground);
 }
 
 .backLink {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #64748b;
+  color: var(--muted);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 500;
   transition: color 160ms ease;
 }
 
 .backLink:hover {
-  color: #111827;
+  color: var(--brand-primary);
 }
 
 .formCenter {
@@ -80,7 +81,7 @@
 
 .formContent {
   width: 100%;
-  max-width: 478px;
+  max-width: 440px;
   min-width: 0;
   text-align: center;
 }
@@ -91,26 +92,26 @@
   height: 60px;
   margin: 0 auto 26px;
   place-items: center;
-  border-radius: 17px;
-  background: #090d20;
-  color: #fff;
-  box-shadow: 0 14px 26px rgb(15 23 42 / 19%);
+  border-radius: 50%;
+  background: var(--surface-warm);
+  color: var(--brand-primary);
+  box-shadow: 0 8px 20px rgba(240, 84, 35, 0.08);
 }
 
 .formContent h1 {
   margin: 0;
-  color: #111827;
-  font-family: var(--font-outfit), sans-serif;
-  font-size: clamp(32px, 3vw, 40px);
-  font-weight: 720;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
+  color: var(--foreground);
+  font-family: var(--font-roboto), sans-serif;
+  font-size: clamp(30px, 3.2vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
 .subtitle {
   margin: 10px 0 34px;
-  color: #94a3b8;
-  font-size: 15px;
+  color: var(--muted);
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -127,26 +128,26 @@
 
 .inputShell {
   display: flex;
-  height: 54px;
+  height: 52px;
   align-items: center;
-  gap: 13px;
-  padding: 0 17px;
-  border: 1px solid #e2e8f0;
-  border-radius: 15px;
-  color: #94a3b8;
-  background: #fff;
+  gap: 12px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  background: var(--surface);
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
 }
 
 .inputShell:focus-within {
-  border-color: #818cf8;
-  box-shadow: 0 0 0 4px rgb(99 102 241 / 10%);
+  border-color: var(--brand-secondary);
+  box-shadow: 0 0 0 4px rgba(237, 161, 47, 0.12);
 }
 
 .inputError {
-  border-color: #f87171;
+  border-color: #ef4444;
 }
 
 .inputShell input {
@@ -154,13 +155,13 @@
   flex: 1;
   border: 0;
   outline: 0;
-  color: #0f172a;
+  color: var(--foreground);
   background: transparent;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .inputShell input::placeholder {
-  color: #a5afc0;
+  color: #a3a3a3;
 }
 
 .passwordToggle {
@@ -168,13 +169,13 @@
   padding: 4px;
   place-items: center;
   border: 0;
-  color: #94a3b8;
+  color: var(--muted);
   background: transparent;
 }
 
 .errorText {
   padding-left: 4px;
-  color: #dc2626;
+  color: #ef4444;
   font-size: 12px;
 }
 
@@ -182,8 +183,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 3px 0 1px;
-  color: #64748b;
+  margin: 4px 0 2px;
+  color: var(--muted);
   font-size: 13px;
 }
 
@@ -195,65 +196,71 @@
 }
 
 .checkboxLabel input {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   margin: 0;
-  accent-color: #4f46e5;
+  accent-color: var(--brand-primary);
+  cursor: pointer;
 }
 
 .textButton {
   padding: 0;
   border: 0;
-  color: #111827;
+  color: var(--foreground);
   background: none;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.textButton:hover {
+  color: var(--brand-primary);
 }
 
 .formMessage {
   margin-top: -4px;
-  padding: 11px 13px;
-  border: 1px solid #ddd6fe;
-  border-radius: 11px;
-  color: #5b21b6;
-  background: #f5f3ff;
+  padding: 12px 14px;
+  border: 1px solid var(--border-warm);
+  border-radius: 10px;
+  color: #7c2d12;
+  background: var(--surface-warm);
   font-size: 13px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .submitButton {
   display: flex;
-  height: 56px;
+  height: 52px;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-top: 2px;
+  margin-top: 4px;
   border: 0;
-  border-radius: 15px;
+  border-radius: 12px;
   color: #fff;
-  background: #080c1e;
-  box-shadow: 0 14px 24px rgb(15 23 42 / 20%);
+  background: var(--brand-primary);
   font-size: 14px;
-  font-weight: 750;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    opacity 160ms ease;
+  font-weight: 500;
+  transition: background 160ms ease, transform 100ms ease;
 }
 
 .submitButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 17px 28px rgb(15 23 42 / 25%);
+  background: #d84315;
+}
+
+.submitButton:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .submitButton:disabled {
-  opacity: 0.72;
+  opacity: 0.6;
 }
 
 .spinner {
-  width: 17px;
-  height: 17px;
-  border: 2px solid rgb(255 255 255 / 35%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 700ms linear infinite;
@@ -263,18 +270,18 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin: 25px 0 20px;
-  color: #94a3b8;
+  margin: 24px 0 18px;
+  color: var(--muted);
   font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.11em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
 }
 
 .divider::before,
 .divider::after {
   height: 1px;
   flex: 1;
-  background: #eef1f6;
+  background: var(--border);
   content: "";
 }
 
@@ -285,20 +292,20 @@
   align-items: center;
   justify-content: center;
   gap: 11px;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  color: #475569;
-  background: #fff;
-  font-size: 13px;
-  font-weight: 650;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--foreground);
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
   transition:
     border-color 160ms ease,
-    background 160ms ease;
+    background-color 160ms ease;
 }
 
 .googleButton:hover {
   border-color: #cbd5e1;
-  background: #f8fafc;
+  background-color: var(--background);
 }
 
 .googleButtonShell {
@@ -306,7 +313,7 @@
   width: 100%;
   min-height: 44px;
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .googleButtonContainer {
@@ -327,17 +334,17 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  color: #64748b;
+  color: var(--muted);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .googleButtonLoading {
   position: absolute;
   inset: 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
 }
 
 .googleStatus {
@@ -345,7 +352,7 @@
 }
 
 .googleButtonDisabled {
-  opacity: 0.58;
+  opacity: 0.6;
 }
 
 .googleButtonBlocker {
@@ -359,34 +366,33 @@
   width: 15px;
   height: 15px;
   border: 2px solid #cbd5e1;
-  border-top-color: #4f46e5;
+  border-top-color: var(--brand-primary);
   border-radius: 50%;
   animation: spin 700ms linear infinite;
 }
 
 .googleMark {
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   color: #4285f4;
 }
 
 .accountNote {
-  margin: 27px 0 0;
-  color: #94a3b8;
+  margin: 24px 0 0;
+  color: var(--muted);
   font-size: 13px;
 }
 
 .accountNote strong {
-  color: #111827;
+  color: var(--foreground);
 }
 
 .formFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #94a3b8;
-  font-size: 11px;
-  font-weight: 550;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .formFooter div {
@@ -394,6 +400,11 @@
   gap: 12px;
 }
 
+.formFooter a:hover {
+  color: var(--brand-primary);
+}
+
+/* Right Showcase Panel with Light Beige Minimal Aesthetics */
 .showcase {
   position: relative;
   display: grid;
@@ -401,22 +412,19 @@
   min-height: 100svh;
   overflow: hidden;
   padding: 60px 68px 64px;
-  color: #fff;
-  background:
-    radial-gradient(circle at 92% 8%, rgb(79 70 229 / 13%), transparent 34%),
-    radial-gradient(circle at 4% 94%, rgb(37 99 235 / 10%), transparent 31%),
-    #090d16;
+  color: var(--foreground);
+  background: var(--surface-warm);
 }
 
 .gridGlow {
   position: absolute;
   inset: 0;
-  opacity: 0.38;
+  opacity: 0.15;
   background-image:
-    linear-gradient(rgb(148 163 184 / 7%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(148 163 184 / 7%) 1px, transparent 1px);
+    linear-gradient(rgba(240, 84, 35, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 84, 35, 0.08) 1px, transparent 1px);
   background-size: 35px 35px;
-  mask-image: linear-gradient(to bottom, #000, transparent 93%);
+  mask-image: linear-gradient(to bottom, #000, transparent 95%);
 }
 
 .showcaseTopbar,
@@ -436,35 +444,35 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.07em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 .workspaceLabel span {
-  width: 11px;
-  height: 11px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: #4f46e5;
-  box-shadow: 0 0 18px #6366f1;
+  background: var(--brand-primary);
+  box-shadow: 0 0 10px rgba(240, 84, 35, 0.4);
 }
 
 .connectedBadge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 13px;
-  border: 1px solid rgb(148 163 184 / 12%);
+  padding: 6px 12px;
+  border: 1px solid var(--border-warm);
   border-radius: 999px;
-  color: #e2e8f0;
-  background: rgb(255 255 255 / 5%);
+  color: var(--foreground);
+  background: rgba(255, 255, 255, 0.6);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .connectedBadge svg {
-  color: #8b5cf6;
+  color: var(--brand-primary);
 }
 
 .previewArea {
@@ -476,110 +484,123 @@
 .board {
   width: min(545px, 100%);
   overflow: hidden;
-  border: 1px solid rgb(148 163 184 / 13%);
-  border-radius: 18px;
-  background: rgb(17 22 35 / 91%);
-  box-shadow: 0 28px 80px rgb(0 0 0 / 35%);
+  border: 1px solid var(--border-warm);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 20px 45px rgba(26, 26, 26, 0.04);
 }
 
 .boardHeader {
   display: flex;
-  height: 76px;
+  height: 70px;
   align-items: center;
   justify-content: space-between;
-  padding: 0 25px;
-  border-bottom: 1px solid rgb(148 163 184 / 7%);
-  font-size: 12px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border-warm);
+  font-size: 13px;
+}
+
+.boardHeader strong {
+  font-weight: 500;
 }
 
 .activeBadge {
-  padding: 5px 9px;
-  border: 1px solid rgb(16 185 129 / 14%);
+  padding: 4px 10px;
+  border: 1px solid var(--border-warm);
   border-radius: 999px;
-  color: #34d399;
-  background: rgb(16 185 129 / 8%);
-  font-size: 9px;
-  font-weight: 700;
+  color: var(--brand-primary);
+  background: rgba(240, 84, 35, 0.06);
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .boardColumns {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 12px;
   min-height: 230px;
-  padding: 18px 25px;
+  padding: 16px 24px;
 }
 
 .boardColumn {
-  padding: 11px 9px;
+  padding: 10px 8px;
   border-radius: 12px;
-  background: #0b0f1d;
+  background: var(--background);
+  border: 1px solid var(--border-warm);
 }
 
 .columnTitle {
   display: block;
   margin-bottom: 10px;
-  color: #94a3b8;
-  font-size: 10px;
-  font-weight: 650;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  padding-left: 4px;
 }
 
 .taskCard {
   display: grid;
-  gap: 7px;
-  padding: 11px;
-  border: 1px solid rgb(99 102 241 / 10%);
-  border-radius: 9px;
-  background: #12182c;
-  font-size: 10px;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-warm);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 11px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
 .taskCardProgress {
-  border-right: 5px solid #8b5cf6;
+  border-left: 3px solid var(--brand-secondary);
 }
 
 .taskLabel {
   display: flex;
   align-items: center;
-  gap: 3px;
-  color: #8b5cf6;
-  font-size: 9px;
+  gap: 4px;
+  color: var(--brand-primary);
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .taskLabelComplete {
-  color: #34d399;
+  color: var(--brand-secondary);
+}
+
+.taskCard strong {
+  font-weight: 500;
+  color: var(--foreground);
 }
 
 .taskCard small {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #64748b;
-  font-size: 8px;
+  color: var(--muted);
+  font-size: 9px;
 }
 
 .progressTrack {
   height: 4px;
   overflow: hidden;
   border-radius: 99px;
-  background: #293246;
+  background: var(--border-warm);
 }
 
 .progressTrack span {
   display: block;
   width: 64%;
   height: 100%;
-  background: #3b82f6;
+  background: var(--brand-primary);
 }
 
 .boardFooter {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 25px;
-  border-top: 1px solid rgb(148 163 184 / 7%);
-  color: #64748b;
-  font-size: 8px;
+  gap: 12px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--border-warm);
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .boardFooter span {
@@ -590,7 +611,8 @@
 
 .boardFooter strong {
   margin-left: auto;
-  color: #94a3b8;
+  color: var(--brand-primary);
+  font-weight: 500;
 }
 
 .showcaseCopy {
@@ -601,14 +623,16 @@
 
 .showcaseCopy h2 {
   margin: 0;
-  font-family: var(--font-outfit), sans-serif;
-  font-size: 27px;
-  letter-spacing: -0.025em;
+  font-family: var(--font-roboto), sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
 }
 
 .showcaseCopy p {
-  margin: 11px auto 28px;
-  color: #94a3b8;
+  margin: 10px auto 26px;
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -617,19 +641,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 8px;
 }
 
 .dots span {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 999px;
-  background: #334155;
+  background: var(--border-warm);
 }
 
 .dots .activeDot {
-  width: 25px;
-  background: #f8fafc;
+  width: 20px;
+  background: var(--brand-primary);
 }
 
 .srOnly {
@@ -699,7 +723,7 @@
   }
 
   .brand {
-    font-size: 23px;
+    font-size: 22px;
   }
 
   .brandMark {
@@ -727,7 +751,7 @@
   }
 
   .formContent h1 {
-    font-size: 31px;
+    font-size: 30px;
   }
 
   .subtitle {
@@ -736,7 +760,7 @@
   }
 
   .inputShell {
-    height: 53px;
+    height: 50px;
   }
 
   .formFooter {

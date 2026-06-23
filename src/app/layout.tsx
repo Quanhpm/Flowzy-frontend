@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Roboto } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { AppProviders } from "@/providers/app-providers";
 
 import "./globals.css";
 
-const inter = Inter({
+const roboto = Roboto({
   subsets: ["latin", "vietnamese"],
-  variable: "--font-inter",
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
+  weight: ["300", "400", "500", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-roboto",
 });
 
 export const metadata: Metadata = {
@@ -28,7 +25,7 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${outfit.variable}`}>
+      <body className={roboto.variable}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
