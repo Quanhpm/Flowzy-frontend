@@ -58,6 +58,8 @@ Endpoints:
 - `/api/groups/{groupId}/mentor/availability`
 - `/api/groups/{groupId}/mentor/meetings`
 
+Note: Neu endpoint co prefix `/api/groups/{groupId}` nhung la `/board`, `/tasks/**`, hoac `/problems/**` thi thuoc Person 3.
+
 ### Person 3 - Tasks, Kanban, Problems, Problem Bank
 
 Owner:
@@ -79,6 +81,8 @@ Endpoints:
 - `/api/problem-domains`
 - `/api/admin/problem-domains/**`
 - `/api/problem-evaluation-criteria`
+
+Note: Person 3 co the doc group id/member data de render UI, nhung khong sua module `groups` neu khong can.
 
 ## Protected Shared Files
 

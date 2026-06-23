@@ -121,6 +121,7 @@ To achieve a **simple and elegant** look, avoid cluttered color sections. Follow
 ## 5. UI Philosophy: "Simple & Elegant"
 
 - **Less is More**: Eliminate multi-colored indicators (e.g. mix of purple, indigo, blue, green). Standardize on `brand-primary` and `brand-secondary` for color accents.
+- **Semantic Status Colors**: `success`, `warning`, and `danger` tones are allowed only for clear operational states (e.g. Active, Pending, Locked, Delete). Do not use these tones as page themes or decorative accents.
 - **White Space**: Provide ample padding and line height to let text breathe. Avoid cramming information.
 - **Micro-interactions**: Use transitions (`150ms` to `200ms` with ease curve) for hover states on buttons, cards, and text links to make the app feel tactile and premium.
 
@@ -285,6 +286,8 @@ import { Badge } from "@/shared/components";
 <Badge tone="warning">Pending</Badge>
 <Badge tone="danger">Locked</Badge>
 ```
+
+Badge tones are semantic only. Use them for data states, not for decorative color variety.
 
 ### Card
 

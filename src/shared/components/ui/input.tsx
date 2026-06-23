@@ -6,6 +6,7 @@ import styles from "./input.module.css";
 
 type TextInputProps = InputHTMLAttributes<HTMLInputElement> & {
   error?: string;
+  fieldClassName?: string;
   hint?: string;
   icon?: ReactNode;
   label?: string;
@@ -15,6 +16,7 @@ type TextInputProps = InputHTMLAttributes<HTMLInputElement> & {
 export function TextInput({
   className,
   error,
+  fieldClassName,
   hint,
   icon,
   id,
@@ -23,7 +25,7 @@ export function TextInput({
   ...props
 }: TextInputProps) {
   return (
-    <label className={styles.field} htmlFor={id}>
+    <label className={cn(styles.field, fieldClassName)} htmlFor={id}>
       {(label || hint) && (
         <span className={styles.labelRow}>
           {label && <span className={styles.label}>{label}</span>}

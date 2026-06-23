@@ -324,7 +324,7 @@ function UserFormModal({
 
             <div className={styles.formGrid}>
               <TextInput
-                className={styles.fullSpan}
+                fieldClassName={styles.fullSpan}
                 label="Email"
                 onChange={(event) => updateField("email", event.target.value)}
                 placeholder="name@example.com"
