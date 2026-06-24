@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
 import { EmptyState, PageHeader } from "../ui";
-import styles from "./module-placeholder.module.css";
 
 type ModulePlaceholderProps = {
   actions?: ReactNode;
@@ -17,7 +16,7 @@ export function ModulePlaceholder({
   title,
 }: ModulePlaceholderProps) {
   return (
-    <div className={styles.page}>
+    <div className="grid min-w-0 gap-6">
       <PageHeader description={description} eyebrow={eyebrow} title={title} />
       <EmptyState
         actions={actions}

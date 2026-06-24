@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useCallback, useRef, useState } from "react";
 
-import styles from "./login.module.css";
+import { cn } from "@/shared/lib";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 const GOOGLE_HOSTED_DOMAIN = process.env.NEXT_PUBLIC_GOOGLE_HOSTED_DOMAIN;
@@ -71,7 +71,7 @@ export function GoogleSignInButton({
   if (!GOOGLE_CLIENT_ID) {
     return (
       <button
-        className={styles.googleButton}
+        className="flex h-12 w-full items-center justify-center gap-[11px] rounded-xl border border-border bg-surface text-sm font-medium text-foreground transition-[background-color,border-color] duration-[160ms] ease-in-out hover:border-slate-300 hover:bg-background"
         type="button"
         onClick={() =>
           onConfigurationError(
@@ -79,7 +79,7 @@ export function GoogleSignInButton({
           )
         }
       >
-        <span className={styles.googleMark}>G</span>
+        <span className="text-[17px] font-bold text-[#4285f4]">G</span>
         Google Workspace
       </button>
     );
@@ -87,7 +87,10 @@ export function GoogleSignInButton({
 
   return (
     <div
-      className={`${styles.googleButtonShell} ${disabled ? styles.googleButtonDisabled : ""}`}
+      className={cn(
+        "relative min-h-11 w-full overflow-hidden rounded-xl",
+        disabled && "opacity-60",
+      )}
       aria-busy={!isReady || disabled}
     >
       <Script
@@ -100,13 +103,19 @@ export function GoogleSignInButton({
           )
         }
       />
-      <div ref={buttonContainerRef} className={styles.googleButtonContainer} />
+      <div
+        ref={buttonContainerRef}
+        className="grid min-h-11 w-full place-items-center [&>div]:max-w-full [&_iframe]:max-w-full"
+      />
       {!isReady && (
-        <div className={styles.googleButtonLoading}>
-          <span className={styles.spinnerDark} /> Loading Google sign-in...
+        <div className="absolute inset-0 flex items-center justify-center gap-[9px] rounded-xl border border-border bg-surface text-[13px] font-medium text-muted">
+          <span className="size-[15px] animate-spin rounded-full border-2 border-slate-300 border-t-brand-primary" />{" "}
+          Loading Google sign-in...
         </div>
       )}
-      {disabled && <span className={styles.googleButtonBlocker} />}
+      {disabled && (
+        <span className="absolute inset-0 z-[3] cursor-not-allowed" />
+      )}
     </div>
   );
 }

@@ -1,5 +1,4 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api-fspark.kusl.io.vn";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 type PrimitiveQueryValue = string | number | boolean;
 
@@ -11,11 +10,7 @@ type QueryValue =
 
 export type QueryParams = Record<string, QueryValue>;
 
-type ApiRequestBody =
-  | BodyInit
-  | object
-  | null
-  | undefined;
+type ApiRequestBody = BodyInit | object | null | undefined;
 
 type ApiParseMode = "json" | "blob" | "text" | "response";
 

@@ -20,25 +20,41 @@ We use a curated, warm neutral palette balanced with high-contrast, premium bran
 | `border-warm` | `#e6dacb` | ![#e6dacb](https://via.placeholder.com/15/e6dacb/000000?text=+) | Borders for cards or blocks sitting on warm-beige backgrounds. |
 | `muted` | `#737373` | ![#737373](https://via.placeholder.com/15/737373/000000?text=+) | Descriptions, labels, icons, metadata, and placeholder text. |
 
-### Global CSS Custom Properties
+### Tailwind Theme Tokens (`src/app/globals.css`)
 ```css
+@import "tailwindcss";
+
+@theme {
+  --color-background: #f5f5f5;
+  --color-foreground: #1a1a1a;
+  --color-surface: #ffffff;
+  --color-surface-warm: #f5ebdc;
+  --color-border: #e2e8f0;
+  --color-border-warm: #e6dacb;
+  --color-muted: #737373;
+  --color-brand-primary: #f05423;
+  --color-brand-primary-hover: #d84315;
+  --color-brand-secondary: #eda12f;
+  --font-sans: var(--font-roboto), Arial, Helvetica, sans-serif;
+}
+
 :root {
-  --background: #F5F5F5;
-  --foreground: #1a1a1a;
-  --surface: #ffffff;
-  --surface-warm: #f5ebdc;
-  --border: #e2e8f0;
-  --border-warm: #e6dacb;
-  --muted: #737373;
-  --brand-primary: #F05423;
-  --brand-primary-hover: #d84315;
-  --brand-secondary: #EDA12F;
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --surface: var(--color-surface);
+  --surface-warm: var(--color-surface-warm);
+  --border: var(--color-border);
+  --border-warm: var(--color-border-warm);
+  --muted: var(--color-muted);
+  --brand-primary: var(--color-brand-primary);
+  --brand-primary-hover: var(--color-brand-primary-hover);
+  --brand-secondary: var(--color-brand-secondary);
   --brand: var(--brand-primary);
 }
 ```
 
 ### Centralized TypeScript Constants (`src/shared/constants/colors.ts`)
-Prefer CSS Modules for production UI. When inline styles are necessary, use the type-safe `COLORS` constant rather than hardcoded hex values or raw CSS variable string literals.
+Prefer Tailwind utility classes for production UI. When inline styles are necessary, use the type-safe `COLORS` constant rather than hardcoded hex values or raw CSS variable string literals.
 
 ```typescript
 import { COLORS } from "@/shared/constants/colors";
@@ -131,10 +147,11 @@ To achieve a **simple and elegant** look, avoid cluttered color sections. Follow
 
 ### Preferred Styling Method
 
-- Use **CSS Modules** for reusable UI and module UI.
-- Use inline styles only for very small one-off values or dynamic values that are awkward in CSS.
-- Do not create global CSS for module-specific layouts.
-- Do not hardcode hex colors in module UI. Use CSS variables in CSS Modules or `COLORS` in inline styles.
+- Use **Tailwind CSS utility classes** for reusable UI and module UI.
+- Use `src/app/globals.css` only for `@import "tailwindcss"`, theme tokens, legacy CSS variables required by `COLORS`, and base element rules.
+- Use inline styles only for very small one-off dynamic values that are awkward in Tailwind.
+- Do not create global CSS or CSS Modules for module-specific layouts.
+- Do not hardcode hex colors in module UI unless the value is a one-off semantic status tone. Prefer Tailwind tokens such as `bg-surface`, `text-foreground`, `border-border`, `text-brand-primary`, or `COLORS` in inline styles.
 
 Recommended structure:
 
@@ -182,7 +199,12 @@ import { cn } from "@/shared/lib";
 Example:
 
 ```tsx
-<div className={cn(styles.panel, isActive && styles.active)} />
+<div
+  className={cn(
+    "grid min-w-0 gap-6 rounded-xl border border-border bg-surface p-6",
+    isActive && "border-brand-secondary shadow-card-interactive",
+  )}
+/>
 ```
 
 ---
@@ -341,7 +363,7 @@ Use this order for management pages:
 Page example:
 
 ```tsx
-<div className={styles.page}>
+<div className="grid min-w-0 gap-6">
   <PageHeader
     eyebrow="Admin"
     title="Users"
@@ -357,14 +379,10 @@ Page example:
 </div>
 ```
 
-Recommended page CSS:
+Recommended page class:
 
-```css
-.page {
-  display: grid;
-  gap: 24px;
-  min-width: 0;
-}
+```tsx
+<div className="grid min-w-0 gap-6">{/* page content */}</div>
 ```
 
 ---
@@ -401,18 +419,10 @@ Do not hand-draw SVG icons if a Lucide icon exists.
 
 Example toolbar:
 
-```css
-.toolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(160px, 220px));
-  gap: 12px;
-}
-
-@media (max-width: 760px) {
-  .toolbar {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
+```tsx
+<div className="grid grid-cols-[minmax(220px,1fr)_repeat(2,minmax(160px,220px))] gap-3 max-[760px]:grid-cols-[minmax(0,1fr)]">
+  {/* filters */}
+</div>
 ```
 
 ---
@@ -426,7 +436,7 @@ When an AI agent builds UI in this repo, it must:
 3. Use `src/shared/components/ui` primitives first.
 4. Use `src/shared/components/layout/AppShell` only through route layouts, not inside individual pages.
 5. Keep module-specific UI inside `src/modules/<module>/components`.
-6. Use CSS Modules for module page styling.
+6. Use Tailwind utility classes for module page styling.
 7. Use `lucide-react` icons.
 8. Avoid custom palettes, gradients, decorative blobs, and unrelated hero sections.
 9. Run `npm run typecheck`.

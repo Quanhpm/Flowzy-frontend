@@ -1,6 +1,6 @@
 "use client";
 
-import { ApiError } from "@/shared/lib";
+import { ApiError, cn } from "@/shared/lib";
 import {
   Badge,
   Button,
@@ -40,7 +40,6 @@ import type {
   StudentProfileInput,
   UpdateAdminUserRequest,
 } from "../types";
-import styles from "./admin-users.module.css";
 
 type UserFormState = {
   email: string;
@@ -93,6 +92,52 @@ const DEFAULT_FORM: UserFormState = {
 };
 
 const PAGE_SIZE = 10;
+
+const pageClassName = "grid min-w-0 gap-6";
+const toolbarClassName =
+  "grid grid-cols-[minmax(240px,1fr)_minmax(150px,190px)_minmax(150px,190px)] items-end gap-3 max-[860px]:grid-cols-[minmax(0,1fr)]";
+const tableWrapClassName = "w-full overflow-x-auto";
+const tableClassName =
+  "w-full min-w-[900px] border-collapse [&_tbody_tr:last-child_td]:border-b-0";
+const tableHeadCellClassName =
+  "border-b border-border px-[18px] py-[15px] text-left align-middle text-xs font-bold tracking-[0.04em] text-muted uppercase";
+const tableCellClassName =
+  "border-b border-border px-[18px] py-[15px] text-left align-middle text-sm text-foreground";
+const mutedTableCellClassName = cn(tableCellClassName, "text-muted");
+const userCellClassName = "grid min-w-0 gap-1";
+const userNameClassName =
+  "overflow-hidden text-ellipsis whitespace-nowrap font-bold";
+const userEmailClassName =
+  "overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-muted";
+const actionsClassName = "flex justify-end gap-2";
+const paginationClassName =
+  "flex items-center justify-between gap-4 border-t border-border px-6 py-4 max-[680px]:flex-col max-[680px]:items-start";
+const paginationTextClassName = "text-[13px] text-muted";
+const paginationActionsClassName = "flex gap-2";
+const errorPanelClassName =
+  "rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm leading-normal text-red-700";
+const modalBackdropClassName =
+  "fixed inset-0 z-40 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6 max-[680px]:p-3";
+const modalClassName =
+  "grid w-[min(760px,100%)] max-h-[min(760px,calc(100svh-48px))] grid-rows-[auto_1fr_auto] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal max-[680px]:max-h-[calc(100svh-24px)]";
+const modalSmallClassName = "w-[min(480px,100%)]";
+const modalHeaderClassName =
+  "flex items-start justify-between gap-4 border-b border-border px-6 py-[22px] max-[680px]:px-[18px]";
+const modalTitleClassName =
+  "m-0 text-xl leading-tight font-bold text-foreground";
+const modalDescriptionClassName =
+  "mt-1.5 mb-0 text-sm leading-[1.55] text-muted";
+const modalBodyClassName =
+  "grid gap-[18px] overflow-y-auto p-6 max-[680px]:px-[18px]";
+const modalFooterClassName =
+  "flex justify-end gap-2.5 border-t border-border bg-surface px-6 py-[18px] max-[680px]:px-[18px]";
+const formGridClassName =
+  "grid grid-cols-2 gap-3.5 max-[680px]:grid-cols-[minmax(0,1fr)]";
+const fullSpanClassName = "col-span-full";
+const sectionTitleClassName =
+  "mt-1.5 mb-0 text-sm font-bold text-foreground";
+const checkboxRowClassName =
+  "flex min-h-[50px] items-center gap-2.5 text-sm font-medium text-foreground [&_input]:size-[17px] [&_input]:accent-brand-primary";
 
 function getErrorMessage(error: unknown) {
   return error instanceof ApiError
@@ -297,18 +342,18 @@ function UserFormModal({
       : "Update account status, profile details, and password-change policy.";
 
   return (
-    <div className={styles.modalBackdrop}>
+    <div className={modalBackdropClassName}>
       <form
         aria-label={title}
         aria-modal="true"
-        className={styles.modal}
+        className={modalClassName}
         onSubmit={handleSubmit}
         role="dialog"
       >
-        <header className={styles.modalHeader}>
+        <header className={modalHeaderClassName}>
           <div>
-            <h2 className={styles.modalTitle}>{title}</h2>
-            <p className={styles.modalDescription}>{description}</p>
+            <h2 className={modalTitleClassName}>{title}</h2>
+            <p className={modalDescriptionClassName}>{description}</p>
           </div>
           <Button
             aria-label="Close"
@@ -319,12 +364,12 @@ function UserFormModal({
           />
         </header>
 
-        <div className={styles.modalBody}>
-            {formError && <div className={styles.errorPanel}>{formError}</div>}
+        <div className={modalBodyClassName}>
+            {formError && <div className={errorPanelClassName}>{formError}</div>}
 
-            <div className={styles.formGrid}>
+            <div className={formGridClassName}>
               <TextInput
-                fieldClassName={styles.fullSpan}
+                fieldClassName={fullSpanClassName}
                 label="Email"
                 onChange={(event) => updateField("email", event.target.value)}
                 placeholder="name@example.com"
@@ -370,7 +415,7 @@ function UserFormModal({
               )}
 
               {mode === "edit" && (
-                <label className={styles.checkboxRow}>
+                <label className={checkboxRowClassName}>
                   <input
                     checked={form.mustChangePassword}
                     onChange={(event) =>
@@ -385,8 +430,8 @@ function UserFormModal({
 
             {form.role === "STUDENT" && (
               <>
-                <h3 className={styles.sectionTitle}>Student profile</h3>
-                <div className={styles.formGrid}>
+                <h3 className={sectionTitleClassName}>Student profile</h3>
+                <div className={formGridClassName}>
                   <TextInput
                     label="Student code"
                     onChange={(event) =>
@@ -467,8 +512,8 @@ function UserFormModal({
 
             {form.role === "MENTOR" && (
               <>
-                <h3 className={styles.sectionTitle}>Mentor profile</h3>
-                <div className={styles.formGrid}>
+                <h3 className={sectionTitleClassName}>Mentor profile</h3>
+                <div className={formGridClassName}>
                   <TextInput
                     label="Mentor code"
                     onChange={(event) =>
@@ -540,7 +585,7 @@ function UserFormModal({
             )}
           </div>
 
-        <footer className={styles.modalFooter}>
+        <footer className={modalFooterClassName}>
           <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
@@ -589,18 +634,18 @@ function ResetPasswordModal({
   }
 
   return (
-    <div className={styles.modalBackdrop}>
+    <div className={modalBackdropClassName}>
       <form
         aria-label="Reset password"
         aria-modal="true"
-        className={`${styles.modal} ${styles.modalSmall}`}
+        className={cn(modalClassName, modalSmallClassName)}
         onSubmit={handleSubmit}
         role="dialog"
       >
-        <header className={styles.modalHeader}>
+        <header className={modalHeaderClassName}>
           <div>
-            <h2 className={styles.modalTitle}>Reset password</h2>
-            <p className={styles.modalDescription}>
+            <h2 className={modalTitleClassName}>Reset password</h2>
+            <p className={modalDescriptionClassName}>
               Set a temporary password for {getDisplayName(user)}.
             </p>
           </div>
@@ -612,8 +657,8 @@ function ResetPasswordModal({
             variant="ghost"
           />
         </header>
-        <div className={styles.modalBody}>
-          {formError && <div className={styles.errorPanel}>{formError}</div>}
+        <div className={modalBodyClassName}>
+          {formError && <div className={errorPanelClassName}>{formError}</div>}
           <TextInput
             label="New password"
             onChange={(event) => setPassword(event.target.value)}
@@ -622,7 +667,7 @@ function ResetPasswordModal({
             value={password}
           />
         </div>
-        <footer className={styles.modalFooter}>
+        <footer className={modalFooterClassName}>
           <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
@@ -655,17 +700,17 @@ function UserDetailStateModal({
   variant,
 }: UserDetailStateModalProps) {
   return (
-    <div className={styles.modalBackdrop}>
+    <div className={modalBackdropClassName}>
       <div
         aria-label={title}
         aria-modal="true"
-        className={`${styles.modal} ${styles.modalSmall}`}
+        className={cn(modalClassName, modalSmallClassName)}
         role="dialog"
       >
-        <header className={styles.modalHeader}>
+        <header className={modalHeaderClassName}>
           <div>
-            <h2 className={styles.modalTitle}>{title}</h2>
-            <p className={styles.modalDescription}>{description}</p>
+            <h2 className={modalTitleClassName}>{title}</h2>
+            <p className={modalDescriptionClassName}>{description}</p>
           </div>
           <Button
             aria-label="Close"
@@ -675,11 +720,11 @@ function UserDetailStateModal({
             variant="ghost"
           />
         </header>
-        <div className={styles.modalBody}>
+        <div className={modalBodyClassName}>
           {variant === "loading" ? (
             <LoadingState title="Loading user detail" />
           ) : (
-            <div className={styles.errorPanel}>{description}</div>
+            <div className={errorPanelClassName}>{description}</div>
           )}
         </div>
       </div>
@@ -706,17 +751,17 @@ function DeleteUserModal({ onClose, onConfirm, user }: DeleteUserModalProps) {
   }
 
   return (
-    <div className={styles.modalBackdrop}>
+    <div className={modalBackdropClassName}>
       <div
         aria-label="Delete user"
         aria-modal="true"
-        className={`${styles.modal} ${styles.modalSmall}`}
+        className={cn(modalClassName, modalSmallClassName)}
         role="dialog"
       >
-        <header className={styles.modalHeader}>
+        <header className={modalHeaderClassName}>
           <div>
-            <h2 className={styles.modalTitle}>Delete user</h2>
-            <p className={styles.modalDescription}>
+            <h2 className={modalTitleClassName}>Delete user</h2>
+            <p className={modalDescriptionClassName}>
               This will soft delete {getDisplayName(user)} and remove their
               active access.
             </p>
@@ -729,13 +774,13 @@ function DeleteUserModal({ onClose, onConfirm, user }: DeleteUserModalProps) {
             variant="ghost"
           />
         </header>
-        <div className={styles.modalBody}>
-          {formError && <div className={styles.errorPanel}>{formError}</div>}
-          <div className={styles.errorPanel}>
+        <div className={modalBodyClassName}>
+          {formError && <div className={errorPanelClassName}>{formError}</div>}
+          <div className={errorPanelClassName}>
             Confirm that you want to delete account {user.email}.
           </div>
         </div>
-        <footer className={styles.modalFooter}>
+        <footer className={modalFooterClassName}>
           <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
@@ -798,7 +843,7 @@ export function AdminUsersPage() {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={pageClassName}>
       <PageHeader
         actions={
           <Button
@@ -822,7 +867,7 @@ export function AdminUsersPage() {
           title="User directory"
         />
         <CardContent>
-          <div className={styles.toolbar}>
+          <div className={toolbarClassName}>
             <TextInput
               icon={<Search size={16} />}
               label="Search"
@@ -868,7 +913,7 @@ export function AdminUsersPage() {
           </CardContent>
         ) : usersQuery.isError ? (
           <CardContent>
-            <div className={styles.errorPanel}>
+            <div className={errorPanelClassName}>
               {getErrorMessage(usersQuery.error)}
             </div>
           </CardContent>
@@ -881,51 +926,51 @@ export function AdminUsersPage() {
           </CardContent>
         ) : (
           <>
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
+            <div className={tableWrapClassName}>
+              <table className={tableClassName}>
                 <thead>
                   <tr>
-                    <th>User</th>
-                    <th>Code</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Last login</th>
-                    <th>Password</th>
-                    <th aria-label="Actions" />
+                    <th className={tableHeadCellClassName}>User</th>
+                    <th className={tableHeadCellClassName}>Code</th>
+                    <th className={tableHeadCellClassName}>Role</th>
+                    <th className={tableHeadCellClassName}>Status</th>
+                    <th className={tableHeadCellClassName}>Last login</th>
+                    <th className={tableHeadCellClassName}>Password</th>
+                    <th className={tableHeadCellClassName} aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (
                     <tr key={user.id}>
-                      <td>
-                        <div className={styles.userCell}>
-                          <span className={styles.userName}>
+                      <td className={tableCellClassName}>
+                        <div className={userCellClassName}>
+                          <span className={userNameClassName}>
                             {getDisplayName(user)}
                           </span>
-                          <span className={styles.userEmail}>{user.email}</span>
+                          <span className={userEmailClassName}>{user.email}</span>
                         </div>
                       </td>
-                      <td className={styles.muted}>{user.code ?? "-"}</td>
-                      <td>
+                      <td className={mutedTableCellClassName}>{user.code ?? "-"}</td>
+                      <td className={tableCellClassName}>
                         <Badge tone={getRoleTone(user.role)}>{user.role}</Badge>
                       </td>
-                      <td>
+                      <td className={tableCellClassName}>
                         <Badge tone={getStatusTone(user.status)}>
                           {user.status}
                         </Badge>
                       </td>
-                      <td className={styles.muted}>
+                      <td className={mutedTableCellClassName}>
                         {formatDateTime(user.lastLoginAt)}
                       </td>
-                      <td>
+                      <td className={tableCellClassName}>
                         {user.mustChangePassword ? (
                           <Badge tone="warning">Must change</Badge>
                         ) : (
                           <Badge tone="neutral">Normal</Badge>
                         )}
                       </td>
-                      <td>
-                        <div className={styles.actions}>
+                      <td className={tableCellClassName}>
+                        <div className={actionsClassName}>
                           <Button
                             icon={<Pencil size={15} />}
                             onClick={() => {
@@ -961,13 +1006,13 @@ export function AdminUsersPage() {
               </table>
             </div>
 
-            <div className={styles.pagination}>
-              <span className={styles.paginationText}>
+            <div className={paginationClassName}>
+              <span className={paginationTextClassName}>
                 Showing {pageData?.numberOfElements ?? 0} of{" "}
                 {pageData?.totalElements ?? 0} users · Page{" "}
                 {(pageData?.page ?? page) + 1} of {pageData?.totalPages ?? 1}
               </span>
-              <div className={styles.paginationActions}>
+              <div className={paginationActionsClassName}>
                 <Button
                   disabled={!pageData?.hasPrevious}
                   onClick={() => setPage((current) => Math.max(0, current - 1))}

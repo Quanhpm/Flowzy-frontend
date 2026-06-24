@@ -6,6 +6,7 @@ Muc tieu: moi nguoi code theo module rieng, dung chung foundation, han che confl
 ## Project Snapshot
 
 - Framework: Next.js App Router, TypeScript.
+- Styling: Tailwind CSS v4 utilities, with theme tokens in `src/app/globals.css`.
 - Data fetching/cache: TanStack React Query.
 - Auth state: Zustand persisted store.
 - Backend reference: `API.md`.
@@ -98,6 +99,8 @@ Khong tu y sua cac file nay neu khong phai owner hoac chua bao team:
 - `src/modules/index.ts`
 
 Neu module can type/enum/query key chung moi, uu tien bao Person 1 them vao shared. Khong tao type trung lap moi module neu do la contract chung trong `API.md`.
+
+`src/app/globals.css` chi duoc dung cho Tailwind import, theme tokens, CSS variables tuong thich `COLORS`, va base element rules. Khong them layout/style rieng cua module vao file nay.
 
 ## Module Folder Standard
 
@@ -406,10 +409,11 @@ Truoc khi sua code, AI phai:
 3. Xac dinh module ownership cua task.
 4. Tim file co san bang `rg` hoac `rg --files`.
 5. Khong sua protected shared files neu task khong yeu cau.
-6. Dung `apiGet/apiPost/apiPatch/apiPut/apiDelete/apiUpload/apiDownload`.
-7. Dung `useQuery/useMutation` va `queryKeys`.
-8. Chay `npm run typecheck`.
-9. Chay `npm run lint`.
+6. Dung Tailwind utility classes va shared UI primitives; khong tao CSS Modules moi.
+7. Dung `apiGet/apiPost/apiPatch/apiPut/apiDelete/apiUpload/apiDownload`.
+8. Dung `useQuery/useMutation` va `queryKeys`.
+9. Chay `npm run typecheck`.
+10. Chay `npm run lint`.
 
 ## Coding Rules
 
@@ -418,6 +422,7 @@ Truoc khi sua code, AI phai:
 - Component UI khong nen chua logic fetch truc tiep; goi hooks tu module.
 - API functions khong nen import React/TanStack.
 - Hooks khong nen render UI.
+- UI styling dung Tailwind utilities; khong tao CSS Modules hoac global CSS cho module-specific layouts.
 - Khong duplicate enum/type da co trong `src/shared/types`.
 - Khong set `Content-Type` khi upload `FormData`.
 - Khong tu tao API base URL rieng.
