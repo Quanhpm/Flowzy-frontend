@@ -26,7 +26,6 @@ import { cn } from "@/shared/lib";
 import type { UserRole } from "@/shared/types";
 
 import { Button, EmptyState, LoadingState } from "../ui";
-import styles from "./app-shell.module.css";
 
 type AppShellProps = {
   children: ReactNode;
@@ -100,8 +99,8 @@ export function AppShell({ children, role }: AppShellProps) {
 
   if (!isHydrated || !session || !hasValidSession) {
     return (
-      <main className={styles.guard}>
-        <div className={styles.guardPanel}>
+      <main className="grid min-h-svh place-items-center bg-background p-6">
+        <div className="w-[min(460px,100%)]">
           <LoadingState
             description="Checking your sign-in session before opening the workspace."
             title="Restoring session"
@@ -113,8 +112,8 @@ export function AppShell({ children, role }: AppShellProps) {
 
   if (session.user.role !== role) {
     return (
-      <main className={styles.guard}>
-        <div className={styles.guardPanel}>
+      <main className="grid min-h-svh place-items-center bg-background p-6">
+        <div className="w-[min(460px,100%)]">
           <EmptyState
             actions={
               <Button
@@ -134,16 +133,22 @@ export function AppShell({ children, role }: AppShellProps) {
   }
 
   return (
-    <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <Link className={styles.brand} href={navItems[0].href}>
-          <span className={styles.brandMark}>
+    <div className="grid min-h-svh grid-cols-[260px_minmax(0,1fr)] bg-background font-sans text-foreground max-[960px]:grid-cols-[minmax(0,1fr)]">
+      <aside className="sticky top-0 grid h-svh grid-rows-[auto_1fr_auto] gap-6 border-r border-border bg-surface px-4 py-[22px] max-[960px]:static max-[960px]:h-auto max-[960px]:grid-rows-[auto_auto] max-[960px]:gap-3.5 max-[960px]:border-r-0 max-[960px]:border-b max-[960px]:p-4">
+        <Link
+          className="inline-flex items-center gap-[11px] px-2 text-[22px] font-bold text-foreground"
+          href={navItems[0].href}
+        >
+          <span className="grid size-[34px] rotate-[-6deg] place-items-center rounded-full border-2 border-brand-primary text-brand-primary">
             <Sparkles size={18} />
           </span>
           F-Spark
         </Link>
 
-        <nav className={styles.nav} aria-label="Workspace navigation">
+        <nav
+          className="grid min-w-0 content-start gap-1.5 max-[960px]:flex max-[960px]:overflow-x-auto max-[960px]:pb-0.5"
+          aria-label="Workspace navigation"
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -152,8 +157,8 @@ export function AppShell({ children, role }: AppShellProps) {
             return (
               <Link
                 className={cn(
-                  styles.navItem,
-                  isActive && styles.navItemActive,
+                  "flex min-w-0 items-center gap-2.5 rounded-xl px-3 py-[11px] text-sm font-medium text-muted transition-[background,color] duration-[160ms] ease-in-out hover:bg-background hover:text-foreground",
+                  isActive && "bg-[#fff3ed] text-brand-primary",
                 )}
                 href={item.href}
                 key={item.href}
@@ -165,10 +170,14 @@ export function AppShell({ children, role }: AppShellProps) {
           })}
         </nav>
 
-        <div className={styles.sidebarFooter}>
-          <div className={styles.profile}>
-            <span className={styles.profileEmail}>{session.user.email}</span>
-            <span className={styles.profileRole}>{session.user.role}</span>
+        <div className="grid min-w-0 gap-3 max-[960px]:hidden">
+          <div className="grid min-w-0 gap-[3px] rounded-xl border border-border bg-background p-3">
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-medium text-foreground">
+              {session.user.email}
+            </span>
+            <span className="text-xs font-medium text-muted">
+              {session.user.role}
+            </span>
           </div>
           <Button
             disabled={logoutMutation.isPending}
@@ -182,13 +191,17 @@ export function AppShell({ children, role }: AppShellProps) {
         </div>
       </aside>
 
-      <div className={styles.workspace}>
-        <header className={styles.topbar}>
-          <div className={styles.topbarTitle}>
-            <span className={styles.sectionLabel}>{ROLE_LABELS[role]}</span>
-            <span className={styles.currentPage}>{activeItem.label}</span>
+      <div className="grid min-w-0 grid-rows-[auto_1fr]">
+        <header className="sticky top-0 z-5 flex min-w-0 items-center justify-between gap-4 border-b border-border bg-background/90 px-7 py-4 backdrop-blur-[14px] max-[640px]:items-start max-[640px]:px-4 max-[640px]:py-3.5">
+          <div className="grid min-w-0 gap-[3px]">
+            <span className="text-xs font-bold tracking-[0.04em] text-brand-primary uppercase">
+              {ROLE_LABELS[role]}
+            </span>
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-bold text-foreground">
+              {activeItem.label}
+            </span>
           </div>
-          <div className={styles.topbarActions}>
+          <div className="flex items-center gap-2.5 max-[640px]:hidden">
             <Button
               disabled={logoutMutation.isPending}
               icon={<LogOut size={16} />}
@@ -201,7 +214,9 @@ export function AppShell({ children, role }: AppShellProps) {
           </div>
         </header>
 
-        <main className={styles.content}>{children}</main>
+        <main className="min-w-0 p-7 max-[960px]:px-4 max-[960px]:py-[22px]">
+          {children}
+        </main>
       </div>
     </div>
   );

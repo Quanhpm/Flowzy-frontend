@@ -2,8 +2,6 @@ import type { HTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/shared/lib";
 
-import styles from "./card.module.css";
-
 type CardProps = HTMLAttributes<HTMLDivElement> & {
   isPadded?: boolean;
 };
@@ -22,7 +20,11 @@ export function Card({
 }: CardProps) {
   return (
     <section
-      className={cn(styles.card, isPadded && styles.padded, className)}
+      className={cn(
+        "min-w-0 rounded-xl border border-border bg-surface shadow-card",
+        isPadded && "p-6",
+        className,
+      )}
       {...props}
     >
       {children}
@@ -38,10 +40,22 @@ export function CardHeader({
   ...props
 }: CardHeaderProps) {
   return (
-    <header className={cn(styles.header, className)} {...props}>
-      <div className={styles.titleBlock}>
-        <h2 className={styles.title}>{title}</h2>
-        {description && <p className={styles.description}>{description}</p>}
+    <header
+      className={cn(
+        "flex items-start justify-between gap-4 border-b border-border px-6 py-5",
+        className,
+      )}
+      {...props}
+    >
+      <div className="grid min-w-0 gap-1">
+        <h2 className="m-0 text-[17px] leading-[1.3] font-bold text-foreground">
+          {title}
+        </h2>
+        {description && (
+          <p className="m-0 text-[13px] leading-normal text-muted">
+            {description}
+          </p>
+        )}
       </div>
       {actions}
     </header>
@@ -54,7 +68,7 @@ export function CardContent({
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn(styles.content, className)} {...props}>
+    <div className={cn("min-w-0 p-6", className)} {...props}>
       {children}
     </div>
   );
