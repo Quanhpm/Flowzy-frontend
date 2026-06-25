@@ -1,11 +1,5 @@
-import { ModulePlaceholder } from "@/shared/components";
+import { StudentGroupsPage } from "@/modules/groups";
 
-export default function StudentGroupsPage() {
-  return (
-    <ModulePlaceholder
-      description="Create a group, manage members, handle invitations, and review group details."
-      eyebrow="Student"
-      title="Groups"
-    />
-  );
+export default function StudentGroupsRoute() {
+  return <StudentGroupsPage />;
 }

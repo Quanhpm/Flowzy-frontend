@@ -1,11 +1,5 @@
-import { ModulePlaceholder } from "@/shared/components";
+import { MentorAvailabilityPage } from "@/modules/mentoring";
 
-export default function MentorAvailabilityPage() {
-  return (
-    <ModulePlaceholder
-      description="Create, update, and cancel mentoring slots that groups can book."
-      eyebrow="Mentor"
-      title="Availability"
-    />
-  );
+export default function MentorAvailabilityRoute() {
+  return <MentorAvailabilityPage />;
 }
