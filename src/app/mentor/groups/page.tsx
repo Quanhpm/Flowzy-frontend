@@ -1,11 +1,5 @@
-import { ModulePlaceholder } from "@/shared/components";
+import { MentorGroupsPage } from "@/modules/groups";
 
-export default function MentorGroupsPage() {
-  return (
-    <ModulePlaceholder
-      description="Review assigned groups, monitor progress, and open scheduled meeting context."
-      eyebrow="Mentor"
-      title="Groups"
-    />
-  );
+export default function MentorGroupsRoute() {
+  return <MentorGroupsPage />;
 }

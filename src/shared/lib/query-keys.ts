@@ -24,10 +24,18 @@ export const queryKeys = {
     list: (filters?: QueryFilters) =>
       [...queryKeys.groups.lists(), filters ?? {}] as const,
     detail: (id: number) => [...queryKeys.groups.all, "detail", id] as const,
+    studentMe: () => [...queryKeys.groups.all, "student", "me"] as const,
+    mentorMe: () => [...queryKeys.groups.all, "mentor", "me"] as const,
+    invitations: (groupId: number) =>
+      [...queryKeys.groups.all, groupId, "invitations"] as const,
+    myInvitations: () =>
+      [...queryKeys.groups.all, "invitations", "me"] as const,
   },
   mentoring: {
     all: ["mentoring"] as const,
     availability: () => [...queryKeys.mentoring.all, "availability"] as const,
+    groupAvailability: (groupId: number) =>
+      [...queryKeys.mentoring.all, "groups", groupId, "availability"] as const,
     meetings: (groupId: number) =>
       [...queryKeys.mentoring.all, "groups", groupId, "meetings"] as const,
   },
