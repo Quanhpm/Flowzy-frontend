@@ -1,11 +1,7 @@
-import { ModulePlaceholder } from "@/shared/components";
+"use client";
 
-export default function StudentProblemsPage() {
-  return (
-    <ModulePlaceholder
-      description="Browse official problems, select a group problem, or propose a custom problem."
-      eyebrow="Student"
-      title="Problems"
-    />
-  );
+import { StudentProblemsPage } from "@/modules/problems";
+
+export default function StudentProblemsRoot() {
+  return <StudentProblemsPage />;
 }
