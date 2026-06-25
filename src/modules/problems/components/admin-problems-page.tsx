@@ -9,7 +9,7 @@ import {
   PageHeader,
 } from "@/shared/components";
 import type { ProblemDifficulty, ProblemStatus, EntityId } from "@/shared/types";
-import { useProblems, useProblem } from "../hooks";
+import { useProblems, useProblem, useImportProblemBank } from "../hooks";
 import { ProblemDifficultyBadge } from "./problem-difficulty-badge";
 import { ProblemStatusBadge } from "./problem-status-badge";
 import { ProblemFilters } from "./problem-filters";
@@ -17,7 +17,7 @@ import { ProblemDetailModal } from "./problem-detail-modal";
 import { AdminProblemForm } from "./admin-problem-form";
 import { ReviewProposalModal } from "./review-proposal-modal";
 import { DomainManager } from "./domain-manager";
-import { Plus, Compass, Library, Edit3 } from "lucide-react";
+import { Plus, Compass, Library, Edit3, Upload } from "lucide-react";
 
 export function AdminProblemsPage() {
   const [activeTab, setActiveTab] = useState<"problems" | "domains">("problems");
@@ -56,6 +56,40 @@ export function AdminProblemsPage() {
   // Fetch full details of the problem being edited
   const { data: editProblemDetails } = useProblem(activeEditProblemId || 0);
 
+  const importMutation = useImportProblemBank();
+
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (extension !== "csv" && extension !== "xlsx") {
+      alert("Invalid file format. Please upload a CSV or XLSX file.");
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to import/update problem bank from ${file.name}?`)) {
+      importMutation.mutate(file, {
+        onSuccess: (response) => {
+          const res = response.data;
+          alert(
+            `Import batch completed successfully!\n` +
+            `- Total Rows: ${res.totalRows}\n` +
+            `- Success Rows: ${res.successRows}\n` +
+            `- Failed Rows: ${res.failedRows}`
+          );
+          e.target.value = "";
+        },
+        onError: (err) => {
+          alert(`Import failed: ${err.message}`);
+          e.target.value = "";
+        },
+      });
+    } else {
+      e.target.value = "";
+    }
+  };
+
   const handleOpenEdit = (id: EntityId) => {
     setSelectedProblemId(null);
     setActiveEditProblemId(id);
@@ -76,10 +110,30 @@ export function AdminProblemsPage() {
         />
 
         {activeTab === "problems" && (
-          <Button onClick={() => setIsCreating(true)} size="md">
-            <Plus className="size-4 mr-1.5" />
-            <span>Create Topic</span>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="file"
+              id="problem-bank-import-input"
+              accept=".csv, .xlsx"
+              className="hidden"
+              onChange={handleFileImport}
+            />
+            
+            <Button
+              variant="secondary"
+              onClick={() => document.getElementById("problem-bank-import-input")?.click()}
+              disabled={importMutation.isPending}
+              size="md"
+            >
+              <Upload className="size-4 mr-1.5" />
+              <span>{importMutation.isPending ? "Importing..." : "Import CSV/XLSX"}</span>
+            </Button>
+
+            <Button onClick={() => setIsCreating(true)} size="md">
+              <Plus className="size-4 mr-1.5" />
+              <span>Create Topic</span>
+            </Button>
+          </div>
         )}
       </div>
 
@@ -167,7 +221,7 @@ export function AdminProblemsPage() {
                       <tr
                         key={prob.id}
                         onClick={() => setSelectedProblemId(prob.id)}
-                        className="hover:bg-neutral-50/50 cursor-pointer [&_button]:opacity-0 [&_tr:hover_button]:opacity-100"
+                        className="hover:bg-neutral-50/50 cursor-pointer transition-colors"
                       >
                         <td className="px-5 py-3.5 font-mono text-xs font-bold text-muted">
                           {prob.code || "PROPOSAL"}
@@ -213,7 +267,7 @@ export function AdminProblemsPage() {
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => handleOpenEdit(prob.id)}
-                                className="size-8 p-0 rounded-lg"
+                                className="size-8 min-w-0 min-h-0 p-0 px-0 rounded-lg flex items-center justify-center"
                               >
                                 <Edit3 className="size-3.5" />
                               </Button>

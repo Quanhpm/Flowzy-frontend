@@ -2,9 +2,10 @@ import { useProblem, useEvaluationCriteria } from "../hooks";
 import {
   useSelectGroupProblem,
   useClearGroupProblem,
+  useUpdateProblemStatus,
 } from "../hooks/use-problem-mutations";
-import { Button, LoadingState } from "@/shared/components";
-import type { EntityId } from "@/shared/types";
+import { Button, LoadingState, Select } from "@/shared/components";
+import type { EntityId, ProblemStatus } from "@/shared/types";
 import { ProblemDifficultyBadge } from "./problem-difficulty-badge";
 import { ProblemStatusBadge } from "./problem-status-badge";
 import {
@@ -45,6 +46,7 @@ export function ProblemDetailModal({
   // Mutations
   const selectProblemMutation = useSelectGroupProblem(currentGroupId || 0);
   const clearProblemMutation = useClearGroupProblem(currentGroupId || 0);
+  const updateStatusMutation = useUpdateProblemStatus(problemId);
 
   const problem = problemResponse?.data;
   const criteria = criteriaResponse?.data || [];
@@ -310,6 +312,36 @@ export function ProblemDetailModal({
             {/* Admin actions */}
             {isAdmin && (
               <>
+                {/* Status Quick Select */}
+                <div className="flex items-center gap-2 border border-border p-1 px-3 rounded-xl bg-surface">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Status:</span>
+                  <Select
+                    value={problem.status}
+                    onChange={(e) => {
+                      const newStatus = e.target.value as ProblemStatus;
+                      if (window.confirm(`Are you sure you want to change the status to ${newStatus}?`)) {
+                        updateStatusMutation.mutate({ status: newStatus }, {
+                          onSuccess: () => {
+                            alert("Status updated successfully!");
+                          },
+                          onError: (err) => {
+                            alert(`Failed to update status: ${err.message}`);
+                          }
+                        });
+                      }
+                    }}
+                    className="h-8 py-0 px-2 text-xs"
+                    disabled={updateStatusMutation.isPending}
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="PENDING_REVIEW">Pending Review</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
+                    <option value="ARCHIVED">Archived</option>
+                  </Select>
+                </div>
+
                 {onEditClick && (
                   <Button onClick={onEditClick} variant="secondary" className="rounded-lg">
                     Edit Problem

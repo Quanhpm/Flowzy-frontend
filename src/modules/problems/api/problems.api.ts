@@ -3,6 +3,7 @@ import {
   apiGet,
   apiPatch,
   apiPost,
+  apiUpload,
 } from "@/shared/lib";
 import type { ApiResponse, EmptyApiResponse, EntityId, PageResponse } from "@/shared/types";
 import type {
@@ -111,5 +112,20 @@ export function listProblemDomains(query?: DomainsQuery) {
 export function listEvaluationCriteria() {
   return apiGet<ApiResponse<ProblemEvaluationCriteriaDto[]>>(
     "/api/problem-evaluation-criteria",
+  );
+}
+
+export function importProblemBank(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiUpload<ApiResponse<{
+    batchId: number;
+    targetType: string;
+    totalRows: number;
+    successRows: number;
+    failedRows: number;
+  }>>(
+    "/api/imports/problem-bank",
+    formData,
   );
 }

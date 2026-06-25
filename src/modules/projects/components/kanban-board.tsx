@@ -231,7 +231,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
       </div>
 
       {/* Kanban columns viewport */}
-      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[500px]">
+      <div className="flex w-full max-w-full gap-4 overflow-x-auto pb-4 min-h-[500px]">
         {columnsConfig.map((col) => (
           <KanbanColumn
             key={col.status}

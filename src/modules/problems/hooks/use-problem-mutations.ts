@@ -10,6 +10,7 @@ import {
   updateProblem,
   updateProblemDomain,
   updateProblemStatus,
+  importProblemBank,
 } from "../api";
 import type {
   CreateOfficialProblemRequest,
@@ -157,6 +158,19 @@ export function useUpdateProblemDomain(id: EntityId) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.problems.all, "domains"],
+      });
+    },
+  });
+}
+
+export function useImportProblemBank() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => importProblemBank(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.problems.all,
       });
     },
   });

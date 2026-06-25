@@ -4,7 +4,6 @@ import type { TaskStatus } from "@/shared/types";
 import type { TaskSummaryDto } from "../types";
 import { TaskCard } from "./task-card";
 import { Plus } from "lucide-react";
-import { Button } from "@/shared/components";
 
 type KanbanColumnProps = {
   status: TaskStatus;
@@ -86,14 +85,14 @@ export function KanbanColumn({
         </div>
         
         {/* Quick Add Button */}
-        <Button
+        <button
+          type="button"
           onClick={() => onAddTaskClick(status)}
-          variant="secondary"
-          className="size-7 p-0 rounded-lg"
+          className="size-7 rounded-lg flex items-center justify-center text-muted hover:text-foreground hover:bg-neutral-100 transition-colors"
           title={`Add task to ${label}`}
         >
           <Plus className="size-4" />
-        </Button>
+        </button>
       </div>
 
       {/* Cards List */}

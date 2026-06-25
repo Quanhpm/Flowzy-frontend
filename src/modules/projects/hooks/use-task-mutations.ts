@@ -35,6 +35,9 @@ export function useCreateTask(groupId: EntityId) {
       queryClient.invalidateQueries({
         queryKey: ["groups", groupId, "board"],
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.all,
+      });
     },
   });
 }
@@ -50,6 +53,9 @@ export function useUpdateTask(groupId: EntityId, taskId: EntityId) {
       });
       queryClient.invalidateQueries({
         queryKey: ["groups", groupId, "board"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.all,
       });
     },
   });
@@ -73,6 +79,9 @@ export function useMoveTask(groupId: EntityId) {
       queryClient.invalidateQueries({
         queryKey: ["groups", groupId, "board"],
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.all,
+      });
     },
   });
 }
@@ -90,6 +99,9 @@ export function useReplaceTaskAssignees(groupId: EntityId, taskId: EntityId) {
       queryClient.invalidateQueries({
         queryKey: ["groups", groupId, "board"],
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.all,
+      });
     },
   });
 }
@@ -106,6 +118,9 @@ export function useArchiveTask(groupId: EntityId, taskId: EntityId) {
       queryClient.invalidateQueries({
         queryKey: ["groups", groupId, "board"],
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.all,
+      });
     },
   });
 }
@@ -121,6 +136,9 @@ export function useRestoreTask(groupId: EntityId, taskId: EntityId) {
       });
       queryClient.invalidateQueries({
         queryKey: ["groups", groupId, "board"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.all,
       });
     },
   });

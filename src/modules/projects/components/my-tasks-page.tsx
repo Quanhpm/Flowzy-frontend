@@ -45,7 +45,7 @@ export function StudentTasksPage() {
     size: 10,
   };
 
-  const { data: myTasksResponse, isLoading: isTasksLoading } = useMyTasks(myTasksFilters);
+  const { data: myTasksResponse, isLoading: isTasksLoading, refetch: refetchMyTasks } = useMyTasks(myTasksFilters);
   const { data: myGroupsResponse, isLoading: isGroupsLoading } = useMyGroups();
 
   const myTasks = myTasksResponse?.data;
@@ -66,6 +66,13 @@ export function StudentTasksPage() {
     }
   }, [activeGroup, selectedGroupId]);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Refetch list when tab switches to "list"
+  useEffect(() => {
+    if (activeTab === "list") {
+      refetchMyTasks();
+    }
+  }, [activeTab, refetchMyTasks]);
 
   const handleRowClick = (taskId: number, taskGroupId: number | null) => {
     // If taskGroupId is not returned, we fallback to the selected group or student's active group
@@ -291,7 +298,7 @@ export function StudentTasksPage() {
         </Card>
       ) : (
         /* Board view */
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0 w-full overflow-hidden">
           {/* Group Project Selector */}
           {myGroups.length > 1 && (
             <div className="flex items-center gap-3 w-fit border border-border p-3.5 rounded-2xl bg-surface shadow-sm">
