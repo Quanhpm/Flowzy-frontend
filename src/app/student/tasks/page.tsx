@@ -1,11 +1,7 @@
-import { ModulePlaceholder } from "@/shared/components";
+"use client";
 
-export default function StudentTasksPage() {
-  return (
-    <ModulePlaceholder
-      description="Work with the group Kanban board, assigned tasks, checklist items, and comments."
-      eyebrow="Student"
-      title="Tasks"
-    />
-  );
+import { StudentTasksPage } from "@/modules/projects";
+
+export default function StudentTasksRoot() {
+  return <StudentTasksPage />;
 }

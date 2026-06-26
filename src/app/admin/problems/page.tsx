@@ -1,11 +1,7 @@
-import { ModulePlaceholder } from "@/shared/components";
+"use client";
 
-export default function AdminProblemsPage() {
-  return (
-    <ModulePlaceholder
-      description="Maintain official problems, review proposals, and manage problem domains."
-      eyebrow="Admin"
-      title="Problem Bank"
-    />
-  );
+import { AdminProblemsPage } from "@/modules/problems";
+
+export default function AdminProblemsRoot() {
+  return <AdminProblemsPage />;
 }
