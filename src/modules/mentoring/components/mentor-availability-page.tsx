@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useMemo, useState } from "react";
-import { CalendarClock, Pencil, Plus, Trash2, X } from "lucide-react";
+import { CalendarClock, Copy, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import {
   Badge,
@@ -58,14 +58,6 @@ const EMPTY_SLOT_FORM: SlotFormState = {
 const pageClassName = "grid min-w-0 gap-6";
 const toolbarClassName =
   "grid grid-cols-[minmax(180px,240px)] items-end gap-3 max-[680px]:grid-cols-[minmax(0,1fr)]";
-const tableWrapClassName = "w-full overflow-x-auto";
-const tableClassName =
-  "w-full min-w-[860px] border-collapse [&_tbody_tr:last-child_td]:border-b-0";
-const tableHeadCellClassName =
-  "border-b border-border px-[18px] py-[15px] text-left align-middle text-xs font-bold tracking-[0.04em] text-muted uppercase";
-const tableCellClassName =
-  "border-b border-border px-[18px] py-[15px] text-left align-middle text-sm text-foreground";
-const mutedTableCellClassName = cn(tableCellClassName, "text-muted");
 const actionsClassName = "flex flex-wrap justify-end gap-2";
 const errorPanelClassName =
   "rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm leading-normal text-red-700";
@@ -99,6 +91,18 @@ function optional(value: string) {
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("en", {
     dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "full",
+  }).format(new Date(value));
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("en", {
     timeStyle: "short",
   }).format(new Date(value));
 }
@@ -226,13 +230,13 @@ function SlotFormModal({
   onSubmit,
   slot,
 }: {
-  mode: "create" | "edit";
+  mode: "create" | "duplicate" | "edit";
   onClose: () => void;
   onSubmit: (form: SlotFormState) => Promise<unknown>;
   slot?: MentorAvailabilitySlotDto;
 }) {
   const [form, setForm] = useState<SlotFormState>(() =>
-    mode === "edit" && slot ? createFormFromSlot(slot) : EMPTY_SLOT_FORM,
+    slot ? createFormFromSlot(slot) : EMPTY_SLOT_FORM,
   );
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -265,7 +269,12 @@ function SlotFormModal({
     }
   }
 
-  const title = mode === "create" ? "Create slot" : "Edit slot";
+  const title =
+    mode === "edit"
+      ? "Edit slot"
+      : mode === "duplicate"
+        ? "Duplicate slot"
+        : "Create slot";
 
   return (
     <div className={modalBackdropClassName}>
@@ -333,12 +342,27 @@ function SlotFormModal({
   );
 }
 
-function AvailabilitySlotTable({
+function groupSlotsByDate(slots: MentorAvailabilitySlotDto[]) {
+  return slots.reduce<Record<string, MentorAvailabilitySlotDto[]>>(
+    (groups, slot) => {
+      const key = formatDate(slot.startAt);
+      return {
+        ...groups,
+        [key]: [...(groups[key] ?? []), slot],
+      };
+    },
+    {},
+  );
+}
+
+function AvailabilitySlotTimeline({
   onCancel,
+  onDuplicate,
   onEdit,
   slots,
 }: {
   onCancel: (slot: MentorAvailabilitySlotDto) => void;
+  onDuplicate: (slot: MentorAvailabilitySlotDto) => void;
   onEdit: (slot: MentorAvailabilitySlotDto) => void;
   slots: MentorAvailabilitySlotDto[];
 }) {
@@ -353,78 +377,95 @@ function AvailabilitySlotTable({
     );
   }
 
+  const groupedSlots = groupSlotsByDate(slots);
+
   return (
-    <div className={tableWrapClassName}>
-      <table className={tableClassName}>
-        <thead>
-          <tr>
-            <th className={tableHeadCellClassName}>Time</th>
-            <th className={tableHeadCellClassName}>Meet link</th>
-            <th className={tableHeadCellClassName}>Note</th>
-            <th className={tableHeadCellClassName}>Status</th>
-            <th className={tableHeadCellClassName} aria-label="Actions" />
-          </tr>
-        </thead>
-        <tbody>
-          {slots.map((slot) => (
-            <tr key={slot.id}>
-              <td className={tableCellClassName}>
-                <div className="grid gap-1">
-                  <span className="font-bold">{formatDateTime(slot.startAt)}</span>
-                  <span className="text-[13px] text-muted">
-                    Ends {formatDateTime(slot.endAt)}
-                  </span>
-                </div>
-              </td>
-              <td className={tableCellClassName}>
-                <a
-                  className="font-medium text-brand-primary"
-                  href={slot.meetLink}
-                  rel="noreferrer"
-                  target="_blank"
+    <CardContent>
+      <div className="grid gap-5">
+        {Object.entries(groupedSlots).map(([date, daySlots]) => (
+          <section
+            className="grid gap-3 rounded-xl border border-border bg-background p-4"
+            key={date}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="m-0 text-base font-bold text-foreground">{date}</h3>
+              <Badge tone="neutral">{daySlots.length} slots</Badge>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-3">
+              {daySlots.map((slot) => (
+                <article
+                  className="grid gap-3 rounded-xl border border-border bg-surface p-4 shadow-card"
+                  key={slot.id}
                 >
-                  Open meet
-                </a>
-              </td>
-              <td className={mutedTableCellClassName}>{slot.note ?? "-"}</td>
-              <td className={tableCellClassName}>
-                <Badge tone={getSlotStatusTone(slot.status)}>{slot.status}</Badge>
-              </td>
-              <td className={tableCellClassName}>
-                {slot.status === "AVAILABLE" ? (
-                  <div className={actionsClassName}>
-                    <Button
-                      icon={<Pencil size={15} />}
-                      onClick={() => onEdit(slot)}
-                      size="sm"
-                      variant="secondary"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      icon={<Trash2 size={15} />}
-                      onClick={() => onCancel(slot)}
-                      size="sm"
-                      variant="danger"
-                    >
-                      Cancel
-                    </Button>
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="grid gap-1">
+                      <strong className="text-base text-foreground">
+                        {formatTime(slot.startAt)} - {formatTime(slot.endAt)}
+                      </strong>
+                      <span className="text-xs text-muted">
+                        {formatDateTime(slot.startAt)}
+                      </span>
+                    </div>
+                    <Badge tone={getSlotStatusTone(slot.status)}>
+                      {slot.status}
+                    </Badge>
                   </div>
-                ) : (
-                  <span className="text-[13px] text-muted">No actions</span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                  <p className="m-0 text-sm leading-relaxed text-muted">
+                    {slot.note ?? "No note"}
+                  </p>
+                  <a
+                    className="text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
+                    href={slot.meetLink}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    Open meet
+                  </a>
+                  {slot.status === "AVAILABLE" ? (
+                    <div className={actionsClassName}>
+                      <Button
+                        icon={<Copy size={15} />}
+                        onClick={() => onDuplicate(slot)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        Duplicate
+                      </Button>
+                      <Button
+                        icon={<Pencil size={15} />}
+                        onClick={() => onEdit(slot)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        icon={<Trash2 size={15} />}
+                        onClick={() => onCancel(slot)}
+                        size="sm"
+                        variant="danger"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <span className="text-[13px] text-muted">No actions</span>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </CardContent>
   );
 }
 
 export function MentorAvailabilityPage() {
   const [statusFilter, setStatusFilter] = useState<"" | SlotStatus>("");
-  const [modal, setModal] = useState<"create" | "edit" | null>(null);
+  const [modal, setModal] = useState<"create" | "duplicate" | "edit" | null>(
+    null,
+  );
   const [selectedSlot, setSelectedSlot] =
     useState<MentorAvailabilitySlotDto | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
@@ -434,16 +475,25 @@ export function MentorAvailabilityPage() {
   const updateSlotMutation = useUpdateSlot();
   const cancelSlotMutation = useCancelSlot();
 
-  const filteredSlots = useMemo(
-    () => {
-      const slots = availabilityQuery.data?.data ?? [];
+  const availableSlots = useMemo(
+    () =>
+      (availabilityQuery.data?.data ?? []).filter(
+        (slot) => slot.status === "AVAILABLE",
+      ),
+    [availabilityQuery.data?.data],
+  );
 
-      return statusFilter
+  const filteredSlots = useMemo(() => {
+      const slots = availabilityQuery.data?.data ?? [];
+      const visibleSlots = statusFilter
         ? slots.filter((slot) => slot.status === statusFilter)
         : slots;
-    },
-    [availabilityQuery.data?.data, statusFilter],
-  );
+
+      return [...visibleSlots].sort(
+        (left, right) =>
+          new Date(left.startAt).getTime() - new Date(right.startAt).getTime(),
+      );
+    }, [availabilityQuery.data?.data, statusFilter]);
 
   async function handleCreateSlot(form: SlotFormState) {
     await createSlotMutation.mutateAsync(createSlotPayload(form));
@@ -469,19 +519,42 @@ export function MentorAvailabilityPage() {
     });
   }
 
+  function requestCancelAvailableSlots() {
+    setConfirmAction({
+      confirmLabel: "Cancel available slots",
+      description: `Cancel all ${availableSlots.length} currently available slots?`,
+      onConfirm: () =>
+        Promise.all(
+          availableSlots.map((slot) => cancelSlotMutation.mutateAsync(slot.id)),
+        ),
+      title: "Bulk cancel slots",
+    });
+  }
+
   return (
     <div className={pageClassName}>
       <PageHeader
         actions={
-          <Button
-            icon={<Plus size={16} />}
-            onClick={() => {
-              setSelectedSlot(null);
-              setModal("create");
-            }}
-          >
-            Create slot
-          </Button>
+          <>
+            {availableSlots.length > 0 && (
+              <Button
+                icon={<Trash2 size={16} />}
+                onClick={requestCancelAvailableSlots}
+                variant="secondary"
+              >
+                Cancel available
+              </Button>
+            )}
+            <Button
+              icon={<Plus size={16} />}
+              onClick={() => {
+                setSelectedSlot(null);
+                setModal("create");
+              }}
+            >
+              Create slot
+            </Button>
+          </>
         }
         description="Create, update, and cancel availability slots that assigned groups can book."
         eyebrow="Mentor"
@@ -521,8 +594,12 @@ export function MentorAvailabilityPage() {
             </div>
           </CardContent>
         ) : (
-          <AvailabilitySlotTable
+          <AvailabilitySlotTimeline
             onCancel={requestCancelSlot}
+            onDuplicate={(slot) => {
+              setSelectedSlot(slot);
+              setModal("duplicate");
+            }}
             onEdit={(slot) => {
               setSelectedSlot(slot);
               setModal("edit");
@@ -537,6 +614,18 @@ export function MentorAvailabilityPage() {
           mode="create"
           onClose={() => setModal(null)}
           onSubmit={handleCreateSlot}
+        />
+      )}
+
+      {modal === "duplicate" && selectedSlot && (
+        <SlotFormModal
+          mode="duplicate"
+          onClose={() => {
+            setModal(null);
+            setSelectedSlot(null);
+          }}
+          onSubmit={handleCreateSlot}
+          slot={selectedSlot}
         />
       )}
 

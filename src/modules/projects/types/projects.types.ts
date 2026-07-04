@@ -148,7 +148,34 @@ export type GroupTaskBoardDto = {
   overdueTaskCount: number;
 };
 
+export type TaskBoardDto = {
+  id: EntityId;
+  groupId: EntityId;
+  name: string;
+  description: string | null;
+  position: number;
+  defaultBoard: boolean;
+  createdByStudentId: EntityId;
+  archivedAt: ISODateTimeString | null;
+  createdAt: ISODateTimeString;
+  updatedAt: ISODateTimeString;
+};
+
+export type CreateTaskBoardRequest = {
+  name: string;
+  description?: string;
+};
+
+export type UpdateTaskBoardRequest = {
+  name?: string;
+  description?: string;
+  position?: number;
+  archived?: boolean;
+  defaultBoard?: boolean;
+};
+
 export type BoardFilters = {
+  boardId?: EntityId;
   priority?: TaskPriority;
   assigneeStudentId?: EntityId;
   search?: string;
@@ -162,6 +189,7 @@ export type CreateTaskRequest = {
   priority?: TaskPriority;
   dueAt?: ISODateTimeString | null;
   assigneeStudentIds?: EntityId[];
+  boardId?: EntityId;
 };
 
 export type UpdateTaskRequest = {
