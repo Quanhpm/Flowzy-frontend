@@ -57,6 +57,7 @@ Endpoints returning lists use this pagination structure inside `data`:
 | **MeetingStatus** | `SCHEDULED`, `CANCELED` |
 | **ImportTargetType** | `STUDENT`, `MENTOR`, `PROBLEM_BANK` |
 | **ImportFileType** | `CSV`, `XLSX` |
+| **JoinRequestStatus** | `PENDING`, `ACCEPTED`, `REJECTED`, `CANCELED` |
 | **ImportBatchStatus** | `COMPLETED`, `FAILED` |
 | **ImportErrorCode** | `MISSING_REQUIRED_FIELD`, `INVALID_FORMAT`, `DUPLICATE_CODE`, `DUPLICATE_EMAIL`, `INVALID_VALUE`, `UNKNOWN_ERROR`, `UNSUPPORTED_COLUMN`, `DUPLICATED_IN_FILE`, `ALREADY_EXISTS`, `INVALID_EMAIL`, `INVALID_GENDER`, `INVALID_EXPERIENCE`, `INVALID_PHONE`, `INVALID_DATE`, `ACCOUNT_CREATION_FAILED`, `SYSTEM_ERROR`, `LEADER_FALLBACK_WARNING`, `GROUP_SKIPPED`, `MENTOR_ASSIGNMENT_WARNING` |
 
@@ -908,6 +909,27 @@ GET /api/groups/mentor/me
 
 ---
 
+
+#### 3.11 Get Ungrouped Students
+```
+GET /api/students/ungrouped
+```
+**Auth Required:** Yes (Any)
+
+**Query Parameters:**
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `term` | string | Yes | — | The term code (e.g., SU24) |
+| `courseCode` | string | Yes | — | The course code (e.g., EXE101) |
+| `search` | string | No | — | Optional search query matching student code, name, or email |
+| `page` | int | No | `0` | Zero-based page index |
+| `size` | int | No | `20` | Number of records per page |
+
+**Response:** `APIResponse<PageResponse<StudentProfileDto>>`
+
+---
+
 ### 4. Group Invitations
 
 #### 4.1 Invite Student to Group
@@ -983,6 +1005,81 @@ POST /api/groups/invitations/{invitationId}/cancel
 **Auth Required:** Yes (Group Leader only)
 
 **Path Parameters:** `invitationId` (long)
+
+**Response:** `APIResponse<void>`
+
+---
+
+#### 4.7 Submit Join Request
+```
+POST /api/groups/{groupId}/join-requests
+```
+**Auth Required:** Yes (STUDENT)
+
+**Path Parameters:** `groupId` (long)
+
+**Request Body:**
+- **Format:** `application/json` (Schema: `CreateJoinRequestDto`)
+
+**Response:** `APIResponse<GroupJoinRequestDto>`
+
+---
+
+#### 4.8 Get Join Requests
+```
+GET /api/groups/{groupId}/join-requests
+```
+**Auth Required:** Yes (Group Member or Assigned Mentor)
+
+**Path Parameters:** `groupId` (long)
+
+**Response:** `APIResponse<List<GroupJoinRequestDto>>`
+
+---
+
+#### 4.9 Cancel Join Request
+```
+POST /api/groups/{groupId}/join-requests/{requestId}/cancel
+```
+*Alternative endpoint:* `POST /api/groups/join-requests/{requestId}/cancel`
+
+**Auth Required:** Yes (Requester STUDENT only)
+
+**Path Parameters:**
+- `groupId` (long, optional for alternative endpoint)
+- `requestId` (long)
+
+**Response:** `APIResponse<void>`
+
+---
+
+#### 4.10 Reject Join Request
+```
+POST /api/groups/{groupId}/join-requests/{requestId}/reject
+```
+*Alternative endpoint:* `POST /api/groups/join-requests/{requestId}/reject`
+
+**Auth Required:** Yes (Group Leader only)
+
+**Path Parameters:**
+- `groupId` (long, optional for alternative endpoint)
+- `requestId` (long)
+
+**Response:** `APIResponse<void>`
+
+---
+
+#### 4.11 Approve Join Request
+```
+POST /api/groups/{groupId}/join-requests/{requestId}/approve
+```
+*Alternative endpoint:* `POST /api/groups/join-requests/{requestId}/approve`
+
+**Auth Required:** Yes (Group Leader only)
+
+**Path Parameters:**
+- `groupId` (long, optional for alternative endpoint)
+- `requestId` (long)
 
 **Response:** `APIResponse<void>`
 
@@ -1314,6 +1411,94 @@ GET /api/tasks/me
 | `size` | int | No | `20` | Page size |
 
 **Response:** `APIResponse<PageResponse<TaskSummaryDto>>`
+
+---
+
+#### 5.18 Get Task Boards
+```
+GET /api/groups/{groupId}/boards
+```
+*Alternative endpoint:* `GET /api/groups/{groupId}/task-boards`
+
+**Auth Required:** Yes (Group Member or Assigned Mentor)
+
+**Path Parameters:** `groupId` (long)
+
+**Response:** `APIResponse<List<TaskBoardDto>>`
+
+---
+
+#### 5.19 Create Task Board
+```
+POST /api/groups/{groupId}/boards
+```
+*Alternative endpoint:* `POST /api/groups/{groupId}/task-boards`
+
+**Auth Required:** Yes (Group Leader or Admin)
+
+**Path Parameters:** `groupId` (long)
+
+**Request Body:**
+- **Format:** `application/json` (Schema: `CreateTaskBoardRequest`)
+
+**Response:** `APIResponse<TaskBoardDto>`
+
+---
+
+#### 5.20 Get Group Task Board by ID
+```
+GET /api/groups/{groupId}/boards/{boardId}
+```
+**Auth Required:** Yes (Group Member or Assigned Mentor)
+
+**Path Parameters:**
+- `groupId` (long)
+- `boardId` (long)
+
+**Query Parameters:**
+
+| Param | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `priority` | string | No | — | Filter by TaskPriority |
+| `assigneeStudentId` | long | No | — | Filter by Student ID |
+| `search` | string | No | — | Search tasks by title/desc |
+| `includeArchived` | boolean | No | `false` | Include soft-deleted tasks |
+
+**Response:** `APIResponse<GroupTaskBoardDto>`
+
+---
+
+#### 5.21 Update Task Board
+```
+PATCH /api/groups/{groupId}/boards/{boardId}
+```
+*Alternative endpoint:* `PATCH /api/groups/{groupId}/task-boards/{boardId}`
+
+**Auth Required:** Yes (Group Leader or Admin)
+
+**Path Parameters:**
+- `groupId` (long)
+- `boardId` (long)
+
+**Request Body:**
+- **Format:** `application/json` (Schema: `UpdateTaskBoardRequest`)
+
+**Response:** `APIResponse<TaskBoardDto>`
+
+---
+
+#### 5.22 Reorder Task
+```
+POST /api/groups/{groupId}/tasks/reorder
+```
+**Auth Required:** Yes (Group Member only)
+
+**Path Parameters:** `groupId` (long)
+
+**Request Body:**
+- **Format:** `application/json` (Schema: `ReorderTaskRequest`)
+
+**Response:** `APIResponse<void>`
 
 ---
 
@@ -1824,6 +2009,111 @@ GET /api/imports/templates/mentors
 
 ---
 
+### 13. Dashboard
+
+> **Note:** Dashboard DTO schemas are not expanded in this reference yet. The frontend currently treats dashboard responses defensively and renders only known/common fields when present.
+
+#### 13.1 Student Monitors Projects
+```
+GET /api/dashboard/student/projects
+```
+**Auth Required:** Yes (STUDENT)
+
+**Response:** `APIResponse<List<DashboardProjectDto>>`
+
+---
+
+#### 13.2 Student Monitors Progress
+```
+GET /api/dashboard/student/progress
+```
+**Auth Required:** Yes (STUDENT)
+
+**Response:** `APIResponse<DashboardStudentProgressDto>`
+
+---
+
+#### 13.3 Student Monitors Groups
+```
+GET /api/dashboard/student/groups
+```
+**Auth Required:** Yes (STUDENT)
+
+**Response:** `APIResponse<List<DashboardGroupProgressDto>>`
+
+---
+
+#### 13.4 Mentor Monitors Meeting Schedule
+```
+GET /api/dashboard/mentor/meetings
+```
+**Auth Required:** Yes (MENTOR)
+
+**Response:** `APIResponse<List<DashboardMeetingDto>>`
+
+---
+
+#### 13.5 Mentor Monitors Assigned Groups
+```
+GET /api/dashboard/mentor/groups
+```
+**Auth Required:** Yes (MENTOR)
+
+**Response:** `APIResponse<List<DashboardGroupProgressDto>>`
+
+---
+
+#### 13.6 Admin Monitors Timeline
+```
+GET /api/dashboard/admin/timeline
+```
+**Auth Required:** Yes (ADMIN)
+
+**Response:** `APIResponse<List<DashboardMeetingDto>>`
+
+---
+
+#### 13.7 Admin Monitors All Projects
+```
+GET /api/dashboard/admin/projects
+```
+**Auth Required:** Yes (ADMIN)
+
+**Response:** `APIResponse<List<DashboardProjectDto>>`
+
+---
+
+#### 13.8 Admin Monitors Mentors
+```
+GET /api/dashboard/admin/mentors
+```
+**Auth Required:** Yes (ADMIN)
+
+**Response:** `APIResponse<List<DashboardMentorDto>>`
+
+---
+
+#### 13.9 Admin Monitors All Groups
+```
+GET /api/dashboard/admin/groups
+```
+**Auth Required:** Yes (ADMIN)
+
+**Response:** `APIResponse<List<DashboardGroupProgressDto>>`
+
+---
+
+#### 13.10 Admin Monitors Execution Status
+```
+GET /api/dashboard/admin/execution-status
+```
+**Auth Required:** Yes (ADMIN)
+
+**Response:** `APIResponse<DashboardExecutionStatusDto>`
+
+
+---
+
 ## Quick Reference — All Endpoints Summary
 
 | # | Method | Path | Auth | Role | Description |
@@ -1902,3 +2192,31 @@ GET /api/imports/templates/mentors
 | 72 | GET | `/api/imports/{batchId}/errors` | Yes | ADMIN | Get import batch errors |
 | 73 | GET | `/api/imports/templates/students` | Yes | ADMIN | Download student template |
 | 74 | GET | `/api/imports/templates/mentors` | Yes | ADMIN | Download mentor template |
+| 75 | GET | `/api/dashboard/admin/execution-status` | Yes | Member/Mentor | Admin monitors execution status |
+| 76 | GET | `/api/dashboard/admin/groups` | Yes | Member/Mentor | Admin monitors all groups |
+| 77 | GET | `/api/dashboard/admin/mentors` | Yes | Member/Mentor | Admin monitors mentors |
+| 78 | GET | `/api/dashboard/admin/projects` | Yes | Member/Mentor | Admin monitors all projects |
+| 79 | GET | `/api/dashboard/admin/timeline` | Yes | Member/Mentor | Admin monitors timeline |
+| 80 | GET | `/api/dashboard/mentor/groups` | Yes | Member/Mentor | Mentor monitors assigned groups |
+| 81 | GET | `/api/dashboard/mentor/meetings` | Yes | Member/Mentor | Mentor monitors meeting schedule |
+| 82 | GET | `/api/dashboard/student/groups` | Yes | Member/Mentor | Student monitors groups |
+| 83 | GET | `/api/dashboard/student/progress` | Yes | Member/Mentor | Student monitors progress |
+| 84 | GET | `/api/dashboard/student/projects` | Yes | Member/Mentor | Student monitors projects |
+| 85 | POST | `/api/groups/join-requests/{requestId}/approve` | Yes | Leader | Approve join request |
+| 86 | POST | `/api/groups/join-requests/{requestId}/cancel` | Yes | Requester STUDENT | Cancel join request |
+| 87 | POST | `/api/groups/join-requests/{requestId}/reject` | Yes | Leader | Reject join request |
+| 88 | GET | `/api/groups/{groupId}/join-requests` | Yes | Member/Mentor | Get join requests |
+| 89 | POST | `/api/groups/{groupId}/join-requests` | Yes | STUDENT | Submit join request |
+| 90 | POST | `/api/groups/{groupId}/join-requests/{requestId}/approve` | Yes | Leader | Approve join request |
+| 91 | POST | `/api/groups/{groupId}/join-requests/{requestId}/cancel` | Yes | Requester STUDENT | Cancel join request |
+| 92 | POST | `/api/groups/{groupId}/join-requests/{requestId}/reject` | Yes | Leader | Reject join request |
+| 93 | GET | `/api/groups/{groupId}/boards/{boardId}` | Yes | Member/Mentor | Get group task board |
+| 94 | POST | `/api/groups/{groupId}/tasks/reorder` | Yes | Member | Reorder task |
+| 95 | POST | `/api/groups/{groupId}/leave` | Yes | STUDENT | Leave group via POST |
+| 96 | GET | `/api/students/ungrouped` | Yes | STUDENT | Get ungrouped students |
+| 97 | GET | `/api/groups/{groupId}/boards` | Yes | Member/Mentor | Get task boards |
+| 98 | POST | `/api/groups/{groupId}/boards` | Yes | Leader/Admin | Create task board |
+| 99 | PATCH | `/api/groups/{groupId}/boards/{boardId}` | Yes | Leader/Admin | Update task board |
+| 100 | GET | `/api/groups/{groupId}/task-boards` | Yes | Member/Mentor | Get task boards |
+| 101 | POST | `/api/groups/{groupId}/task-boards` | Yes | Leader/Admin | Create task board |
+| 102 | PATCH | `/api/groups/{groupId}/task-boards/{boardId}` | Yes | Leader/Admin | Update task board |

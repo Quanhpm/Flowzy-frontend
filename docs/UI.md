@@ -232,6 +232,7 @@ Do not build a custom sidebar/topbar inside individual pages. Pages should rende
 Route prefixes:
 
 ```txt
+/admin/dashboard
 /admin/users
 /admin/imports
 /admin/problems

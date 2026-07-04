@@ -17,7 +17,7 @@ Muc tieu: moi nguoi code theo module rieng, dung chung foundation, han che confl
 
 ## Module Ownership
 
-### Person 1 - Core, Auth, Admin Users, Imports
+### Person 1 - Core, Auth, Admin Users, Imports, Admin Dashboard
 
 Owner:
 
@@ -28,14 +28,17 @@ Owner:
 - `src/modules/auth/**`
 - `src/modules/users/**`
 - `src/modules/imports/**`
+- `src/modules/dashboards/**`
 - `src/app/admin/users/**`
 - `src/app/admin/imports/**`
+- `src/app/admin/dashboard/**`
 
 Endpoints:
 
 - `/api/auth/**`
 - `/api/admin/users/**`
 - `/api/imports/**`
+- `/api/dashboard/admin/**`
 
 ### Person 2 - Groups, Invitations, Mentor Scheduling
 
@@ -58,6 +61,12 @@ Endpoints:
 - `/api/mentor/availability/**`
 - `/api/groups/{groupId}/mentor/availability`
 - `/api/groups/{groupId}/mentor/meetings`
+- `/api/groups/{groupId}/leave` (POST)
+- `/api/groups/{groupId}/join-requests/**`
+- `/api/groups/join-requests/**`
+- `/api/students/ungrouped`
+- `/api/dashboard/student/groups`
+- `/api/dashboard/mentor/**`
 
 Note: Neu endpoint co prefix `/api/groups/{groupId}` nhung la `/board`, `/tasks/**`, hoac `/problems/**` thi thuoc Person 3.
 
@@ -70,11 +79,17 @@ Owner:
 - `src/app/student/tasks/**`
 - `src/app/student/problems/**`
 - `src/app/admin/problems/**`
+- `src/app/student/boards/**`
 
 Endpoints:
 
 - `/api/groups/{groupId}/board`
 - `/api/groups/{groupId}/tasks/**`
+- `/api/groups/{groupId}/boards/**`
+- `/api/groups/{groupId}/task-boards/**`
+- `/api/groups/{groupId}/tasks/reorder`
+- `/api/dashboard/student/projects`
+- `/api/dashboard/student/progress`
 - `/api/tasks/me`
 - `/api/problems/**`
 - `/api/groups/{groupId}/problems/**`
@@ -350,6 +365,18 @@ queryKeys.problems.criteria()
 queryKeys.tasks.board(groupId, filters)
 queryKeys.tasks.detail(groupId, taskId)
 queryKeys.tasks.mine(filters)
+queryKeys.tasks.boards(groupId)
+queryKeys.groups.joinRequests(groupId)
+queryKeys.dashboard.student.progress()
+queryKeys.dashboard.student.projects()
+queryKeys.dashboard.student.groups()
+queryKeys.dashboard.mentor.meetings()
+queryKeys.dashboard.mentor.groups()
+queryKeys.dashboard.admin.timeline()
+queryKeys.dashboard.admin.projects()
+queryKeys.dashboard.admin.mentors()
+queryKeys.dashboard.admin.groups()
+queryKeys.dashboard.admin.executionStatus()
 ```
 
 Neu can key moi cho module cua minh:
@@ -387,6 +414,7 @@ API client da tu doc access token tu auth store, nen module API function khong c
 Route placeholders da co san:
 
 ```txt
+src/app/admin/dashboard/page.tsx
 src/app/admin/users/page.tsx
 src/app/admin/imports/page.tsx
 src/app/admin/problems/page.tsx
