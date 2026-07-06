@@ -143,7 +143,7 @@ export function ActiveGroupWorkspace({
     <div className="grid min-w-0 gap-6">
       <PageHeader
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pt-[50px]">
             {isLeader && (
               <>
                 <Button

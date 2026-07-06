@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { X } from "lucide-react";
 
-import { Button, TextInput } from "@/shared/components";
+import { Button, Select, TextInput } from "@/shared/components";
 import { ApiError, cn } from "@/shared/lib";
 
 import type {
@@ -49,6 +49,8 @@ const EMPTY_GROUP_FORM: GroupFormState = {
   term: "",
 };
 
+const COURSE_CODE_OPTIONS = ["EXE101", "EXE201", "EXE401"] as const;
+
 function getErrorMessage(error: unknown) {
   return error instanceof ApiError
     ? error.message
@@ -63,6 +65,17 @@ function optional(value: string) {
 function optionalNumber(value: string) {
   const trimmed = value.trim();
   return trimmed ? Number(trimmed) : undefined;
+}
+
+function clampNumberInput(value: string, max: number) {
+  if (!value) return "";
+
+  const numericValue = Number(value);
+  if (Number.isNaN(numericValue)) return value;
+  if (numericValue < 0) return "0";
+  if (numericValue > max) return String(max);
+
+  return value;
 }
 
 function createFormFromGroup(group: GroupDetailDto): GroupFormState {
@@ -82,6 +95,14 @@ function validateGroupForm(form: GroupFormState, mode: "create" | "edit") {
   if (mode === "create" && !form.term.trim()) return "Term is required.";
   if (mode === "create" && !form.courseCode.trim()) {
     return "Course code is required.";
+  }
+  if (
+    form.courseCode &&
+    !COURSE_CODE_OPTIONS.includes(
+      form.courseCode as (typeof COURSE_CODE_OPTIONS)[number],
+    )
+  ) {
+    return "Course code must be EXE101, EXE201, or EXE401.";
   }
   if (!form.name.trim()) return "Group name is required.";
 
@@ -105,7 +126,6 @@ function createGroupPayload(form: GroupFormState): CreateGroupRequest {
     name: form.name.trim(),
     projectName: optional(form.projectName),
     requiredGpa: optionalNumber(form.requiredGpa),
-    researchDomain: optional(form.researchDomain),
     targetGrade: optionalNumber(form.targetGrade),
     term: form.term.trim(),
   };
@@ -135,6 +155,14 @@ export function GroupFormModal(props: GroupFormModalProps) {
     value: GroupFormState[K],
   ) {
     setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateBoundedNumberField(
+    field: "requiredGpa" | "targetGrade",
+    value: string,
+    max: number,
+  ) {
+    updateField(field, clampNumberInput(value, max));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -206,13 +234,20 @@ export function GroupFormModal(props: GroupFormModalProps) {
               placeholder="Summer2026"
               value={form.term}
             />
-            <TextInput
+            <Select
               disabled={mode === "edit"}
               label="Course code"
               onChange={(event) => updateField("courseCode", event.target.value)}
-              placeholder="EXE201"
+              required={mode === "create"}
               value={form.courseCode}
-            />
+            >
+              {mode === "create" && <option value="">Select course</option>}
+              {COURSE_CODE_OPTIONS.map((courseCode) => (
+                <option key={courseCode} value={courseCode}>
+                  {courseCode}
+                </option>
+              ))}
+            </Select>
             <TextInput
               fieldClassName="col-span-full"
               label="Group name"
@@ -221,32 +256,43 @@ export function GroupFormModal(props: GroupFormModalProps) {
               value={form.name}
             />
             <TextInput
+              fieldClassName={mode === "create" ? "col-span-full" : undefined}
               label="Project name"
               onChange={(event) => updateField("projectName", event.target.value)}
               placeholder="Optional"
               value={form.projectName}
             />
+            {mode === "edit" && (
+              <TextInput
+                label="Research domain"
+                onChange={(event) =>
+                  updateField("researchDomain", event.target.value)
+                }
+                placeholder="AI, Web, IoT..."
+                value={form.researchDomain}
+              />
+            )}
             <TextInput
-              label="Research domain"
-              onChange={(event) =>
-                updateField("researchDomain", event.target.value)
-              }
-              placeholder="AI, Web, IoT..."
-              value={form.researchDomain}
-            />
-            <TextInput
+              hint="Max 4"
               label="Required GPA"
+              max={4}
               min={0}
-              onChange={(event) => updateField("requiredGpa", event.target.value)}
+              onChange={(event) =>
+                updateBoundedNumberField("requiredGpa", event.target.value, 4)
+              }
               placeholder="2.5"
               step="0.1"
               type="number"
               value={form.requiredGpa}
             />
             <TextInput
+              hint="Max 10"
               label="Target grade"
+              max={10}
               min={0}
-              onChange={(event) => updateField("targetGrade", event.target.value)}
+              onChange={(event) =>
+                updateBoundedNumberField("targetGrade", event.target.value, 10)
+              }
               placeholder="8.0"
               step="0.1"
               type="number"

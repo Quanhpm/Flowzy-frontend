@@ -6,7 +6,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
   EmptyState,
   LoadingState,
   PageHeader,
@@ -862,10 +861,6 @@ export function AdminUsersPage() {
       />
 
       <Card>
-        <CardHeader
-          description="Search users, filter by role or status, and perform account actions."
-          title="User directory"
-        />
         <CardContent>
           <div className={toolbarClassName}>
             <TextInput
