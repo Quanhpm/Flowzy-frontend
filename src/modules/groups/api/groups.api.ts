@@ -7,8 +7,10 @@ import {
 import type { ApiResponse, EmptyApiResponse } from "@/shared/types";
 
 import type {
+  CreateJoinRequestDto,
   CreateGroupRequest,
   GroupDetailDto,
+  GroupJoinRequestDto,
   GroupsQuery,
   GroupSummaryDto,
   InvitationDto,
@@ -64,7 +66,11 @@ export function removeMember(groupId: number, studentId: number) {
 }
 
 export function leaveGroup(groupId: number) {
-  return apiDelete<EmptyApiResponse>(`/api/groups/${groupId}/members/me`);
+  return leaveGroupPost(groupId);
+}
+
+export function leaveGroupPost(groupId: number) {
+  return apiPost<EmptyApiResponse>(`/api/groups/${groupId}/leave`);
 }
 
 export function getMyGroups() {
@@ -110,5 +116,45 @@ export function declineInvitation(invitationId: number) {
 export function cancelInvitation(invitationId: number) {
   return apiPost<ApiResponse<InvitationDto>>(
     `/api/groups/invitations/${invitationId}/cancel`,
+  );
+}
+
+export function createJoinRequest(
+  groupId: number,
+  payload: CreateJoinRequestDto,
+) {
+  return apiPost<ApiResponse<GroupJoinRequestDto>>(
+    `/api/groups/${groupId}/join-requests`,
+    payload,
+  );
+}
+
+export function getGroupJoinRequests(groupId: number) {
+  return apiGet<ApiResponse<GroupJoinRequestDto[]>>(
+    `/api/groups/${groupId}/join-requests`,
+  );
+}
+
+export function getMyJoinRequests() {
+  return apiGet<ApiResponse<GroupJoinRequestDto[]>>(
+    "/api/groups/join-requests/me",
+  );
+}
+
+export function approveJoinRequest(groupId: number, requestId: number) {
+  return apiPost<ApiResponse<GroupJoinRequestDto>>(
+    `/api/groups/${groupId}/join-requests/${requestId}/approve`,
+  );
+}
+
+export function rejectJoinRequest(groupId: number, requestId: number) {
+  return apiPost<ApiResponse<GroupJoinRequestDto>>(
+    `/api/groups/${groupId}/join-requests/${requestId}/reject`,
+  );
+}
+
+export function cancelJoinRequest(groupId: number, requestId: number) {
+  return apiPost<ApiResponse<GroupJoinRequestDto>>(
+    `/api/groups/${groupId}/join-requests/${requestId}/cancel`,
   );
 }

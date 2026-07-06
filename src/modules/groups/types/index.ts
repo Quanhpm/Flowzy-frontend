@@ -3,6 +3,7 @@ import type {
   GroupStatus,
   InvitationStatus,
   ISODateTimeString,
+  JoinRequestStatus,
   ProblemSourceType,
   ProblemStatus,
 } from "@/shared/types";
@@ -84,6 +85,26 @@ export type InvitationDto = {
   respondedAt: ISODateTimeString | null;
 };
 
+export type GroupJoinRequestDto = {
+  id: number;
+  groupId: number;
+  groupName: string;
+  groupNo: string;
+  courseCode: string;
+  term: string;
+  studentId: number;
+  studentCode: string;
+  studentName: string;
+  status: JoinRequestStatus;
+  message: string | null;
+  respondedById: number | null;
+  respondedByCode: string | null;
+  respondedByName: string | null;
+  respondedAt: ISODateTimeString | null;
+  createdAt: ISODateTimeString;
+  updatedAt: ISODateTimeString;
+};
+
 export type CreateGroupRequest = {
   term: string;
   courseCode: string;
@@ -118,4 +139,16 @@ export type InviteStudentRequest = {
   message?: string;
 };
 
+export type CreateJoinRequestDto = {
+  message?: string;
+};
+
 export type GroupsQuery = Pick<ApiListQuery, "search">;
+
+export type UngroupedStudentsQuery = {
+  term: string;
+  courseCode: string;
+  search?: string;
+  page?: number;
+  size?: number;
+};

@@ -30,6 +30,15 @@ export const queryKeys = {
       [...queryKeys.groups.all, groupId, "invitations"] as const,
     myInvitations: () =>
       [...queryKeys.groups.all, "invitations", "me"] as const,
+    joinRequests: (groupId: number) =>
+      [...queryKeys.groups.all, groupId, "join-requests"] as const,
+    myJoinRequests: () =>
+      [...queryKeys.groups.all, "join-requests", "me"] as const,
+  },
+  students: {
+    all: ["students"] as const,
+    ungrouped: (filters?: QueryFilters) =>
+      [...queryKeys.students.all, "ungrouped", filters ?? {}] as const,
   },
   mentoring: {
     all: ["mentoring"] as const,
@@ -51,11 +60,25 @@ export const queryKeys = {
   },
   tasks: {
     all: ["tasks"] as const,
+    boards: (groupId: number) => ["groups", groupId, "boards"] as const,
+    boardDetail: (groupId: number, boardId: number) =>
+      ["groups", groupId, "boards", boardId] as const,
     board: (groupId: number, filters?: QueryFilters) =>
       ["groups", groupId, "board", filters ?? {}] as const,
     detail: (groupId: number, taskId: number) =>
       ["groups", groupId, "tasks", taskId] as const,
     mine: (filters?: QueryFilters) =>
       [...queryKeys.tasks.all, "me", filters ?? {}] as const,
+  },
+  dashboard: {
+    all: ["dashboard"] as const,
+    studentGroups: () => [...queryKeys.dashboard.all, "student", "groups"] as const,
+    studentProjects: () =>
+      [...queryKeys.dashboard.all, "student", "projects"] as const,
+    studentProgress: () =>
+      [...queryKeys.dashboard.all, "student", "progress"] as const,
+    mentorGroups: () => [...queryKeys.dashboard.all, "mentor", "groups"] as const,
+    mentorMeetings: () =>
+      [...queryKeys.dashboard.all, "mentor", "meetings"] as const,
   },
 } as const;

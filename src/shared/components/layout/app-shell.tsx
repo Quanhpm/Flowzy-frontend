@@ -7,14 +7,13 @@ import {
   Database,
   LayoutDashboard,
   LogOut,
-  Sparkles,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import {
   isAuthSessionValid,
@@ -25,6 +24,7 @@ import {
 import { cn } from "@/shared/lib";
 import type { UserRole } from "@/shared/types";
 
+import { BrandLogo } from "../brand-logo";
 import { Button, EmptyState, LoadingState } from "../ui";
 
 type AppShellProps = {
@@ -36,12 +36,6 @@ type NavItem = {
   href: string;
   icon: LucideIcon;
   label: string;
-};
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  ADMIN: "Admin Workspace",
-  STUDENT: "Student Workspace",
-  MENTOR: "Mentor Workspace",
 };
 
 const NAV_ITEMS: Record<UserRole, NavItem[]> = {
@@ -66,36 +60,23 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   ],
 };
 
-function getActiveItem(pathname: string, items: NavItem[]) {
-  return (
-    items.find((item) => pathname === item.href) ??
-    items.find((item) => pathname.startsWith(`${item.href}/`)) ??
-    items[0]
-  );
-}
-
 export function AppShell({ children, role }: AppShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const isHydrated = useAuthHydrated();
   const logoutMutation = useLogout();
   const session = useAuthStore((state) => state.session);
   const hasValidSession = isAuthSessionValid(session);
   const navItems = NAV_ITEMS[role];
-  const activeItem = useMemo(
-    () => getActiveItem(pathname, navItems),
-    [navItems, pathname],
-  );
 
   async function handleSignOut() {
     await logoutMutation.mutateAsync().catch(() => undefined);
-    router.replace("/login");
+    window.location.replace("/login");
   }
 
   useEffect(() => {
     if (!isHydrated || hasValidSession) return;
-    router.replace("/login");
-  }, [hasValidSession, isHydrated, router]);
+    window.location.replace("/login");
+  }, [hasValidSession, isHydrated]);
 
   if (!isHydrated || !session || !hasValidSession) {
     return (
@@ -134,15 +115,12 @@ export function AppShell({ children, role }: AppShellProps) {
 
   return (
     <div className="grid min-h-svh grid-cols-[260px_minmax(0,1fr)] bg-background font-sans text-foreground max-[960px]:grid-cols-[minmax(0,1fr)]">
-      <aside className="sticky top-0 grid h-svh grid-rows-[auto_1fr_auto] gap-6 border-r border-border bg-surface px-4 py-[22px] max-[960px]:static max-[960px]:h-auto max-[960px]:grid-rows-[auto_auto] max-[960px]:gap-3.5 max-[960px]:border-r-0 max-[960px]:border-b max-[960px]:p-4">
+      <aside className="sticky top-0 grid h-svh grid-rows-[auto_1fr_auto] gap-6 border-r border-border bg-surface px-4 py-[22px] max-[960px]:static max-[960px]:h-auto max-[960px]:grid-rows-[auto_auto_auto] max-[960px]:gap-3.5 max-[960px]:border-r-0 max-[960px]:border-b max-[960px]:p-4">
         <Link
-          className="inline-flex items-center gap-[11px] px-2 text-[22px] font-bold text-foreground"
+          className="inline-flex min-w-0 items-center px-2"
           href={navItems[0].href}
         >
-          <span className="grid size-[34px] rotate-[-6deg] place-items-center rounded-full border-2 border-brand-primary text-brand-primary">
-            <Sparkles size={18} />
-          </span>
-          F-Spark
+          <BrandLogo variant="sidebar" />
         </Link>
 
         <nav
@@ -170,7 +148,7 @@ export function AppShell({ children, role }: AppShellProps) {
           })}
         </nav>
 
-        <div className="grid min-w-0 gap-3 max-[960px]:hidden">
+        <div className="grid min-w-0 gap-3 max-[960px]:grid-cols-[minmax(0,1fr)_auto] max-[960px]:items-center max-[640px]:grid-cols-[minmax(0,1fr)]">
           <div className="grid min-w-0 gap-[3px] rounded-xl border border-border bg-background p-3">
             <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-medium text-foreground">
               {session.user.email}
@@ -180,6 +158,7 @@ export function AppShell({ children, role }: AppShellProps) {
             </span>
           </div>
           <Button
+            className="max-[960px]:w-auto max-[640px]:w-full"
             disabled={logoutMutation.isPending}
             icon={<LogOut size={16} />}
             isFullWidth
@@ -191,29 +170,7 @@ export function AppShell({ children, role }: AppShellProps) {
         </div>
       </aside>
 
-      <div className="grid min-w-0 grid-rows-[auto_1fr]">
-        <header className="sticky top-0 z-5 flex min-w-0 items-center justify-between gap-4 border-b border-border bg-background/90 px-7 py-4 backdrop-blur-[14px] max-[640px]:items-start max-[640px]:px-4 max-[640px]:py-3.5">
-          <div className="grid min-w-0 gap-[3px]">
-            <span className="text-xs font-bold tracking-[0.04em] text-brand-primary uppercase">
-              {ROLE_LABELS[role]}
-            </span>
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-bold text-foreground">
-              {activeItem.label}
-            </span>
-          </div>
-          <div className="flex items-center gap-2.5 max-[640px]:hidden">
-            <Button
-              disabled={logoutMutation.isPending}
-              icon={<LogOut size={16} />}
-              onClick={handleSignOut}
-              size="sm"
-              variant="ghost"
-            >
-              Sign out
-            </Button>
-          </div>
-        </header>
-
+      <div className="min-w-0">
         <main className="min-w-0 p-7 max-[960px]:px-4 max-[960px]:py-[22px]">
           {children}
         </main>

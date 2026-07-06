@@ -118,7 +118,7 @@ export function LoginForm() {
     loginMutation.isPending || googleLoginMutation.isPending;
 
   return (
-    <section className="relative z-[2] grid min-h-svh min-w-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr_auto] bg-surface px-[68px] pt-[58px] pb-[42px] max-[1180px]:px-11 max-[600px]:w-screen max-[600px]:max-w-screen max-[600px]:overflow-hidden max-[600px]:px-[22px] max-[600px]:pt-7 max-[600px]:pb-6">
+    <section className="relative z-[2] grid min-h-svh min-w-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr_auto] bg-surface px-[34px] pt-[32px] pb-[22px] max-[1180px]:px-11 max-[600px]:w-screen max-[600px]:max-w-screen max-[600px]:overflow-hidden max-[600px]:px-[22px] max-[600px]:pt-7 max-[600px]:pb-6">
       <header className="flex w-full min-w-0 items-center justify-between">
         <BrandLogo />
         <Link
@@ -131,12 +131,6 @@ export function LoginForm() {
 
       <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)] place-items-center pt-[34px] pb-7 max-[600px]:py-[34px]">
         <div className="w-full max-w-[440px] min-w-0 text-center max-[600px]:w-[calc(100vw-44px)] max-[600px]:max-w-[calc(100vw-44px)]">
-          <span
-            className="mx-auto mb-[26px] grid size-[60px] place-items-center rounded-full bg-surface-warm text-brand-primary shadow-[0_8px_20px_rgba(240,84,35,0.08)] max-[600px]:mb-[22px] max-[600px]:size-[55px]"
-            aria-hidden="true"
-          >
-            <Sparkles size={28} fill="currentColor" />
-          </span>
           <h1 className="m-0 font-sans text-[clamp(30px,3.2vw,36px)] leading-[1.2] font-bold tracking-normal text-foreground max-[600px]:text-[30px]">
             Welcome back!
           </h1>

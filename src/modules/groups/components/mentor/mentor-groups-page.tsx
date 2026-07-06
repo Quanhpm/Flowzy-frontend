@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CalendarClock, ChevronDown, ChevronUp, Users } from "lucide-react";
 
+import {
+  MentorDashboardSection,
+  useMentorDashboardGroups,
+} from "@/modules/dashboards";
+import type { DashboardGroupProgressDto } from "@/modules/dashboards";
 import { useGroupMeetings } from "@/modules/mentoring";
 import {
   Badge,
@@ -16,8 +21,8 @@ import {
 import { ApiError, cn } from "@/shared/lib";
 import type { GroupStatus } from "@/shared/types";
 
-import { useGroup, useMentorGroups } from "../hooks";
-import type { GroupDetailDto, GroupSummaryDto } from "../types";
+import { useGroup, useMentorGroups } from "../../hooks";
+import type { GroupDetailDto, GroupSummaryDto } from "../../types";
 
 const pageClassName = "grid min-w-0 gap-6";
 const gridClassName =
@@ -51,6 +56,10 @@ function getGroupStatusTone(status: GroupStatus) {
   return status === "ACTIVE" ? "success" : "neutral";
 }
 
+function clampPercent(value: number) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 function InfoItem({
   label,
   value,
@@ -62,6 +71,37 @@ function InfoItem({
     <div className="min-w-0 rounded-xl border border-border bg-surface px-4 py-3">
       <div className={labelClassName}>{label}</div>
       <div className={valueClassName}>{formatNullable(value)}</div>
+    </div>
+  );
+}
+
+function ProgressSummary({
+  progress,
+}: {
+  progress?: DashboardGroupProgressDto;
+}) {
+  if (!progress) return null;
+
+  return (
+    <div className="grid gap-2 rounded-xl border border-border bg-background px-4 py-3">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="text-muted">
+          Tasks: {progress.completedTasks}/{progress.totalTasks} done
+        </span>
+        <strong className="text-foreground">
+          {clampPercent(progress.progressPercent)}%
+        </strong>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-surface">
+        <div
+          className="h-full rounded-full bg-brand-primary transition-all duration-200"
+          style={{ width: `${clampPercent(progress.progressPercent)}%` }}
+        />
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs text-muted">
+        <span>{progress.inProgressTasks} in progress</span>
+        <span>{progress.overdueTasks} overdue</span>
+      </div>
     </div>
   );
 }
@@ -95,7 +135,7 @@ function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
             <div className="min-w-0">
               <div className="font-bold text-foreground">{member.fullName}</div>
               <p className="mt-1 mb-0 text-[13px] text-muted">
-                {member.studentCode} · {member.email}
+                {member.studentCode} - {member.email}
               </p>
             </div>
             <Badge tone={member.role === "LEADER" ? "brand" : "neutral"}>
@@ -165,10 +205,12 @@ function MentorGroupCard({
   group,
   isExpanded,
   onToggle,
+  progress,
 }: {
   group: GroupSummaryDto;
   isExpanded: boolean;
   onToggle: () => void;
+  progress?: DashboardGroupProgressDto;
 }) {
   const groupDetailQuery = useGroup(isExpanded ? group.id : null);
   const detail = groupDetailQuery.data?.data;
@@ -182,7 +224,7 @@ function MentorGroupCard({
               {group.name}
             </h2>
             <p className="mt-1 mb-0 text-sm text-muted">
-              {group.groupNo} · {group.term} · {group.courseCode}
+              {group.groupNo} - {group.term} - {group.courseCode}
             </p>
           </div>
           <Badge tone={getGroupStatusTone(group.status)}>{group.status}</Badge>
@@ -193,6 +235,8 @@ function MentorGroupCard({
           <InfoItem label="Members" value={group.memberCount} />
           <InfoItem label="Project" value={group.projectName} />
         </div>
+
+        <ProgressSummary progress={progress} />
 
         {group.selectedProblem && (
           <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm leading-[1.55] text-muted">
@@ -237,15 +281,22 @@ function MentorGroupCard({
 export function MentorGroupsPage() {
   const [expandedGroupId, setExpandedGroupId] = useState<number | null>(null);
   const mentorGroupsQuery = useMentorGroups();
+  const dashboardGroupsQuery = useMentorDashboardGroups();
   const groups = mentorGroupsQuery.data?.data ?? [];
+  const progressByGroupId = useMemo(() => {
+    const dashboardGroups = dashboardGroupsQuery.data?.data ?? [];
+    return new Map(dashboardGroups.map((group) => [group.groupId, group]));
+  }, [dashboardGroupsQuery.data?.data]);
 
   return (
     <div className={pageClassName}>
       <PageHeader
-        description="Review assigned groups, members, selected problems, and scheduled meeting context."
+        description="Review assigned groups, members, selected problems, task progress, and scheduled meetings."
         eyebrow="Mentor"
         title="My Groups"
       />
+
+      <MentorDashboardSection />
 
       {mentorGroupsQuery.isLoading ? (
         <Card isPadded>
@@ -277,6 +328,7 @@ export function MentorGroupsPage() {
                   current === group.id ? null : group.id,
                 )
               }
+              progress={progressByGroupId.get(group.id)}
             />
           ))}
         </div>

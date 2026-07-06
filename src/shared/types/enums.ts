@@ -33,6 +33,12 @@ export type InvitationStatus =
   | "DECLINED"
   | "CANCELED";
 
+export type JoinRequestStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "CANCELED";
+
 export type SlotStatus = "AVAILABLE" | "BOOKED" | "CANCELED";
 
 export type MeetingStatus = "SCHEDULED" | "CANCELED";

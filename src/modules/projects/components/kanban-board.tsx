@@ -8,8 +8,9 @@ import {
 } from "@/shared/components";
 import { cn } from "@/shared/lib";
 import type { TaskPriority, TaskStatus, EntityId } from "@/shared/types";
-import { useGroupBoard, useGroupDetails } from "../hooks";
+import { useCreateTaskBoard, useGroupBoard, useGroupDetails, useTaskBoards } from "../hooks";
 import { useCreateTask, useMoveTask } from "../hooks/use-task-mutations";
+import type { TaskBoardDto } from "../types";
 import { KanbanColumn } from "./kanban-column";
 import { TaskDetailPanel } from "./task-detail-panel";
 import {
@@ -25,7 +26,11 @@ type KanbanBoardProps = {
 
 type BoardView = "board" | "list" | "timeline" | "dueTasks";
 
-const checkpoints = [1, 2, 3] as const;
+type MilestonePreset = {
+  id: string;
+  label: string;
+  tone: string;
+};
 
 const boardViews: { id: BoardView; label: string }[] = [
   { id: "board", label: "Board" },
@@ -42,9 +47,47 @@ const columnsConfig: { status: TaskStatus; label: string }[] = [
   { status: "DONE", label: "Done" },
 ];
 
+function normalizeBoardName(name: string) {
+  return name.trim().toLowerCase();
+}
+
+function getMilestonesForCourse(courseCode: string): {
+  milestoneLabel: string;
+  milestones: MilestonePreset[];
+} {
+  const normalizedCourseCode = courseCode.toUpperCase();
+  const isOutcomeCourse = normalizedCourseCode.includes("201");
+
+  if (isOutcomeCourse) {
+    return {
+      milestoneLabel: "OUTCOMES",
+      milestones: [
+        { id: "oc1", label: "Outcome 1", tone: "bg-emerald-400" },
+        { id: "oc2", label: "Outcome 2", tone: "bg-indigo-500" },
+        { id: "oc3", label: "Outcome 3", tone: "bg-amber-500" },
+      ],
+    };
+  }
+
+  return {
+    milestoneLabel: "CHECKPOINTS",
+    milestones: [
+      { id: "cp1", label: "Checkpoint 1", tone: "bg-emerald-400" },
+      { id: "cp2", label: "Checkpoint 2", tone: "bg-indigo-500" },
+      { id: "cp3", label: "Checkpoint 3", tone: "bg-amber-500" },
+      { id: "cp4", label: "Checkpoint 4", tone: "bg-purple-500" },
+    ],
+  };
+}
+
 export function KanbanBoard({ groupId }: KanbanBoardProps) {
-  const [activeCheckpoint, setActiveCheckpoint] = useState(1);
+  const [activeBoardId, setActiveBoardId] = useState<EntityId | null>(null);
+  const [activeBoardName, setActiveBoardName] = useState("");
   const [activeView, setActiveView] = useState<BoardView>("board");
+  const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
+  const [newBoardName, setNewBoardName] = useState("");
+  const [newBoardDescription, setNewBoardDescription] = useState("");
+  const [boardActionError, setBoardActionError] = useState("");
 
   // Filters state
   const [priorityFilter, setPriorityFilter] = useState<string>("");
@@ -64,22 +107,88 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
   const [newAssignees, setNewAssignees] = useState<number[]>([]);
 
   // Queries
-  const boardFilters = {
-    priority: priorityFilter ? (priorityFilter as TaskPriority) : undefined,
-    assigneeStudentId: assigneeFilter ? Number(assigneeFilter) : undefined,
-    search: searchFilter || undefined,
-    includeArchived,
-  };
+  const { data: groupResponse } = useGroupDetails(groupId);
+  const { data: taskBoardsResponse } = useTaskBoards(groupId);
 
+  const group = groupResponse?.data;
+  const taskBoards = useMemo(
+    () => taskBoardsResponse?.data.filter((taskBoard) => !taskBoard.archivedAt) ?? [],
+    [taskBoardsResponse?.data],
+  );
+  const courseCode = group?.courseCode ?? "EXE101";
+  const { milestoneLabel, milestones } = useMemo(
+    () => getMilestonesForCourse(courseCode),
+    [courseCode],
+  );
+  const milestoneNameSet = useMemo(
+    () => new Set(milestones.map((milestone) => normalizeBoardName(milestone.label))),
+    [milestones],
+  );
+  const boardsByName = useMemo(() => {
+    return new Map(
+      taskBoards.map((taskBoard) => [normalizeBoardName(taskBoard.name), taskBoard]),
+    );
+  }, [taskBoards]);
+  const customBoards = useMemo(
+    () =>
+      taskBoards.filter(
+        (taskBoard) => !milestoneNameSet.has(normalizeBoardName(taskBoard.name)),
+      ),
+    [milestoneNameSet, taskBoards],
+  );
+  const defaultTaskBoard = useMemo(
+    () => taskBoards.find((taskBoard) => taskBoard.defaultBoard) ?? taskBoards[0] ?? null,
+    [taskBoards],
+  );
+  const activeTaskBoard = useMemo(() => {
+    if (activeBoardId !== null) {
+      const selectedBoard = taskBoards.find(
+        (taskBoard) => Number(taskBoard.id) === Number(activeBoardId),
+      );
+
+      if (selectedBoard) {
+        return selectedBoard;
+      }
+    }
+
+    if (activeBoardName) {
+      const namedBoard = boardsByName.get(normalizeBoardName(activeBoardName));
+
+      if (namedBoard) {
+        return namedBoard;
+      }
+    }
+
+    for (const milestone of milestones) {
+      const milestoneBoard = boardsByName.get(normalizeBoardName(milestone.label));
+
+      if (milestoneBoard) {
+        return milestoneBoard;
+      }
+    }
+
+    return defaultTaskBoard;
+  }, [activeBoardId, activeBoardName, boardsByName, defaultTaskBoard, milestones, taskBoards]);
+  const activeTaskBoardId = activeTaskBoard?.id ?? activeBoardId ?? undefined;
+  const currentActiveBoardName =
+    activeTaskBoard?.name || activeBoardName || milestones[0]?.label || "Checkpoint 1";
+  const boardFilters = useMemo(
+    () => ({
+      boardId: activeTaskBoardId,
+      priority: priorityFilter ? (priorityFilter as TaskPriority) : undefined,
+      assigneeStudentId: assigneeFilter ? Number(assigneeFilter) : undefined,
+      search: searchFilter || undefined,
+      includeArchived,
+    }),
+    [activeTaskBoardId, assigneeFilter, includeArchived, priorityFilter, searchFilter],
+  );
   const {
     data: boardResponse,
     isLoading: isBoardLoading,
     error: boardError,
   } = useGroupBoard(groupId, boardFilters);
-  const { data: groupResponse } = useGroupDetails(groupId);
 
   const board = boardResponse?.data;
-  const group = groupResponse?.data;
   const allTasks = useMemo(
     () => board?.columns.flatMap((column) => column.tasks) ?? [],
     [board],
@@ -87,6 +196,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
 
   // Mutations
   const createTaskMutation = useCreateTask(groupId);
+  const createTaskBoardMutation = useCreateTaskBoard();
   const moveTaskMutation = useMoveTask(groupId);
 
   const handleDragStart = (
@@ -139,6 +249,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
         dueAt: newDueAt ? new Date(newDueAt).toISOString() : null,
         assigneeStudentIds:
           newAssignees.length > 0 ? newAssignees : undefined,
+        boardId: activeTaskBoardId,
       },
       {
         onSuccess: () => {
@@ -161,6 +272,71 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
       setNewAssignees([...newAssignees, studentId]);
     } else {
       setNewAssignees(newAssignees.filter((id) => id !== studentId));
+    }
+  };
+
+  const handlePresetBoardClick = async (milestone: MilestonePreset) => {
+    setBoardActionError("");
+
+    const existingBoard = boardsByName.get(normalizeBoardName(milestone.label));
+    if (existingBoard) {
+      setActiveBoardId(existingBoard.id);
+      setActiveBoardName(existingBoard.name);
+      setSelectedTaskId(null);
+      return;
+    }
+
+    try {
+      const response = await createTaskBoardMutation.mutateAsync({
+        groupId,
+        payload: { name: milestone.label },
+      });
+      setActiveBoardId(response.data.id);
+      setActiveBoardName(response.data.name);
+      setSelectedTaskId(null);
+    } catch (error) {
+      setBoardActionError(
+        error instanceof Error
+          ? error.message
+          : "Could not create this task board.",
+      );
+    }
+  };
+
+  const handleCustomBoardClick = (taskBoard: TaskBoardDto) => {
+    setBoardActionError("");
+    setActiveBoardId(taskBoard.id);
+    setActiveBoardName(taskBoard.name);
+    setSelectedTaskId(null);
+  };
+
+  const handleCreateCustomBoard = async (event: FormEvent) => {
+    event.preventDefault();
+    setBoardActionError("");
+
+    if (!newBoardName.trim()) {
+      setBoardActionError("Board name is required.");
+      return;
+    }
+
+    try {
+      const response = await createTaskBoardMutation.mutateAsync({
+        groupId,
+        payload: {
+          description: newBoardDescription.trim() || undefined,
+          name: newBoardName.trim(),
+        },
+      });
+      setActiveBoardId(response.data.id);
+      setActiveBoardName(response.data.name);
+      setSelectedTaskId(null);
+      setIsCreateBoardOpen(false);
+      setNewBoardName("");
+      setNewBoardDescription("");
+    } catch (error) {
+      setBoardActionError(
+        error instanceof Error ? error.message : "Could not create board.",
+      );
     }
   };
 
@@ -234,31 +410,77 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
             <span className="mr-1 text-xs font-extrabold tracking-[0.22em] text-muted uppercase">
-              Checkpoints
+              {milestoneLabel}
             </span>
-            {checkpoints.map((checkpoint) => (
-              <button
-                key={checkpoint}
-                type="button"
-                onClick={() => setActiveCheckpoint(checkpoint)}
-                className={cn(
-                  "inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-[background,border-color,color,box-shadow]",
-                  activeCheckpoint === checkpoint
-                    ? "border-brand-secondary/30 bg-[#eef2ff] text-brand-primary shadow-sm"
-                    : "border-border bg-surface text-muted hover:border-brand-secondary/30 hover:text-foreground",
-                )}
-              >
-                <span
+            {milestones.map((milestone) => {
+              const existingBoard = boardsByName.get(
+                normalizeBoardName(milestone.label),
+              );
+              const isCreated = Boolean(existingBoard);
+              const isActive = existingBoard
+                ? Number(activeTaskBoardId) === Number(existingBoard.id)
+                : normalizeBoardName(currentActiveBoardName) ===
+                    normalizeBoardName(milestone.label);
+
+              return (
+                <button
+                  key={milestone.id}
+                  type="button"
+                  onClick={() => handlePresetBoardClick(milestone)}
+                  disabled={createTaskBoardMutation.isPending}
                   className={cn(
-                    "size-2 rounded-full",
-                    checkpoint === 1 && "bg-emerald-400",
-                    checkpoint === 2 && "bg-indigo-500",
-                    checkpoint === 3 && "bg-slate-300",
+                    "inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-[background,border-color,color,box-shadow]",
+                    isActive
+                      ? "border-brand-secondary/30 bg-[#eef2ff] text-brand-primary shadow-sm"
+                      : isCreated
+                        ? "border-border bg-surface text-muted hover:border-brand-secondary/30 hover:text-foreground"
+                        : "border-dashed border-border bg-surface text-muted hover:border-brand-primary hover:text-brand-primary",
                   )}
-                />
-                Checkpoint {checkpoint}
-              </button>
-            ))}
+                  title={isCreated ? "Open board" : "Create board"}
+                >
+                  <span
+                    className={cn(
+                      "size-2 rounded-full",
+                      isCreated ? milestone.tone : "bg-slate-300",
+                    )}
+                  />
+                  {milestone.label}
+                </button>
+              );
+            })}
+            {customBoards.map((taskBoard) => {
+              const isActive =
+                Number(activeTaskBoardId) === Number(taskBoard.id);
+
+              return (
+                <button
+                  key={taskBoard.id}
+                  type="button"
+                  onClick={() => handleCustomBoardClick(taskBoard)}
+                  className={cn(
+                    "inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-[background,border-color,color,box-shadow]",
+                    isActive
+                      ? "border-brand-secondary/30 bg-[#eef2ff] text-brand-primary shadow-sm"
+                      : "border-border bg-surface text-muted hover:border-brand-secondary/30 hover:text-foreground",
+                  )}
+                >
+                  <span className="size-2 rounded-full bg-brand-primary" />
+                  {taskBoard.name}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              title="Add board"
+              onClick={() => {
+                setBoardActionError("");
+                setIsCreateBoardOpen(true);
+              }}
+              className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-dashed border-border bg-surface px-3 text-xs font-bold text-muted transition-colors hover:border-brand-primary hover:text-brand-primary"
+            >
+              <Plus className="size-3.5" />
+              <span>Board</span>
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -276,6 +498,11 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
             </Button>
           </div>
         </div>
+        {boardActionError && (
+          <p className="mt-3 mb-0 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {boardActionError}
+          </p>
+        )}
       </div>
 
       <div className="border-b border-border bg-surface px-4 py-3 sm:px-5">
@@ -476,6 +703,76 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                   Cancel
                 </Button>
                 <Button type="submit">Create Task</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isCreateBoardOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6">
+          <div className="grid max-h-[90vh] w-[min(520px,100%)] grid-rows-[auto_1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4">
+              <div>
+                <h3 className="m-0 text-lg font-bold text-foreground">
+                  Create board
+                </h3>
+                <p className="mt-1 mb-0 text-sm text-muted">
+                  Add a custom task board for this group.
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsCreateBoardOpen(false);
+                  setNewBoardName("");
+                  setNewBoardDescription("");
+                }}
+                className="size-8 rounded-lg p-0"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+
+            <form
+              onSubmit={handleCreateCustomBoard}
+              className="space-y-4 overflow-y-auto p-6"
+            >
+              <TextInput
+                label="Board name"
+                onChange={(event) => setNewBoardName(event.target.value)}
+                placeholder="Sprint planning, Marketing, Research..."
+                value={newBoardName}
+                required
+              />
+              <TextInput
+                label="Description"
+                onChange={(event) =>
+                  setNewBoardDescription(event.target.value)
+                }
+                placeholder="Optional context for this board"
+                value={newBoardDescription}
+              />
+              <div className="flex justify-end gap-2.5 border-t border-border pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setIsCreateBoardOpen(false);
+                    setNewBoardName("");
+                    setNewBoardDescription("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={createTaskBoardMutation.isPending}
+                  type="submit"
+                >
+                  {createTaskBoardMutation.isPending
+                    ? "Creating..."
+                    : "Create board"}
+                </Button>
               </div>
             </form>
           </div>
