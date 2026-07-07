@@ -6,6 +6,8 @@ import type {
   TaskStatus,
 } from "@/shared/types";
 
+export type DashboardRecord = Record<string, unknown>;
+
 export type DashboardStatsDto = {
   totalGroups: number;
   totalProjects: number;
@@ -80,4 +82,91 @@ export type DashboardProjectDto = {
   researchDomain: string | null;
   groupStatus: GroupStatus;
   progressPercent: number;
+};
+
+export type AdminDashboardMeetingDto = DashboardRecord & {
+  id?: number | null;
+  meetingId?: number | null;
+  slotId?: number | null;
+  groupId?: number | null;
+  groupName?: string | null;
+  groupNo?: string | null;
+  mentorId?: number | null;
+  mentorCode?: string | null;
+  mentorName?: string | null;
+  bookedByStudentName?: string | null;
+  startAt?: ISODateTimeString | null;
+  endAt?: ISODateTimeString | null;
+  meetLink?: string | null;
+  status?: string | null;
+};
+
+export type AdminDashboardProjectDto = DashboardRecord & {
+  id?: number | null;
+  projectId?: number | null;
+  title?: string | null;
+  name?: string | null;
+  projectName?: string | null;
+  groupId?: number | null;
+  groupName?: string | null;
+  groupNo?: string | null;
+  mentorName?: string | null;
+  progressPercent?: number | null;
+  completedTaskCount?: number | null;
+  totalTaskCount?: number | null;
+  overdueTaskCount?: number | null;
+  status?: string | null;
+};
+
+export type AdminDashboardMentorDto = DashboardRecord & {
+  id?: number | null;
+  mentorId?: number | null;
+  mentorCode?: string | null;
+  fullName?: string | null;
+  mentorName?: string | null;
+  email?: string | null;
+  assignedGroupCount?: number | null;
+  groupCount?: number | null;
+  scheduledMeetingCount?: number | null;
+  meetingCount?: number | null;
+  availabilitySlotCount?: number | null;
+  status?: string | null;
+};
+
+export type AdminDashboardGroupProgressDto = DashboardRecord & {
+  id?: number | null;
+  groupId?: number | null;
+  groupName?: string | null;
+  name?: string | null;
+  groupNo?: string | null;
+  courseCode?: string | null;
+  term?: string | null;
+  projectName?: string | null;
+  leaderName?: string | null;
+  mentorName?: string | null;
+  memberCount?: number | null;
+  progressPercent?: number | null;
+  completedTaskCount?: number | null;
+  completedTasks?: number | null;
+  totalTaskCount?: number | null;
+  totalTasks?: number | null;
+  overdueTaskCount?: number | null;
+  overdueTasks?: number | null;
+  status?: string | null;
+};
+
+export type AdminDashboardExecutionStatusDto = DashboardRecord & {
+  totalProjects?: number | null;
+  activeProjects?: number | null;
+  completedProjects?: number | null;
+  totalGroups?: number | null;
+  activeGroups?: number | null;
+  totalMentors?: number | null;
+  totalMeetings?: number | null;
+  scheduledMeetings?: number | null;
+  canceledMeetings?: number | null;
+  completionPercent?: number | null;
+  progressPercent?: number | null;
+  overdueTaskCount?: number | null;
+  status?: string | null;
 };

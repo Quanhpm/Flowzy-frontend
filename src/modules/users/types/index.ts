@@ -35,6 +35,19 @@ export type MentorProfileDto = {
   status: UserStatus;
 };
 
+export type AdminUserGroupDto = {
+  id?: number | null;
+  groupId?: number | null;
+  groupNo?: string | null;
+  name?: string | null;
+  groupName?: string | null;
+  projectName?: string | null;
+  courseCode?: string | null;
+  term?: string | null;
+  mentorName?: string | null;
+  status?: string | null;
+};
+
 export type AdminUserDetailDto = {
   id: number;
   email: string;
@@ -46,6 +59,7 @@ export type AdminUserDetailDto = {
   lastLoginAt: ISODateTimeString | null;
   studentProfile: StudentProfileDto | null;
   mentorProfile: MentorProfileDto | null;
+  group?: AdminUserGroupDto | null;
 };
 
 export type AdminUserSummaryDto = {
@@ -58,6 +72,7 @@ export type AdminUserSummaryDto = {
   code: string | null;
   createdAt: ISODateTimeString;
   lastLoginAt: ISODateTimeString | null;
+  group?: AdminUserGroupDto | null;
 };
 
 export type AdminUsersQuery = ApiListQuery & {

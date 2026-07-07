@@ -40,6 +40,7 @@ type NavItem = {
 
 const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   ADMIN: [
+    { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/admin/users", icon: Users, label: "Users" },
     { href: "/admin/imports", icon: Database, label: "Imports" },
     { href: "/admin/problems", icon: BookOpen, label: "Problem Bank" },
