@@ -33,6 +33,7 @@ import {
 } from "../hooks/use-user-mutations";
 import type {
   AdminUserDetailDto,
+  AdminUserGroupDto,
   AdminUserSummaryDto,
   CreateAdminUserRequest,
   MentorProfileInput,
@@ -97,7 +98,7 @@ const toolbarClassName =
   "grid grid-cols-[minmax(240px,1fr)_minmax(150px,190px)_minmax(150px,190px)] items-end gap-3 max-[860px]:grid-cols-[minmax(0,1fr)]";
 const tableWrapClassName = "w-full overflow-x-auto";
 const tableClassName =
-  "w-full min-w-[900px] border-collapse [&_tbody_tr:last-child_td]:border-b-0";
+  "w-full min-w-[1040px] border-collapse [&_tbody_tr:last-child_td]:border-b-0";
 const tableHeadCellClassName =
   "border-b border-border px-[18px] py-[15px] text-left align-middle text-xs font-bold tracking-[0.04em] text-muted uppercase";
 const tableCellClassName =
@@ -172,6 +173,37 @@ function getRoleTone(role: UserRole) {
 
 function getDisplayName(user: AdminUserSummaryDto) {
   return user.fullName ?? user.email;
+}
+
+function getGroupTitle(group: AdminUserGroupDto | null | undefined) {
+  return group?.groupName ?? group?.name ?? group?.groupNo ?? "Assigned group";
+}
+
+function getGroupMeta(group: AdminUserGroupDto | null | undefined) {
+  if (!group) return "-";
+
+  const meta = [group.groupNo, group.courseCode, group.term, group.projectName]
+    .filter(Boolean)
+    .join(" · ");
+
+  return meta || "-";
+}
+
+function UserGroupCell({
+  group,
+}: {
+  group: AdminUserGroupDto | null | undefined;
+}) {
+  if (!group) {
+    return <span className="text-muted">-</span>;
+  }
+
+  return (
+    <div className={userCellClassName}>
+      <span className={userNameClassName}>{getGroupTitle(group)}</span>
+      <span className={userEmailClassName}>{getGroupMeta(group)}</span>
+    </div>
+  );
 }
 
 function createFormFromDetail(user: AdminUserDetailDto): UserFormState {
@@ -254,11 +286,16 @@ function validateForm(form: UserFormState, mode: "create" | "edit") {
       return "Mentor code and full name are required.";
     }
 
-    if (
-      form.yearsOfExperience &&
-      Number.isNaN(Number(form.yearsOfExperience))
-    ) {
-      return "Years of experience must be a valid number.";
+    if (form.yearsOfExperience) {
+      const yearsOfExperience = Number(form.yearsOfExperience);
+
+      if (Number.isNaN(yearsOfExperience)) {
+        return "Years of experience must be a valid number.";
+      }
+
+      if (yearsOfExperience < 0) {
+        return "Years of experience cannot be negative.";
+      }
     }
   }
 
@@ -505,6 +542,30 @@ function UserFormModal({
                     placeholder="HCM"
                     value={form.address}
                   />
+                </div>
+              </>
+            )}
+
+            {mode === "edit" && detail?.group && (
+              <>
+                <h3 className={sectionTitleClassName}>Group</h3>
+                <div className="grid gap-3 rounded-xl border border-border bg-background p-4 text-sm">
+                  <div className={userCellClassName}>
+                    <span className={userNameClassName}>
+                      {getGroupTitle(detail.group)}
+                    </span>
+                    <span className={userEmailClassName}>
+                      {getGroupMeta(detail.group)}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {detail.group.status && (
+                      <Badge tone="neutral">{detail.group.status}</Badge>
+                    )}
+                    {detail.group.mentorName && (
+                      <Badge tone="warning">{detail.group.mentorName}</Badge>
+                    )}
+                  </div>
                 </div>
               </>
             )}
@@ -927,6 +988,7 @@ export function AdminUsersPage() {
                   <tr>
                     <th className={tableHeadCellClassName}>User</th>
                     <th className={tableHeadCellClassName}>Code</th>
+                    <th className={tableHeadCellClassName}>Group</th>
                     <th className={tableHeadCellClassName}>Role</th>
                     <th className={tableHeadCellClassName}>Status</th>
                     <th className={tableHeadCellClassName}>Last login</th>
@@ -946,6 +1008,9 @@ export function AdminUsersPage() {
                         </div>
                       </td>
                       <td className={mutedTableCellClassName}>{user.code ?? "-"}</td>
+                      <td className={tableCellClassName}>
+                        <UserGroupCell group={user.group} />
+                      </td>
                       <td className={tableCellClassName}>
                         <Badge tone={getRoleTone(user.role)}>{user.role}</Badge>
                       </td>

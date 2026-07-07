@@ -1,11 +1,5 @@
-import { ModulePlaceholder } from "@/shared/components";
+import { AdminImportsPage } from "@/modules/imports";
 
-export default function AdminImportsPage() {
-  return (
-    <ModulePlaceholder
-      description="Upload student, mentor, and problem-bank spreadsheets, then review import results."
-      eyebrow="Admin"
-      title="Imports"
-    />
-  );
+export default function AdminImportsRoute() {
+  return <AdminImportsPage />;
 }

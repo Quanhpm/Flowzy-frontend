@@ -80,5 +80,14 @@ export const queryKeys = {
     mentorGroups: () => [...queryKeys.dashboard.all, "mentor", "groups"] as const,
     mentorMeetings: () =>
       [...queryKeys.dashboard.all, "mentor", "meetings"] as const,
+    admin: {
+      all: ["dashboard", "admin"] as const,
+      timeline: () => [...queryKeys.dashboard.admin.all, "timeline"] as const,
+      projects: () => [...queryKeys.dashboard.admin.all, "projects"] as const,
+      mentors: () => [...queryKeys.dashboard.admin.all, "mentors"] as const,
+      groups: () => [...queryKeys.dashboard.admin.all, "groups"] as const,
+      executionStatus: () =>
+        [...queryKeys.dashboard.admin.all, "execution-status"] as const,
+    },
   },
 } as const;

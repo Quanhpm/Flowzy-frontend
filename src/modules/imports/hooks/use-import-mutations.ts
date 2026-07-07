@@ -9,10 +9,14 @@ import {
   importProblemBank,
   importStudents,
 } from "../api";
+import type { ImportResponse } from "../types";
+import type { ApiResponse } from "@/shared/types";
 
 type ImportFileInput = Blob | File | FormData;
 
-function useImportMutation(importer: (file: ImportFileInput) => Promise<unknown>) {
+function useImportMutation(
+  importer: (file: ImportFileInput) => Promise<ApiResponse<ImportResponse>>,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({

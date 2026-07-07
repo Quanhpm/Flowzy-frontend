@@ -2,6 +2,11 @@ import { apiGet } from "@/shared/lib";
 import type { ApiResponse } from "@/shared/types";
 
 import type {
+  AdminDashboardExecutionStatusDto,
+  AdminDashboardGroupProgressDto,
+  AdminDashboardMeetingDto,
+  AdminDashboardMentorDto,
+  AdminDashboardProjectDto,
   DashboardGroupProgressDto,
   DashboardMeetingDto,
   DashboardProjectDto,
@@ -35,5 +40,35 @@ export function getMentorDashboardGroups() {
 export function getMentorDashboardMeetings() {
   return apiGet<ApiResponse<DashboardMeetingDto[]>>(
     "/api/dashboard/mentor/meetings",
+  );
+}
+
+export function getAdminDashboardTimeline() {
+  return apiGet<ApiResponse<AdminDashboardMeetingDto[]>>(
+    "/api/dashboard/admin/timeline",
+  );
+}
+
+export function getAdminDashboardProjects() {
+  return apiGet<ApiResponse<AdminDashboardProjectDto[]>>(
+    "/api/dashboard/admin/projects",
+  );
+}
+
+export function getAdminDashboardMentors() {
+  return apiGet<ApiResponse<AdminDashboardMentorDto[]>>(
+    "/api/dashboard/admin/mentors",
+  );
+}
+
+export function getAdminDashboardGroups() {
+  return apiGet<ApiResponse<AdminDashboardGroupProgressDto[]>>(
+    "/api/dashboard/admin/groups",
+  );
+}
+
+export function getAdminDashboardExecutionStatus() {
+  return apiGet<ApiResponse<AdminDashboardExecutionStatusDto>>(
+    "/api/dashboard/admin/execution-status",
   );
 }
