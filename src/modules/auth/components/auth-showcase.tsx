@@ -40,14 +40,14 @@ export function AuthShowcase() {
   return (
     <aside
       className="relative grid min-h-svh grid-rows-[auto_1fr_auto] overflow-hidden bg-surface-warm px-[34px] pt-[45px] pb-16 text-foreground max-[1180px]:px-11 max-[900px]:hidden"
-      aria-label="F-Spark workspace preview"
+      aria-label="Flowzy workspace preview"
     >
-      <div className="absolute inset-0 opacity-15 [background-image:linear-gradient(rgba(240,84,35,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(240,84,35,0.08)_1px,transparent_1px)] [background-size:35px_35px] [mask-image:linear-gradient(to_bottom,#000,transparent_95%)]" />
+      <div className="absolute inset-0 opacity-15 [background-image:linear-gradient(rgba(0,102,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.08)_1px,transparent_1px)] [background-size:35px_35px] [mask-image:linear-gradient(to_bottom,#000,transparent_95%)]" />
 
       <div className="relative z-[1] flex items-center justify-between">
         <div className="flex items-center gap-[9px] text-[11px] font-bold tracking-[0.05em] text-muted">
-          <span className="size-2.5 rounded-full bg-brand-primary shadow-[0_0_10px_rgba(240,84,35,0.4)]" />{" "}
-          F-SPARK PROJECT WORKSPACE
+          <span className="size-2.5 rounded-full bg-brand-primary shadow-[0_0_10px_rgba(0,102,255,0.4)]" />{" "}
+          FLOWZY PROJECT WORKSPACE
         </div>
         <div className="inline-flex items-center gap-1.5 rounded-full border border-border-warm bg-white/60 px-3 py-1.5 text-[11px] font-medium text-foreground [&_svg]:text-brand-primary">
           <Bot size={14} /> System ready
@@ -115,7 +115,7 @@ export function AuthShowcase() {
               <MessageCircle size={12} /> 22 feedbacks
             </span>
             <strong className="ml-auto font-medium text-brand-primary">
-              F-Spark Board
+              Flowzy Board
             </strong>
           </div>
         </div>

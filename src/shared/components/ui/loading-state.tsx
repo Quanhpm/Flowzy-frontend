@@ -23,7 +23,7 @@ export function LoadingState({
       {...props}
     >
       <div className="grid max-w-[420px] justify-items-center gap-2.5">
-        <span className="size-[30px] animate-spin rounded-full border-[3px] border-[#fbd0bd] border-t-brand-primary" />
+        <span className="size-[30px] animate-spin rounded-full border-[3px] border-[#c8d7ff] border-t-brand-primary" />
         <h2 className="m-0 text-lg leading-[1.3] font-bold text-foreground">
           {title}
         </h2>

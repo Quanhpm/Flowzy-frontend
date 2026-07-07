@@ -36,7 +36,7 @@ export function TextInput({
       )}
       <span
         className={cn(
-          "flex h-[50px] min-w-0 items-center gap-2.5 rounded-xl border border-border bg-surface px-3.5 text-muted transition-[border-color,box-shadow] duration-[160ms] ease-in-out focus-within:border-brand-secondary focus-within:shadow-[0_0_0_4px_rgba(237,161,47,0.12)] data-[invalid=true]:border-red-500",
+          "flex h-[50px] min-w-0 items-center gap-2.5 rounded-xl border border-border bg-surface px-3.5 text-muted transition-[border-color,box-shadow] duration-[160ms] ease-in-out focus-within:border-brand-secondary focus-within:shadow-[0_0_0_4px_rgba(106,0,255,0.12)] data-[invalid=true]:border-red-500",
           shellClassName,
         )}
         data-invalid={Boolean(error)}

@@ -1,5 +1,5 @@
 /**
- * F-Spark design system color palette configuration.
+ * Flowzy design system color palette configuration.
  *
  * This file serves as the single source of truth for color constants.
  * 
@@ -9,16 +9,16 @@
  */
 
 export const LIGHT_THEME = {
-  brandPrimary: "#F05423",
-  brandPrimaryHover: "#d84315",
-  brandSecondary: "#EDA12F",
-  surfaceWarm: "#f5ebdc",
-  background: "#F5F5F5",
+  brandPrimary: "#0066FF",
+  brandPrimaryHover: "#1A1F71",
+  brandSecondary: "#6A00FF",
+  surfaceWarm: "#eef3ff",
+  background: "#F5F7FF",
   surface: "#ffffff",
-  foreground: "#1a1a1a",
-  border: "#e2e8f0",
-  borderWarm: "#e6dacb",
-  muted: "#737373",
+  foreground: "#0B0F2B",
+  border: "#dce6ff",
+  borderWarm: "#c8d7ff",
+  muted: "#52607f",
 } as const;
 
 export const COLORS = {

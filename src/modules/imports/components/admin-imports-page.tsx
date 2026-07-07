@@ -122,7 +122,7 @@ const statusPanelClassName =
 const errorPanelClassName =
   "rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-normal text-red-700";
 const fileInputClassName =
-  "block w-full min-w-0 cursor-pointer rounded-xl border border-border bg-surface px-3.5 py-[13px] text-sm text-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-surface-warm file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-brand-primary focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)] focus:outline-0";
+  "block w-full min-w-0 cursor-pointer rounded-xl border border-border bg-surface px-3.5 py-[13px] text-sm text-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-surface-warm file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-brand-primary focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(106,0,255,0.12)] focus:outline-0";
 const helperTextClassName = "text-xs leading-normal text-muted";
 
 function getErrorMessage(error: unknown) {

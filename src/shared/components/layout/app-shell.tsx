@@ -137,7 +137,7 @@ export function AppShell({ children, role }: AppShellProps) {
               <Link
                 className={cn(
                   "flex min-w-0 items-center gap-2.5 rounded-xl px-3 py-[11px] text-sm font-medium text-muted transition-[background,color] duration-[160ms] ease-in-out hover:bg-background hover:text-foreground",
-                  isActive && "bg-[#fff3ed] text-brand-primary",
+                  isActive && "bg-[#eef3ff] text-brand-primary",
                 )}
                 href={item.href}
                 key={item.href}

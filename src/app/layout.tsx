@@ -14,7 +14,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "F-Spark",
+  title: "Flowzy",
   description: "EXE Project Management System",
 };
 

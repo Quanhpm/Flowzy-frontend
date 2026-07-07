@@ -13,7 +13,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const baseClassName =
-  "inline-flex min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-transparent font-sans font-medium leading-none transition-[background,border-color,color,box-shadow,transform] duration-[160ms] ease-in-out focus-visible:outline-0 focus-visible:shadow-[0_0_0_4px_rgba(237,161,47,0.16)] disabled:cursor-not-allowed disabled:opacity-[0.58] [&:active:not(:disabled)]:scale-[0.98]";
+  "inline-flex min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-transparent font-sans font-medium leading-none transition-[background,border-color,color,box-shadow,transform] duration-[160ms] ease-in-out focus-visible:outline-0 focus-visible:shadow-[0_0_0_4px_rgba(106,0,255,0.16)] disabled:cursor-not-allowed disabled:opacity-[0.58] [&:active:not(:disabled)]:scale-[0.98]";
 
 const variantClassNames: Record<ButtonVariant, string> = {
   danger:

@@ -32,22 +32,22 @@ export function GoogleSignInButton({
 
     if (!window.google || !buttonContainerRef.current) return;
 
-    window.__fsparkGoogleCredentialHandler = (response) => {
+    window.__flowzyGoogleCredentialHandler = (response) => {
       if (response.credential) onCredential(response.credential);
     };
 
-    if (!window.__fsparkGoogleInitialized) {
+    if (!window.__flowzyGoogleInitialized) {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: (response) =>
-          window.__fsparkGoogleCredentialHandler?.(response),
+          window.__flowzyGoogleCredentialHandler?.(response),
         auto_select: false,
         cancel_on_tap_outside: true,
         hd: GOOGLE_HOSTED_DOMAIN || undefined,
         ux_mode: "popup",
         use_fedcm_for_button: true,
       });
-      window.__fsparkGoogleInitialized = true;
+      window.__flowzyGoogleInitialized = true;
     }
 
     const container = buttonContainerRef.current;

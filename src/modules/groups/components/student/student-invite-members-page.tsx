@@ -114,7 +114,7 @@ function StudentInviteRow({
             <textarea
               className={cn(
                 "min-h-24 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-sm text-foreground outline-0 transition-[border-color,box-shadow] duration-[160ms]",
-                "focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]",
+                "focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(106,0,255,0.12)]",
               )}
               onChange={(event) => onMessageChange(event.target.value)}
               placeholder="Optional message for this student."

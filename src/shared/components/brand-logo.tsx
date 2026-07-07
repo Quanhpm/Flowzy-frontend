@@ -25,12 +25,12 @@ const BRAND_LOGO_STYLES: Record<
   default: {
     root: "inline-flex min-w-0 items-center gap-[11px] font-sans text-[26px] font-bold tracking-normal text-foreground max-[600px]:text-[22px]",
     image:
-      "block h-[60px] w-[120px] shrink-0 object-contain object-center max-[600px]:h-[34px] max-[600px]:w-[88px]",
+      "block h-[60px] w-[210px] shrink-0 object-contain object-center max-[600px]:h-[38px] max-[600px]:w-[132px]",
     text: "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap",
   },
 sidebar: {
-  root: "inline-flex min-w-0 items-center gap-[10px] font-sans text-[26px] font-bold tracking-normal text-foreground", // Tăng chữ: 22px -> 26px
-  image: "block h-[42px] w-[108px] shrink-0 object-contain object-left", // Tăng ảnh: 34px -> 42px
+  root: "inline-flex min-w-0 items-center gap-[10px] font-sans text-[26px] font-bold tracking-normal text-foreground",
+  image: "block h-[46px] w-[160px] shrink-0 object-contain object-left",
   text: "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap",
 },
 };

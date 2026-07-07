@@ -19,7 +19,7 @@ import type { AuthUser } from "../types/auth.types";
 import { BrandLogo } from "./brand-logo";
 import { GoogleSignInButton } from "./google-sign-in-button";
 
-const REMEMBERED_EMAIL_KEY = "fspark-remembered-email";
+const REMEMBERED_EMAIL_KEY = "flowzy-remembered-email";
 
 function getRememberedEmail() {
   return typeof window === "undefined"
@@ -39,7 +39,7 @@ function getDefaultWorkspacePath(role: AuthUser["role"]) {
 }
 
 const inputShellClassName =
-  "flex h-[52px] items-center gap-3 rounded-xl border border-border bg-surface px-4 text-muted transition-[border-color,box-shadow] duration-[160ms] ease-in-out focus-within:border-brand-secondary focus-within:shadow-[0_0_0_4px_rgba(237,161,47,0.12)] max-[600px]:h-[50px]";
+  "flex h-[52px] items-center gap-3 rounded-xl border border-border bg-surface px-4 text-muted transition-[border-color,box-shadow] duration-[160ms] ease-in-out focus-within:border-brand-secondary focus-within:shadow-[0_0_0_4px_rgba(106,0,255,0.12)] max-[600px]:h-[50px]";
 
 export function LoginForm() {
   const router = useRouter();
@@ -276,7 +276,7 @@ export function LoginForm() {
       </div>
 
       <footer className="flex w-full min-w-0 items-center justify-between text-xs text-muted max-[600px]:grid max-[600px]:justify-items-center max-[600px]:gap-[9px] max-[600px]:text-center">
-        <span>&copy; 2026 F-Spark. All rights reserved.</span>
+        <span>&copy; 2026 Flowzy. All rights reserved.</span>
         <div className="flex gap-3 max-[600px]:flex-wrap max-[600px]:justify-center">
           <a className="hover:text-brand-primary" href="#privacy">
             Privacy Policy

@@ -19,7 +19,7 @@ export const useAuthStore = create<AuthState>()(
       clearSession: () => set({ session: null, isAuthenticated: false }),
     }),
     {
-      name: "fspark-auth",
+      name: "flowzy-auth",
       storage: createJSONStorage(() => localStorage),
     },
   ),

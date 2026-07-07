@@ -27,7 +27,7 @@ export function Select({
       )}
       <span
         className={cn(
-          "relative flex h-[50px] min-w-0 items-center rounded-xl border border-border bg-surface transition-[border-color,box-shadow] duration-[160ms] ease-in-out focus-within:border-brand-secondary focus-within:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]",
+          "relative flex h-[50px] min-w-0 items-center rounded-xl border border-border bg-surface transition-[border-color,box-shadow] duration-[160ms] ease-in-out focus-within:border-brand-secondary focus-within:shadow-[0_0_0_4px_rgba(106,0,255,0.12)]",
           shellClassName,
         )}
       >

@@ -40,8 +40,8 @@ type GoogleIdentityServices = {
 declare global {
   interface Window {
     google?: GoogleIdentityServices;
-    __fsparkGoogleInitialized?: boolean;
-    __fsparkGoogleCredentialHandler?: (
+    __flowzyGoogleInitialized?: boolean;
+    __flowzyGoogleCredentialHandler?: (
       response: GoogleCredentialResponse,
     ) => void;
   }
