@@ -23,6 +23,7 @@ import {
   useAddTaskComment,
   useDeleteTaskComment,
 } from "../hooks/use-task-mutations";
+import type { TaskActivityDto } from "../types";
 import {
   X,
   Plus,
@@ -32,7 +33,154 @@ import {
   History,
   Archive,
   UserPlus,
+  ArrowRight,
+  Check,
+  RefreshCw,
 } from "lucide-react";
+
+const getActivityIcon = (type: string) => {
+  switch (type) {
+    case "TASK_CREATED":
+      return { icon: <Plus className="size-3.5 text-emerald-600" />, bg: "bg-emerald-50 border-emerald-200" };
+    case "TASK_MOVED":
+    case "STATUS_CHANGED":
+      return { icon: <ArrowRight className="size-3.5 text-blue-600" />, bg: "bg-blue-50 border-blue-200" };
+    case "ASSIGNEE_ADDED":
+      return { icon: <UserPlus className="size-3.5 text-indigo-600" />, bg: "bg-indigo-50 border-indigo-200" };
+    case "ASSIGNEE_REMOVED":
+      return { icon: <X className="size-3.5 text-rose-600" />, bg: "bg-rose-50 border-rose-200" };
+    case "CHECKLIST_ITEM_COMPLETED":
+      return { icon: <Check className="size-3.5 text-teal-600" />, bg: "bg-teal-50 border-teal-200" };
+    case "CHECKLIST_ITEM_ADDED":
+    case "CHECKLIST_ITEM_INCOMPLETED":
+      return { icon: <CheckSquare className="size-3.5 text-amber-600" />, bg: "bg-amber-50 border-amber-200" };
+    case "COMMENT_ADDED":
+      return { icon: <MessageSquare className="size-3.5 text-purple-600" />, bg: "bg-purple-50 border-purple-200" };
+    case "TASK_ARCHIVED":
+      return { icon: <Archive className="size-3.5 text-slate-600" />, bg: "bg-slate-50 border-slate-200" };
+    case "TASK_RESTORED":
+      return { icon: <RefreshCw className="size-3.5 text-cyan-600" />, bg: "bg-cyan-50 border-cyan-200" };
+    default:
+      return { icon: <History className="size-3.5 text-slate-500" />, bg: "bg-slate-50 border-slate-200" };
+  }
+};
+
+const renderActivityDetails = (act: TaskActivityDto) => {
+  const type = act.activityType;
+  const d = (act.details || {}) as Record<string, string | undefined>;
+
+  switch (type) {
+    case "TASK_CREATED":
+      return (
+        <span>
+          created the task <span className="font-semibold text-foreground">&ldquo;{String(d.title || "")}&rdquo;</span>
+        </span>
+      );
+    case "TASK_UPDATED": {
+      const changes: string[] = [];
+      if (d.title) changes.push(`renamed to "${d.title}"`);
+      if (d.description !== undefined) changes.push(`updated description`);
+      if (d.priority) changes.push(`changed priority to ${d.priority}`);
+      if (d.dueAt !== undefined) {
+        changes.push(d.dueAt ? `set due date to ${new Date(d.dueAt).toLocaleDateString()}` : `removed due date`);
+      }
+      return (
+        <span>
+          updated the task: {changes.length > 0 ? changes.join(", ") : "changed details"}
+        </span>
+      );
+    }
+    case "TASK_MOVED":
+    case "STATUS_CHANGED":
+      return (
+        <span className="inline-flex items-center gap-1.5 flex-wrap">
+          moved status from{" "}
+          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-800">{d.from || d.fromStatus || "Unknown"}</span>
+          <ArrowRight className="inline size-3 text-muted-foreground" />
+          <span className="rounded bg-brand-primary/10 px-1.5 py-0.5 text-[11px] font-bold text-brand-primary">{d.to || d.toStatus || "Unknown"}</span>
+        </span>
+      );
+    case "TASK_ARCHIVED":
+      return <span>archived the task</span>;
+    case "TASK_RESTORED":
+      return <span>restored the task</span>;
+    case "ASSIGNEE_ADDED":
+      return (
+        <span>
+          assigned <span className="font-semibold text-foreground">{d.assigneeName || d.studentName || "someone"}</span> to the task
+        </span>
+      );
+    case "ASSIGNEE_REMOVED":
+      return (
+        <span>
+          removed <span className="font-semibold text-foreground">{d.assigneeName || d.studentName || "someone"}</span> from assignees
+        </span>
+      );
+    case "CHECKLIST_ITEM_ADDED":
+      return (
+        <span>
+          added checklist item <span className="font-semibold text-foreground">&ldquo;{String(d.title || d.itemName || "")}&rdquo;</span>
+        </span>
+      );
+    case "CHECKLIST_ITEM_COMPLETED":
+      return (
+        <span>
+          completed checklist item <span className="font-semibold text-foreground">&ldquo;{String(d.title || d.itemName || "")}&rdquo;</span>
+        </span>
+      );
+    case "CHECKLIST_ITEM_INCOMPLETED":
+      return (
+        <span>
+          uncompleted checklist item <span className="font-semibold text-foreground">&ldquo;{String(d.title || d.itemName || "")}&rdquo;</span>
+        </span>
+      );
+    case "CHECKLIST_ITEM_DELETED":
+      return (
+        <span>
+          deleted checklist item <span className="font-semibold text-foreground">&ldquo;{String(d.title || d.itemName || "")}&rdquo;</span>
+        </span>
+      );
+    case "COMMENT_ADDED":
+      return (
+        <span>
+          commented: <span className="italic text-muted-foreground">&ldquo;{String(d.content || d.comment || "")}&rdquo;</span>
+        </span>
+      );
+    case "COMMENT_DELETED":
+      return <span>deleted a comment</span>;
+    default:
+      return <span>performed action: {type.replace(/_/g, " ").toLowerCase()}</span>;
+  }
+};
+
+const groupActivitiesByDate = (activityList: TaskActivityDto[]) => {
+  const groups: { [key: string]: TaskActivityDto[] } = {};
+  activityList.forEach((act) => {
+    const date = new Date(act.createdAt);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    let groupKey = "";
+    if (date.toDateString() === today.toDateString()) {
+      groupKey = "Today";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      groupKey = "Yesterday";
+    } else {
+      groupKey = new Intl.DateTimeFormat("en", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+    }
+
+    if (!groups[groupKey]) {
+      groups[groupKey] = [];
+    }
+    groups[groupKey].push(act);
+  });
+  return groups;
+};
 
 type TaskDetailPanelProps = {
   groupId: EntityId;
@@ -567,30 +715,56 @@ export function TaskDetailPanel({ groupId, taskId, onClose }: TaskDetailPanelPro
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {/* List activities */}
-                  <div className="relative border-l border-border/80 pl-4.5 ml-2 space-y-5 py-2">
-                    {activities?.content && activities.content.length > 0 ? (
-                      activities.content.map((act) => (
-                        <div key={act.id} className="relative text-xs">
-                          {/* Dot marker */}
-                          <div className="absolute -left-[24.5px] top-1 size-2 rounded-full bg-brand-primary border border-surface shadow-sm" />
-                          <div className="flex items-center gap-1.5 text-muted-foreground/60 mb-0.5">
-                            <span className="font-bold text-muted">{act.actor.fullName}</span>
-                            <span>•</span>
-                            <span>{formatFullDate(act.createdAt)}</span>
-                          </div>
-                          <div className="text-muted leading-relaxed font-semibold">
-                            {act.activityType.replace(/_/g, " ")}
-                          </div>
+                  {activities?.content && activities.content.length > 0 ? (
+                    (() => {
+                      const grouped = groupActivitiesByDate(activities.content);
+                      return (
+                        <div className="space-y-6">
+                          {Object.keys(grouped).map((groupKey) => (
+                            <div key={groupKey} className="space-y-3">
+                              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 pl-2 border-l-2 border-brand-secondary/40">
+                                {groupKey}
+                              </h4>
+                              <div className="relative border-l border-border/80 pl-4.5 ml-2 space-y-4 py-1">
+                                {grouped[groupKey].map((act) => {
+                                  const { icon, bg } = getActivityIcon(act.activityType);
+                                  return (
+                                    <div key={act.id} className="relative text-xs">
+                                      {/* Icon marker */}
+                                      <div className={cn(
+                                        "absolute -left-[27.5px] top-0.5 flex size-[18px] items-center justify-center rounded-full border bg-surface shadow-sm",
+                                        bg
+                                      )}>
+                                        {icon}
+                                      </div>
+                                      <div className="flex items-center gap-1.5 text-muted-foreground/60 mb-0.5">
+                                        <span className="font-bold text-muted">{act.actor.fullName}</span>
+                                        <span>•</span>
+                                        <span>
+                                          {new Intl.DateTimeFormat("en", {
+                                            timeStyle: "short",
+                                          }).format(new Date(act.createdAt))}
+                                        </span>
+                                      </div>
+                                      <div className="text-muted leading-relaxed font-semibold">
+                                        {renderActivityDetails(act)}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-6 text-xs text-muted-foreground/50 border-l-0 -ml-4.5">
-                        No history available.
-                      </div>
-                    )}
-                  </div>
+                      );
+                    })()
+                  ) : (
+                    <div className="text-center py-6 text-xs text-muted-foreground/50">
+                      No history available.
+                    </div>
+                  )}
 
                   {/* Pagination */}
                   {activities && activities.totalPages > 1 && (

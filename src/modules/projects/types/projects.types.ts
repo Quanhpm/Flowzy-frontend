@@ -207,6 +207,12 @@ export type MoveTaskRequest = {
   version: number;
 };
 
+export type ReorderTaskRequest = {
+  taskId: EntityId;
+  targetStatus: TaskStatus;
+  targetIndex: number;
+};
+
 export type ReplaceAssigneesRequest = {
   assigneeStudentIds: EntityId[];
   assigneeIds?: EntityId[];
