@@ -9,7 +9,7 @@ import {
 import { cn } from "@/shared/lib";
 import type { TaskPriority, TaskStatus, EntityId } from "@/shared/types";
 import { useCreateTaskBoard, useGroupBoard, useGroupDetails, useTaskBoards } from "../hooks";
-import { useCreateTask, useMoveTask } from "../hooks/use-task-mutations";
+import { useCreateTask, useReorderTask } from "../hooks/use-task-mutations";
 import type { TaskBoardDto } from "../types";
 import { KanbanColumn } from "./kanban-column";
 import { TaskDetailPanel } from "./task-detail-panel";
@@ -197,7 +197,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
   // Mutations
   const createTaskMutation = useCreateTask(groupId);
   const createTaskBoardMutation = useCreateTaskBoard();
-  const moveTaskMutation = useMoveTask(groupId);
+  const reorderTaskMutation = useReorderTask(groupId);
 
   const handleDragStart = (
     e: React.DragEvent,
@@ -226,13 +226,10 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
 
     if (!sourceTask) return;
 
-    moveTaskMutation.mutate({
+    reorderTaskMutation.mutate({
       taskId,
-      payload: {
-        status: targetStatus,
-        position,
-        version: sourceTask.version,
-      },
+      targetStatus,
+      targetIndex: position,
     });
   };
 

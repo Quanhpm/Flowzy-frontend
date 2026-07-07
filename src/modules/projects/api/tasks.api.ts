@@ -17,6 +17,7 @@ import type {
   MoveTaskRequest,
   MyTasksQuery,
   ReplaceAssigneesRequest,
+  ReorderTaskRequest,
   TaskActivityDto,
   TaskCommentDto,
   TaskDetailDto,
@@ -193,6 +194,13 @@ export function getGroupDetails(groupId: EntityId) {
 
 export function getMyGroups() {
   return apiGet<ApiResponse<GroupSummaryDto[]>>("/api/groups/student/me");
+}
+
+export function reorderTask(groupId: EntityId, payload: ReorderTaskRequest) {
+  return apiPost<EmptyApiResponse>(
+    `/api/groups/${groupId}/tasks/reorder`,
+    payload,
+  );
 }
 
 
