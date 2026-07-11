@@ -33,10 +33,11 @@ import {
 } from "../hooks/use-user-mutations";
 import type {
   AdminUserDetailDto,
-  AdminUserGroupDto,
   AdminUserSummaryDto,
   CreateAdminUserRequest,
+  InstructorProfileInput,
   MentorProfileInput,
+  StudentGroupMembershipDto,
   StudentProfileInput,
   UpdateAdminUserRequest,
 } from "../types";
@@ -64,6 +65,11 @@ type UserFormState = {
   expertise: string;
   yearsOfExperience: string;
   linkedinUrl: string;
+  instructorCode: string;
+  instructorFullName: string;
+  instructorPhone: string;
+  instructorDepartment: string;
+  instructorExpertise: string;
 };
 
 const DEFAULT_FORM: UserFormState = {
@@ -89,9 +95,18 @@ const DEFAULT_FORM: UserFormState = {
   expertise: "",
   yearsOfExperience: "",
   linkedinUrl: "",
+  instructorCode: "",
+  instructorFullName: "",
+  instructorPhone: "",
+  instructorDepartment: "",
+  instructorExpertise: "",
 };
 
 const PAGE_SIZE = 10;
+const INSTRUCTOR_CODE_MAX_LENGTH = 50;
+const INSTRUCTOR_FULL_NAME_MAX_LENGTH = 255;
+const INSTRUCTOR_PHONE_MAX_LENGTH = 30;
+const INSTRUCTOR_DEPARTMENT_MAX_LENGTH = 150;
 
 const pageClassName = "grid min-w-0 gap-6";
 const toolbarClassName =
@@ -165,43 +180,57 @@ function getStatusTone(status: UserStatus) {
   return "neutral";
 }
 
-function getRoleTone(role: UserRole) {
-  if (role === "ADMIN") return "brand";
-  if (role === "MENTOR") return "warning";
-  return "neutral";
-}
-
 function getDisplayName(user: AdminUserSummaryDto) {
   return user.fullName ?? user.email;
 }
 
-function getGroupTitle(group: AdminUserGroupDto | null | undefined) {
-  return group?.groupName ?? group?.name ?? group?.groupNo ?? "Assigned group";
+function getGroupTitle(membership: StudentGroupMembershipDto) {
+  return membership.name || membership.groupNo || "Assigned group";
 }
 
-function getGroupMeta(group: AdminUserGroupDto | null | undefined) {
-  if (!group) return "-";
-
-  const meta = [group.groupNo, group.courseCode, group.term, group.projectName]
+function getGroupMeta(membership: StudentGroupMembershipDto) {
+  const meta = [
+    membership.groupNo,
+    membership.courseCode,
+    membership.term,
+    membership.projectName,
+  ]
     .filter(Boolean)
     .join(" · ");
 
   return meta || "-";
 }
 
-function UserGroupCell({
-  group,
+function UserGroupMemberships({
+  memberships,
 }: {
-  group: AdminUserGroupDto | null | undefined;
+  memberships: StudentGroupMembershipDto[] | null | undefined;
 }) {
-  if (!group) {
+  if (!memberships?.length) {
     return <span className="text-muted">-</span>;
   }
 
   return (
-    <div className={userCellClassName}>
-      <span className={userNameClassName}>{getGroupTitle(group)}</span>
-      <span className={userEmailClassName}>{getGroupMeta(group)}</span>
+    <div className="grid gap-3">
+      {memberships.map((membership) => (
+        <div
+          className={userCellClassName}
+          key={`${membership.groupId}-${membership.joinedAt}`}
+        >
+          <span className={userNameClassName}>
+            {getGroupTitle(membership)}
+          </span>
+          <span className={userEmailClassName}>
+            {getGroupMeta(membership)}
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="neutral">{membership.role}</Badge>
+            <span className="text-xs text-muted">
+              Joined {formatDateTime(membership.joinedAt)}
+            </span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -234,6 +263,11 @@ function createFormFromDetail(user: AdminUserDetailDto): UserFormState {
         ? ""
         : String(user.mentorProfile.yearsOfExperience),
     linkedinUrl: user.mentorProfile?.linkedinUrl ?? "",
+    instructorCode: user.instructorProfile?.instructorCode ?? "",
+    instructorFullName: user.instructorProfile?.fullName ?? "",
+    instructorPhone: user.instructorProfile?.phone ?? "",
+    instructorDepartment: user.instructorProfile?.department ?? "",
+    instructorExpertise: user.instructorProfile?.expertise ?? "",
   };
 }
 
@@ -263,6 +297,18 @@ function buildMentorProfile(form: UserFormState): MentorProfileInput {
       ? Number(form.yearsOfExperience)
       : undefined,
     linkedinUrl: optional(form.linkedinUrl),
+  };
+}
+
+function buildInstructorProfile(
+  form: UserFormState,
+): InstructorProfileInput {
+  return {
+    instructorCode: form.instructorCode.trim(),
+    fullName: form.instructorFullName.trim(),
+    phone: optional(form.instructorPhone),
+    department: optional(form.instructorDepartment),
+    expertise: optional(form.instructorExpertise),
   };
 }
 
@@ -299,6 +345,31 @@ function validateForm(form: UserFormState, mode: "create" | "edit") {
     }
   }
 
+  if (form.role === "INSTRUCTOR") {
+    if (!form.instructorCode.trim() || !form.instructorFullName.trim()) {
+      return "Instructor code and full name are required.";
+    }
+
+    if (form.instructorCode.trim().length > INSTRUCTOR_CODE_MAX_LENGTH) {
+      return `Instructor code must be at most ${INSTRUCTOR_CODE_MAX_LENGTH} characters.`;
+    }
+
+    if (form.instructorFullName.trim().length > INSTRUCTOR_FULL_NAME_MAX_LENGTH) {
+      return `Instructor full name must be at most ${INSTRUCTOR_FULL_NAME_MAX_LENGTH} characters.`;
+    }
+
+    if (form.instructorPhone.trim().length > INSTRUCTOR_PHONE_MAX_LENGTH) {
+      return `Instructor phone must be at most ${INSTRUCTOR_PHONE_MAX_LENGTH} characters.`;
+    }
+
+    if (
+      form.instructorDepartment.trim().length >
+      INSTRUCTOR_DEPARTMENT_MAX_LENGTH
+    ) {
+      return `Instructor department must be at most ${INSTRUCTOR_DEPARTMENT_MAX_LENGTH} characters.`;
+    }
+  }
+
   return null;
 }
 
@@ -310,6 +381,8 @@ function createPayload(form: UserFormState): CreateAdminUserRequest {
     studentProfile:
       form.role === "STUDENT" ? buildStudentProfile(form) : undefined,
     mentorProfile: form.role === "MENTOR" ? buildMentorProfile(form) : undefined,
+    instructorProfile:
+      form.role === "INSTRUCTOR" ? buildInstructorProfile(form) : undefined,
   };
 }
 
@@ -321,6 +394,8 @@ function updatePayload(form: UserFormState): UpdateAdminUserRequest {
     studentProfile:
       form.role === "STUDENT" ? buildStudentProfile(form) : undefined,
     mentorProfile: form.role === "MENTOR" ? buildMentorProfile(form) : undefined,
+    instructorProfile:
+      form.role === "INSTRUCTOR" ? buildInstructorProfile(form) : undefined,
   };
 }
 
@@ -423,6 +498,7 @@ function UserFormModal({
               >
                 <option value="STUDENT">Student</option>
                 <option value="MENTOR">Mentor</option>
+                <option value="INSTRUCTOR">Instructor</option>
                 <option value="ADMIN">Admin</option>
               </Select>
 
@@ -546,26 +622,13 @@ function UserFormModal({
               </>
             )}
 
-            {mode === "edit" && detail?.group && (
+            {mode === "edit" && detail && (
               <>
-                <h3 className={sectionTitleClassName}>Group</h3>
+                <h3 className={sectionTitleClassName}>Group memberships</h3>
                 <div className="grid gap-3 rounded-xl border border-border bg-background p-4 text-sm">
-                  <div className={userCellClassName}>
-                    <span className={userNameClassName}>
-                      {getGroupTitle(detail.group)}
-                    </span>
-                    <span className={userEmailClassName}>
-                      {getGroupMeta(detail.group)}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {detail.group.status && (
-                      <Badge tone="neutral">{detail.group.status}</Badge>
-                    )}
-                    {detail.group.mentorName && (
-                      <Badge tone="warning">{detail.group.mentorName}</Badge>
-                    )}
-                  </div>
+                  <UserGroupMemberships
+                    memberships={detail.groupMemberships}
+                  />
                 </div>
               </>
             )}
@@ -639,6 +702,59 @@ function UserFormModal({
                     placeholder="https://linkedin.com/in/..."
                     type="url"
                     value={form.linkedinUrl}
+                  />
+                </div>
+              </>
+            )}
+
+            {form.role === "INSTRUCTOR" && (
+              <>
+                <h3 className={sectionTitleClassName}>Instructor profile</h3>
+                <div className={formGridClassName}>
+                  <TextInput
+                    label="Instructor code"
+                    maxLength={INSTRUCTOR_CODE_MAX_LENGTH}
+                    onChange={(event) =>
+                      updateField("instructorCode", event.target.value)
+                    }
+                    placeholder="INS001"
+                    value={form.instructorCode}
+                  />
+                  <TextInput
+                    label="Full name"
+                    maxLength={INSTRUCTOR_FULL_NAME_MAX_LENGTH}
+                    onChange={(event) =>
+                      updateField("instructorFullName", event.target.value)
+                    }
+                    placeholder="Le Thi C"
+                    value={form.instructorFullName}
+                  />
+                  <TextInput
+                    label="Phone"
+                    maxLength={INSTRUCTOR_PHONE_MAX_LENGTH}
+                    onChange={(event) =>
+                      updateField("instructorPhone", event.target.value)
+                    }
+                    placeholder="0901234567"
+                    value={form.instructorPhone}
+                  />
+                  <TextInput
+                    label="Department"
+                    maxLength={INSTRUCTOR_DEPARTMENT_MAX_LENGTH}
+                    onChange={(event) =>
+                      updateField("instructorDepartment", event.target.value)
+                    }
+                    placeholder="Software Engineering"
+                    value={form.instructorDepartment}
+                  />
+                  <TextInput
+                    fieldClassName={fullSpanClassName}
+                    label="Expertise"
+                    onChange={(event) =>
+                      updateField("instructorExpertise", event.target.value)
+                    }
+                    placeholder="Project Management"
+                    value={form.instructorExpertise}
                   />
                 </div>
               </>
@@ -946,6 +1062,7 @@ export function AdminUsersPage() {
               <option value="ADMIN">Admin</option>
               <option value="STUDENT">Student</option>
               <option value="MENTOR">Mentor</option>
+              <option value="INSTRUCTOR">Instructor</option>
             </Select>
             <Select
               label="Status"
@@ -1009,10 +1126,12 @@ export function AdminUsersPage() {
                       </td>
                       <td className={mutedTableCellClassName}>{user.code ?? "-"}</td>
                       <td className={tableCellClassName}>
-                        <UserGroupCell group={user.group} />
+                        <UserGroupMemberships
+                          memberships={user.groupMemberships}
+                        />
                       </td>
                       <td className={tableCellClassName}>
-                        <Badge tone={getRoleTone(user.role)}>{user.role}</Badge>
+                        <Badge tone="neutral">{user.role}</Badge>
                       </td>
                       <td className={tableCellClassName}>
                         <Badge tone={getStatusTone(user.status)}>

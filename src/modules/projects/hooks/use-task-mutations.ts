@@ -13,6 +13,7 @@ import {
   updateTask,
   archiveTask,
   restoreTask,
+  reorderTask,
 } from "../api";
 import type {
   AddChecklistItemRequest,
@@ -23,6 +24,7 @@ import type {
   UpdateChecklistItemRequest,
   UpdateCommentRequest,
   UpdateTaskRequest,
+  ReorderTaskRequest,
 } from "../types";
 import type { EntityId } from "@/shared/types";
 
@@ -72,6 +74,25 @@ export function useMoveTask(groupId: EntityId) {
       taskId: EntityId;
       payload: MoveTaskRequest;
     }) => moveTask(groupId, taskId, payload),
+    onSuccess: (_response, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.detail(groupId, variables.taskId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["groups", groupId, "board"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.all,
+      });
+    },
+  });
+}
+
+export function useReorderTask(groupId: EntityId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ReorderTaskRequest) => reorderTask(groupId, payload),
     onSuccess: (_response, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.tasks.detail(groupId, variables.taskId),

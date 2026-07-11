@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarClock, CheckCircle2, LinkIcon } from "lucide-react";
+import { CalendarClock, CheckCircle2, LinkIcon, XCircle } from "lucide-react";
 
 import {
   Badge,
@@ -12,8 +12,10 @@ import {
   EmptyState,
   LoadingState,
 } from "@/shared/components";
+import { ApiError } from "@/shared/lib";
 import {
   useBookMeeting,
+  useCancelMeeting,
   useGroupMeetings,
   useMentorAvailabilityForGroup,
 } from "@/modules/mentoring";
@@ -49,6 +51,12 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
+function getErrorMessage(error: unknown) {
+  return error instanceof ApiError
+    ? error.message
+    : "Something went wrong. Please try again.";
+}
+
 function groupSlotsByDate(slots: MentorAvailabilitySlotDto[]) {
   return slots.reduce<Record<string, MentorAvailabilitySlotDto[]>>(
     (groups, slot) => {
@@ -62,7 +70,17 @@ function groupSlotsByDate(slots: MentorAvailabilitySlotDto[]) {
   );
 }
 
-function MeetingCard({ meeting }: { meeting: MentorMeetingDto }) {
+function MeetingCard({
+  canCancel,
+  isCanceling,
+  meeting,
+  onCancel,
+}: {
+  canCancel: boolean;
+  isCanceling: boolean;
+  meeting: MentorMeetingDto;
+  onCancel: (meeting: MentorMeetingDto) => void;
+}) {
   return (
     <article className="grid gap-2 rounded-xl border border-border bg-surface p-4">
       <div className="flex items-start justify-between gap-3">
@@ -78,17 +96,30 @@ function MeetingCard({ meeting }: { meeting: MentorMeetingDto }) {
           {meeting.status}
         </Badge>
       </div>
-      {meeting.meetLink && (
-        <a
-          className="inline-flex items-center gap-1 text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
-          href={meeting.meetLink}
-          rel="noreferrer"
-          target="_blank"
-        >
-          <LinkIcon size={14} />
-          Meeting link
-        </a>
-      )}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {meeting.meetLink && (
+          <a
+            className="inline-flex items-center gap-1 text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
+            href={meeting.meetLink}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <LinkIcon size={14} />
+            Meeting link
+          </a>
+        )}
+        {canCancel && meeting.status === "SCHEDULED" && (
+          <Button
+            disabled={isCanceling}
+            icon={<XCircle size={15} />}
+            onClick={() => onCancel(meeting)}
+            size="sm"
+            variant="danger"
+          >
+            Cancel meeting
+          </Button>
+        )}
+      </div>
     </article>
   );
 }
@@ -102,8 +133,12 @@ export function MeetingBookingSection({
   );
   const meetingsQuery = useGroupMeetings(group.id);
   const bookMeetingMutation = useBookMeeting();
+  const cancelMeetingMutation = useCancelMeeting();
   const [slotToBook, setSlotToBook] =
     useState<MentorAvailabilitySlotDto | null>(null);
+  const [meetingToCancel, setMeetingToCancel] =
+    useState<MentorMeetingDto | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const slots = useMemo(
     () => availabilityQuery.data?.data ?? [],
@@ -127,6 +162,11 @@ export function MeetingBookingSection({
         title="Mentor meetings"
       />
       <CardContent>
+        {successMessage && (
+          <p className="m-0 mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">
+            {successMessage}
+          </p>
+        )}
         {!group.mentor ? (
           <EmptyState
             className="min-h-44"
@@ -135,6 +175,10 @@ export function MeetingBookingSection({
           />
         ) : availabilityQuery.isLoading || meetingsQuery.isLoading ? (
           <LoadingState className="min-h-44" title="Loading meetings" />
+        ) : availabilityQuery.isError || meetingsQuery.isError ? (
+          <p className="m-0 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {getErrorMessage(availabilityQuery.error ?? meetingsQuery.error)}
+          </p>
         ) : !hasData ? (
           <EmptyState
             className="min-h-44"
@@ -152,7 +196,16 @@ export function MeetingBookingSection({
               {meetings.length > 0 ? (
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-3">
                   {meetings.map((meeting) => (
-                    <MeetingCard key={meeting.id} meeting={meeting} />
+                    <MeetingCard
+                      canCancel={canBook}
+                      isCanceling={cancelMeetingMutation.isPending}
+                      key={meeting.id}
+                      meeting={meeting}
+                      onCancel={(selectedMeeting) => {
+                        setSuccessMessage("");
+                        setMeetingToCancel(selectedMeeting);
+                      }}
+                    />
                   ))}
                 </div>
               ) : (
@@ -233,6 +286,25 @@ export function MeetingBookingSection({
             })
           }
           title="Confirm meeting booking"
+        />
+      )}
+
+      {meetingToCancel && (
+        <ConfirmDialog
+          confirmLabel="Cancel meeting"
+          description={`Cancel the meeting scheduled for ${formatDateTime(
+            meetingToCancel.startAt,
+          )}?`}
+          onClose={() => setMeetingToCancel(null)}
+          onConfirm={async () => {
+            await cancelMeetingMutation.mutateAsync({
+              groupId: group.id,
+              meetingId: meetingToCancel.id,
+            });
+            setSuccessMessage("Meeting canceled successfully.");
+          }}
+          title="Cancel mentor meeting"
+          tone="danger"
         />
       )}
     </Card>

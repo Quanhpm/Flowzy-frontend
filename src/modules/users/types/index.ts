@@ -35,17 +35,26 @@ export type MentorProfileDto = {
   status: UserStatus;
 };
 
-export type AdminUserGroupDto = {
-  id?: number | null;
-  groupId?: number | null;
-  groupNo?: string | null;
-  name?: string | null;
-  groupName?: string | null;
-  projectName?: string | null;
-  courseCode?: string | null;
-  term?: string | null;
-  mentorName?: string | null;
-  status?: string | null;
+export type InstructorProfileDto = {
+  id: number;
+  instructorCode: string;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  department: string | null;
+  expertise: string | null;
+  status: UserStatus;
+};
+
+export type StudentGroupMembershipDto = {
+  groupId: number;
+  term: string;
+  courseCode: string;
+  groupNo: string;
+  name: string;
+  projectName: string;
+  role: string;
+  joinedAt: ISODateTimeString;
 };
 
 export type AdminUserDetailDto = {
@@ -59,7 +68,8 @@ export type AdminUserDetailDto = {
   lastLoginAt: ISODateTimeString | null;
   studentProfile: StudentProfileDto | null;
   mentorProfile: MentorProfileDto | null;
-  group?: AdminUserGroupDto | null;
+  instructorProfile: InstructorProfileDto | null;
+  groupMemberships: StudentGroupMembershipDto[];
 };
 
 export type AdminUserSummaryDto = {
@@ -72,7 +82,7 @@ export type AdminUserSummaryDto = {
   code: string | null;
   createdAt: ISODateTimeString;
   lastLoginAt: ISODateTimeString | null;
-  group?: AdminUserGroupDto | null;
+  groupMemberships: StudentGroupMembershipDto[];
 };
 
 export type AdminUsersQuery = ApiListQuery & {
@@ -103,12 +113,21 @@ export type MentorProfileInput = {
   linkedinUrl?: string;
 };
 
+export type InstructorProfileInput = {
+  instructorCode: string;
+  fullName: string;
+  phone?: string;
+  department?: string;
+  expertise?: string;
+};
+
 export type CreateAdminUserRequest = {
   email: string;
   role: UserRole;
   initialPassword: string;
   studentProfile?: StudentProfileInput;
   mentorProfile?: MentorProfileInput;
+  instructorProfile?: InstructorProfileInput;
 };
 
 export type UpdateAdminUserRequest = {
@@ -117,6 +136,7 @@ export type UpdateAdminUserRequest = {
   mustChangePassword: boolean;
   studentProfile?: StudentProfileInput;
   mentorProfile?: MentorProfileInput;
+  instructorProfile?: InstructorProfileInput;
 };
 
 export type ResetUserPasswordRequest = {

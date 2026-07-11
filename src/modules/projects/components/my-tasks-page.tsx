@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/shared/lib";
+import { StudentMilestoneSubmissionsPanel } from "@/modules/milestones";
 import {
   Button,
   Card,
@@ -18,15 +19,17 @@ import { KanbanBoard } from "./kanban-board";
 import { TaskStatusBadge } from "./task-status-badge";
 import { TaskPriorityBadge } from "./task-priority-badge";
 import { TaskDetailPanel } from "./task-detail-panel";
-import { ChevronRight, ListTodo, Kanban } from "lucide-react";
+import { CalendarClock, ChevronRight, ListTodo, Kanban } from "lucide-react";
 
 export function StudentTasksPage() {
-  const [activeTab, setActiveTab] = useState<"list" | "board">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "board" | "submissions">("list");
   
   // My Tasks list filters
   const [listStatus, setListStatus] = useState<string>("");
   const [listPriority, setListPriority] = useState<string>("");
   const [listOverdue, setListOverdue] = useState<boolean>(false);
+  const [listGroupId, setListGroupId] = useState<string>("");
+  const [listDueBefore, setListDueBefore] = useState<string>("");
   const [listPage, setListPage] = useState(0);
 
   // Group selection for Kanban board
@@ -38,9 +41,11 @@ export function StudentTasksPage() {
 
   // Queries
   const myTasksFilters = {
+    groupId: listGroupId ? Number(listGroupId) : undefined,
     status: listStatus ? (listStatus as TaskStatus) : undefined,
     priority: listPriority ? (listPriority as TaskPriority) : undefined,
     overdue: listOverdue ? true : undefined,
+    dueBefore: listDueBefore ? new Date(listDueBefore).toISOString() : undefined,
     page: listPage,
     size: 10,
   };
@@ -75,8 +80,13 @@ export function StudentTasksPage() {
   }, [activeTab, refetchMyTasks]);
 
   const handleRowClick = (taskId: number, taskGroupId: number | null) => {
-    // If taskGroupId is not returned, we fallback to the selected group or student's active group
-    const finalGroupId = taskGroupId || (activeGroup ? Number(activeGroup.id) : null);
+    // If taskGroupId is not returned, we fallback to the listGroupId, then activeGroup, then selectedGroupId
+    const finalGroupId =
+      taskGroupId ||
+      (listGroupId ? Number(listGroupId) : null) ||
+      (activeGroup ? Number(activeGroup.id) : null) ||
+      (selectedGroupId ? Number(selectedGroupId) : null);
+
     if (finalGroupId) {
       setDetailTaskId(taskId);
       setDetailGroupId(finalGroupId);
@@ -131,6 +141,19 @@ export function StudentTasksPage() {
             <Kanban className="size-4" />
             Group Kanban Board
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("submissions")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all rounded-lg",
+              activeTab === "submissions"
+                ? "bg-surface shadow-sm text-brand-primary"
+                : "text-muted hover:bg-surface/50"
+            )}
+          >
+            <CalendarClock className="size-4" />
+            Deliverables
+          </button>
         </div>
       </div>
 
@@ -144,7 +167,27 @@ export function StudentTasksPage() {
           
           <CardContent className="space-y-6">
             {/* Filters Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 items-end gap-3 rounded-2xl border border-border p-4 bg-surface-base">
+            <div className="grid grid-cols-1 sm:grid-cols-5 items-end gap-3 rounded-2xl border border-border p-4 bg-surface-base">
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Group Project
+                </label>
+                <Select
+                  value={listGroupId}
+                  onChange={(e) => {
+                    setListGroupId(e.target.value);
+                    setListPage(0);
+                  }}
+                >
+                  <option value="">All Groups</option>
+                  {myGroups.map((g) => (
+                    <option key={g.id} value={String(g.id)}>
+                      {g.groupNo} - {g.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+
               <div>
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Task Status
@@ -182,6 +225,21 @@ export function StudentTasksPage() {
                   <option value="HIGH">High</option>
                   <option value="URGENT">Urgent</option>
                 </Select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Due Before
+                </label>
+                <input
+                  type="date"
+                  value={listDueBefore}
+                  onChange={(e) => {
+                    setListDueBefore(e.target.value);
+                    setListPage(0);
+                  }}
+                  className="flex h-10 w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs font-bold text-foreground focus:border-brand-primary focus:outline-none"
+                />
               </div>
 
               <div className="flex h-10 items-center justify-between gap-3 border border-border px-3 rounded-xl bg-surface">
@@ -296,7 +354,7 @@ export function StudentTasksPage() {
             )}
           </CardContent>
         </Card>
-      ) : (
+      ) : activeTab === "board" ? (
         /* Board view */
         <div className="space-y-6 min-w-0 w-full overflow-hidden">
           {/* Group Project Selector */}
@@ -319,7 +377,10 @@ export function StudentTasksPage() {
 
           {/* Render Board */}
           {selectedGroupId ? (
-            <KanbanBoard groupId={Number(selectedGroupId)} />
+            <KanbanBoard
+              groupId={Number(selectedGroupId)}
+              key={selectedGroupId}
+            />
           ) : isGroupsLoading ? (
             <LoadingState title="Loading your group info..." />
           ) : (
@@ -329,6 +390,17 @@ export function StudentTasksPage() {
             />
           )}
         </div>
+      ) : (
+        <StudentMilestoneSubmissionsPanel
+          groups={myGroups}
+          initialGroupId={
+            selectedGroupId
+              ? Number(selectedGroupId)
+              : activeGroup
+                ? Number(activeGroup.id)
+                : null
+          }
+        />
       )}
 
       {/* Task Details Side Panel (shared for both list & board) */}

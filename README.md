@@ -1,4 +1,4 @@
-# F-Spark Frontend
+# Flowzy Frontend
 
 Frontend cho EXE Project Management System, xây dựng bằng Next.js App Router và TypeScript.
 
@@ -23,7 +23,7 @@ NEXT_PUBLIC_GOOGLE_HOSTED_DOMAIN=your-school-domain.edu.vn
 ```
 
 `NEXT_PUBLIC_GOOGLE_HOSTED_DOMAIN` là tùy chọn. Backend nhận Google ID token qua
-`POST /api/auth/google`, sau đó frontend lưu phiên đăng nhập F-Spark bằng Zustand.
+`POST /api/auth/google`, sau đó frontend lưu phiên đăng nhập Flowzy bằng Zustand.
 
 API mặc định trỏ tới `https://api-fspark.kusl.io.vn`. Có thể thay đổi qua
 `NEXT_PUBLIC_API_BASE_URL` trong `.env.local`.
@@ -79,7 +79,7 @@ Module `auth` hiện gồm:
 
 - TanStack Query mutation cho email/password và Google Workspace login.
 - Google Identity Services gửi ID token tới `POST /api/auth/google`.
-- `GET /api/auth/me` tải thông tin người dùng sau khi nhận F-Spark token.
-- Zustand persist session trong localStorage với key `fspark-auth`.
+- `GET /api/auth/me` tải thông tin người dùng sau khi nhận token.
+- Zustand persist session trong localStorage với key `flowzy-auth`.
 - Trang `/login` responsive và dashboard placeholder sau khi đăng nhập.
 - API client dùng chung tại `src/shared/lib/api-client.ts`.

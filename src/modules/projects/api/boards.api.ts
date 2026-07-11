@@ -5,6 +5,8 @@ import type {
   CreateTaskBoardRequest,
   TaskBoardDto,
   UpdateTaskBoardRequest,
+  BoardFilters,
+  GroupTaskBoardDto,
 } from "../types";
 
 export function getTaskBoards(groupId: EntityId) {
@@ -29,5 +31,16 @@ export function updateTaskBoard(
   return apiPatch<ApiResponse<TaskBoardDto>>(
     `/api/groups/${groupId}/boards/${boardId}`,
     payload,
+  );
+}
+
+export function getTaskBoardDetail(
+  groupId: EntityId,
+  boardId: EntityId,
+  filters?: BoardFilters,
+) {
+  return apiGet<ApiResponse<GroupTaskBoardDto>>(
+    `/api/groups/${groupId}/boards/${boardId}`,
+    { query: filters },
   );
 }

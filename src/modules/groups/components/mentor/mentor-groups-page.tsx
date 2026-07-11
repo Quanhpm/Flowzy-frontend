@@ -1,14 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CalendarClock, ChevronDown, ChevronUp, Users } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CalendarClock,
+  Eye,
+  Users,
+  X,
+  XCircle,
+} from "lucide-react";
 
 import {
   MentorDashboardSection,
   useMentorDashboardGroups,
 } from "@/modules/dashboards";
 import type { DashboardGroupProgressDto } from "@/modules/dashboards";
-import { useGroupMeetings } from "@/modules/mentoring";
+import { useCancelMeeting, useGroupMeetings } from "@/modules/mentoring";
+import type { MentorMeetingDto } from "@/modules/mentoring";
 import {
   Badge,
   Button,
@@ -18,11 +25,12 @@ import {
   LoadingState,
   PageHeader,
 } from "@/shared/components";
-import { ApiError, cn } from "@/shared/lib";
+import { ApiError } from "@/shared/lib";
 import type { GroupStatus } from "@/shared/types";
 
 import { useGroup, useMentorGroups } from "../../hooks";
 import type { GroupDetailDto, GroupSummaryDto } from "../../types";
+import { ConfirmDialog } from "../student/confirm-dialog";
 
 const pageClassName = "grid min-w-0 gap-6";
 const gridClassName =
@@ -108,10 +116,14 @@ function ProgressSummary({
 
 function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
   const meetingsQuery = useGroupMeetings(group.id);
+  const cancelMeetingMutation = useCancelMeeting();
   const meetings = meetingsQuery.data?.data ?? [];
+  const [meetingToCancel, setMeetingToCancel] =
+    useState<MentorMeetingDto | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   return (
-    <div className="grid gap-5 border-t border-border pt-5">
+    <div className="grid gap-5">
       <div className={detailGridClassName}>
         <InfoItem label="Project" value={group.projectName} />
         <InfoItem label="Domain" value={group.researchDomain} />
@@ -149,6 +161,11 @@ function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
         <h3 className="m-0 text-sm font-bold text-foreground">
           Upcoming meetings
         </h3>
+        {successMessage && (
+          <p className="m-0 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">
+            {successMessage}
+          </p>
+        )}
         {meetingsQuery.isLoading ? (
           <LoadingState title="Loading meetings" />
         ) : meetingsQuery.isError ? (
@@ -191,33 +208,152 @@ function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
                   >
                     Meet
                   </Button>
+                  {meeting.status === "SCHEDULED" && (
+                    <Button
+                      disabled={cancelMeetingMutation.isPending}
+                      icon={<XCircle size={15} />}
+                      onClick={() => {
+                        setSuccessMessage("");
+                        setMeetingToCancel(meeting);
+                      }}
+                      size="sm"
+                      variant="danger"
+                    >
+                      Cancel meeting
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {meetingToCancel && (
+        <ConfirmDialog
+          confirmLabel="Cancel meeting"
+          description={`Cancel the meeting scheduled for ${formatDateTime(
+            meetingToCancel.startAt,
+          )}?`}
+          onClose={() => setMeetingToCancel(null)}
+          onConfirm={async () => {
+            await cancelMeetingMutation.mutateAsync({
+              groupId: group.id,
+              meetingId: meetingToCancel.id,
+            });
+            setSuccessMessage("Meeting canceled successfully.");
+          }}
+          title="Cancel mentor meeting"
+          tone="danger"
+        />
+      )}
+    </div>
+  );
+}
+
+function MentorGroupDetailModal({
+  groupId,
+  onClose,
+}: {
+  groupId: number;
+  onClose: () => void;
+}) {
+  const groupDetailQuery = useGroup(groupId);
+  const group = groupDetailQuery.data?.data;
+  const dialogTitleRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    const activeElement = document.activeElement as HTMLElement | null;
+
+    dialogTitleRef.current?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      activeElement?.focus();
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        aria-describedby="mentor-group-detail-description"
+        aria-labelledby="mentor-group-detail-title"
+        aria-modal="true"
+        className="grid max-h-[calc(100svh-2rem)] w-[min(920px,100%)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-2xl border border-border bg-surface shadow-card"
+        role="dialog"
+      >
+        <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
+          <div className="grid min-w-0 gap-1">
+            <h2
+              className="m-0 overflow-hidden text-ellipsis whitespace-nowrap text-lg font-bold text-foreground"
+              id="mentor-group-detail-title"
+              ref={dialogTitleRef}
+              tabIndex={-1}
+            >
+              {group?.name ?? "Group details"}
+            </h2>
+            <p
+              className="m-0 text-sm leading-relaxed text-muted"
+              id="mentor-group-detail-description"
+            >
+              {group
+                ? `${group.groupNo} · ${group.term} · ${group.courseCode}`
+                : "Review group members, project context, and meetings."}
+            </p>
+          </div>
+          <Button
+            aria-label="Close group details"
+            icon={<X size={17} />}
+            onClick={onClose}
+            size="sm"
+            variant="ghost"
+          />
+        </header>
+
+        <div className="min-h-0 overflow-y-auto px-6 py-5 max-[640px]:px-4">
+          {groupDetailQuery.isLoading ? (
+            <LoadingState title="Loading group detail" />
+          ) : groupDetailQuery.isError ? (
+            <div className={errorPanelClassName}>
+              {getErrorMessage(groupDetailQuery.error)}
+            </div>
+          ) : group ? (
+            <MentorGroupDetail group={group} />
+          ) : (
+            <EmptyState
+              description="The selected group could not be loaded."
+              title="Group detail unavailable"
+            />
+          )}
+        </div>
+      </section>
     </div>
   );
 }
 
 function MentorGroupCard({
   group,
-  isExpanded,
-  onToggle,
+  onViewDetails,
   progress,
 }: {
   group: GroupSummaryDto;
-  isExpanded: boolean;
-  onToggle: () => void;
+  onViewDetails: (trigger: HTMLButtonElement) => void;
   progress?: DashboardGroupProgressDto;
 }) {
-  const groupDetailQuery = useGroup(isExpanded ? group.id : null);
-  const detail = groupDetailQuery.data?.data;
-
   return (
-    <Card className="transition-all duration-200 ease-in-out hover:shadow-card-interactive">
-      <CardContent className="grid gap-4">
+    <Card className="flex h-full flex-col transition-all duration-200 ease-in-out hover:shadow-card-interactive">
+      <CardContent className="flex h-full flex-1 flex-col gap-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="m-0 text-[17px] leading-tight font-bold text-foreground">
@@ -247,39 +383,24 @@ function MentorGroupCard({
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="mt-auto flex justify-end pt-2">
           <Button
-            icon={isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            onClick={onToggle}
+            icon={<Eye size={16} />}
+            onClick={(event) => onViewDetails(event.currentTarget)}
             size="sm"
             variant="secondary"
           >
-            {isExpanded ? "Collapse" : "Expand"}
+            View details
           </Button>
         </div>
-
-        {isExpanded && (
-          <>
-            {groupDetailQuery.isLoading ? (
-              <div className="border-t border-border pt-5">
-                <LoadingState title="Loading group detail" />
-              </div>
-            ) : groupDetailQuery.isError ? (
-              <div className={cn(errorPanelClassName, "mt-1")}>
-                {getErrorMessage(groupDetailQuery.error)}
-              </div>
-            ) : detail ? (
-              <MentorGroupDetail group={detail} />
-            ) : null}
-          </>
-        )}
       </CardContent>
     </Card>
   );
 }
 
 export function MentorGroupsPage() {
-  const [expandedGroupId, setExpandedGroupId] = useState<number | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const detailTriggerRef = useRef<HTMLButtonElement | null>(null);
   const mentorGroupsQuery = useMentorGroups();
   const dashboardGroupsQuery = useMentorDashboardGroups();
   const groups = mentorGroupsQuery.data?.data ?? [];
@@ -287,6 +408,10 @@ export function MentorGroupsPage() {
     const dashboardGroups = dashboardGroupsQuery.data?.data ?? [];
     return new Map(dashboardGroups.map((group) => [group.groupId, group]));
   }, [dashboardGroupsQuery.data?.data]);
+  const closeGroupDetail = useCallback(() => {
+    setSelectedGroupId(null);
+    detailTriggerRef.current?.focus();
+  }, []);
 
   return (
     <div className={pageClassName}>
@@ -321,17 +446,22 @@ export function MentorGroupsPage() {
           {groups.map((group) => (
             <MentorGroupCard
               group={group}
-              isExpanded={expandedGroupId === group.id}
               key={group.id}
-              onToggle={() =>
-                setExpandedGroupId((current) =>
-                  current === group.id ? null : group.id,
-                )
-              }
+              onViewDetails={(trigger) => {
+                detailTriggerRef.current = trigger;
+                setSelectedGroupId(group.id);
+              }}
               progress={progressByGroupId.get(group.id)}
             />
           ))}
         </div>
+      )}
+
+      {selectedGroupId && (
+        <MentorGroupDetailModal
+          groupId={selectedGroupId}
+          onClose={closeGroupDetail}
+        />
       )}
     </div>
   );

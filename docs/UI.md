@@ -1,40 +1,40 @@
-# F-Spark UI & Design Guidelines
+# Flowzy UI & Design Guidelines
 
-This document defines the unified UI rules, color palette, typography settings, and CSS guidelines for the F-Spark project. All current and future pages must strictly follow these rules to maintain a simple, elegant, and consistent aesthetic.
+This document defines the unified UI rules, color palette, typography settings, and CSS guidelines for Flowzy. All current and future pages must strictly follow these rules to maintain a simple, elegant, and consistent aesthetic.
 
 ---
 
 ## 1. Color System
 
-We use a curated, warm neutral palette balanced with high-contrast, premium brand colors. Avoid generic primary colors (e.g., solid blue, red, green).
+Flowzy uses a cool blue palette with a violet secondary accent. Brand colors must come from the shared tokens below.
 
 | Token Name | Hex Code | Visual | Usage Guideline |
 | :--- | :--- | :--- | :--- |
-| `brand-primary` | `#F05423` | ![#F05423](https://via.placeholder.com/15/F05423/000000?text=+) | Main action buttons, active badges, brand marks, and key interactive element states. |
-| `brand-secondary`| `#EDA12F` | ![#EDA12F](https://via.placeholder.com/15/EDA12F/000000?text=+) | Highlight states, secondary badges (e.g., "In Progress"), borders on focused inputs, progress bars. |
-| `surface-warm` | `#f5ebdc` | ![#f5ebdc](https://via.placeholder.com/15/f5ebdc/000000?text=+) | Sidebars/showcase background panels, warm card borders, secondary container surfaces. |
-| `background` | `#F5F5F5` | ![#F5F5F5](https://via.placeholder.com/15/F5F5F5/000000?text=+) | Main page background. Prevents visual fatigue compared to pure white. |
+| `brand-primary` | `#0066FF` | ![#0066FF](https://via.placeholder.com/15/0066FF/000000?text=+) | Main action buttons, active badges, brand marks, and key interactive element states. |
+| `brand-secondary`| `#6A00FF` | ![#6A00FF](https://via.placeholder.com/15/6A00FF/000000?text=+) | Highlight states, secondary badges, borders on focused inputs, and progress bars. |
+| `surface-warm` | `#EEF3FF` | ![#EEF3FF](https://via.placeholder.com/15/EEF3FF/000000?text=+) | Sidebars, showcase panels, highlighted cards, and secondary container surfaces. |
+| `background` | `#F5F7FF` | ![#F5F7FF](https://via.placeholder.com/15/F5F7FF/000000?text=+) | Main page background. Prevents visual fatigue compared to pure white. |
 | `surface` | `#ffffff` | ![#ffffff](https://via.placeholder.com/15/ffffff/000000?text=+) | Cards, modal sheets, dropdowns, input fields. |
-| `foreground` | `#1a1a1a` | ![#1a1a1a](https://via.placeholder.com/15/1a1a1a/000000?text=+) | Primary headings, body copy, and active text elements. |
-| `border` | `#e2e8f0` | ![#e2e8f0](https://via.placeholder.com/15/e2e8f0/000000?text=+) | Standard divider lines and default input/card borders. |
-| `border-warm` | `#e6dacb` | ![#e6dacb](https://via.placeholder.com/15/e6dacb/000000?text=+) | Borders for cards or blocks sitting on warm-beige backgrounds. |
-| `muted` | `#737373` | ![#737373](https://via.placeholder.com/15/737373/000000?text=+) | Descriptions, labels, icons, metadata, and placeholder text. |
+| `foreground` | `#0B0F2B` | ![#0B0F2B](https://via.placeholder.com/15/0B0F2B/000000?text=+) | Primary headings, body copy, and active text elements. |
+| `border` | `#DCE6FF` | ![#DCE6FF](https://via.placeholder.com/15/DCE6FF/000000?text=+) | Standard divider lines and default input/card borders. |
+| `border-warm` | `#C8D7FF` | ![#C8D7FF](https://via.placeholder.com/15/C8D7FF/000000?text=+) | Borders for cards or blocks sitting on blue-tinted surfaces. |
+| `muted` | `#52607F` | ![#52607F](https://via.placeholder.com/15/52607F/000000?text=+) | Descriptions, labels, icons, metadata, and placeholder text. |
 
 ### Tailwind Theme Tokens (`src/app/globals.css`)
 ```css
 @import "tailwindcss";
 
 @theme {
-  --color-background: #f5f5f5;
-  --color-foreground: #1a1a1a;
+  --color-background: #f5f7ff;
+  --color-foreground: #0b0f2b;
   --color-surface: #ffffff;
-  --color-surface-warm: #f5ebdc;
-  --color-border: #e2e8f0;
-  --color-border-warm: #e6dacb;
-  --color-muted: #737373;
-  --color-brand-primary: #f05423;
-  --color-brand-primary-hover: #d84315;
-  --color-brand-secondary: #eda12f;
+  --color-surface-warm: #eef3ff;
+  --color-border: #dce6ff;
+  --color-border-warm: #c8d7ff;
+  --color-muted: #52607f;
+  --color-brand-primary: #0066ff;
+  --color-brand-primary-hover: #1a1f71;
+  --color-brand-secondary: #6a00ff;
   --font-sans: var(--font-roboto), Arial, Helvetica, sans-serif;
 }
 
@@ -101,8 +101,8 @@ To achieve a **simple and elegant** look, avoid cluttered color sections. Follow
 
 1. **Containers**: Use a maximum border-radius of `16px` for cards and major modules, and `12px` for smaller UI widgets (like buttons, input fields, badges).
 2. **Borders and Lines**: Card borders should be thin (`1px`) and use soft colors:
-   - On `#F5F5F5` background, use card border: `1px solid var(--border)` (`#e2e8f0`).
-   - On `#f5ebdc` background, use card border: `1px solid var(--border-warm)` (`#e6dacb`).
+   - On `#F5F7FF` background, use card border: `1px solid var(--border)` (`#DCE6FF`).
+   - On `#EEF3FF` background, use card border: `1px solid var(--border-warm)` (`#C8D7FF`).
 3. **Card Shadows**: Do not use heavy black shadows. Use soft, transparent shadows for depth:
    - Standard: `box-shadow: 0 10px 30px rgba(26, 26, 26, 0.03);`
    - Interactive: `box-shadow: 0 20px 45px rgba(26, 26, 26, 0.04);`
@@ -116,9 +116,9 @@ To achieve a **simple and elegant** look, avoid cluttered color sections. Follow
 
 ### Buttons
 - **Primary Action Button**:
-  - Background: `var(--brand-primary)` (`#F05423`).
+  - Background: `var(--brand-primary)` (`#0066FF`).
   - Text Color: `#ffffff` (White).
-  - Hover: Background `#d84315` (slightly darker warm orange).
+  - Hover: Background `#1A1F71` (deep navy blue).
   - Shape: Border radius `12px`.
   - Font weight: `500` (Medium).
 - **Secondary Action Button (Outline/Text)**:
@@ -129,7 +129,7 @@ To achieve a **simple and elegant** look, avoid cluttered color sections. Follow
 
 ### Form Fields (Inputs)
 - **Container**: Height `50px` - `52px` with a border radius of `12px`, border `1px solid var(--border)`.
-- **Focus State**: On focus, the border must change to `var(--brand-secondary)` (`#EDA12F`) with a soft glow `box-shadow: 0 0 0 4px rgba(237, 161, 47, 0.12)`.
+- **Focus State**: On focus, the border must change to `var(--brand-secondary)` (`#6A00FF`) with a soft glow `box-shadow: 0 0 0 4px rgba(106, 0, 255, 0.12)`.
 - **Placeholder**: Use a light gray `#a3a3a3` for input placeholders.
 
 ---

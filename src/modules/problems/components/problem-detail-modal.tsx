@@ -6,7 +6,6 @@ import {
   ExternalLink,
   FileText,
   Users,
-  X,
 } from "lucide-react";
 
 import { Button, LoadingState, Select } from "@/shared/components";
@@ -200,14 +199,6 @@ export function ProblemDetailModal({
                   {problem.title}
                 </h2>
               </div>
-              <Button
-                aria-label="Close"
-                className="size-9 shrink-0 rounded-lg p-0"
-                onClick={onClose}
-                variant="secondary"
-              >
-                <X className="size-4" />
-              </Button>
             </div>
           </header>
 

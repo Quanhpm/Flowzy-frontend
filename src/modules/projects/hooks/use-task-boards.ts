@@ -5,13 +5,36 @@ import type { EntityId } from "@/shared/types";
 
 import {
   createTaskBoard,
+  getTaskBoardDetail,
   getTaskBoards,
   updateTaskBoard,
 } from "../api";
 import type {
   CreateTaskBoardRequest,
   UpdateTaskBoardRequest,
+  BoardFilters,
 } from "../types";
+
+export function useTaskBoardDetail(
+  groupId: EntityId | null | undefined,
+  boardId: EntityId | null | undefined,
+  filters?: BoardFilters,
+) {
+  return useQuery({
+    enabled: typeof groupId === "number" && typeof boardId === "number",
+    queryFn: () => {
+      if (typeof groupId !== "number" || typeof boardId !== "number") {
+        throw new Error("Group ID and Board ID are required.");
+      }
+      return getTaskBoardDetail(groupId, boardId, filters);
+    },
+    queryKey:
+      typeof groupId === "number" && typeof boardId === "number"
+        ? [...queryKeys.tasks.boardDetail(groupId, boardId), filters ?? {}]
+        : [...queryKeys.tasks.all, "boardDetail", "empty"],
+  });
+}
+
 
 export function useTaskBoards(groupId: EntityId | null | undefined) {
   return useQuery({

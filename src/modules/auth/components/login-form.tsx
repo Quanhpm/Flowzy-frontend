@@ -7,7 +7,6 @@ import {
   EyeOff,
   LockKeyhole,
   Mail,
-  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,6 +34,7 @@ type FormErrors = {
 function getDefaultWorkspacePath(role: AuthUser["role"]) {
   if (role === "ADMIN") return "/admin/users";
   if (role === "MENTOR") return "/mentor/groups";
+  if (role === "INSTRUCTOR") return "/instructor/milestones";
   return "/student/dashboard";
 }
 
@@ -229,7 +229,7 @@ export function LoginForm() {
 
             {formMessage && (
               <div
-                className="-mt-1 rounded-[10px] border border-border-warm bg-surface-warm px-3.5 py-3 text-[13px] leading-normal text-orange-900"
+                className="-mt-1 rounded-[10px] border border-border-warm bg-surface-warm px-3.5 py-3 text-[13px] leading-normal text-foreground"
                 role="alert"
               >
                 {formMessage}

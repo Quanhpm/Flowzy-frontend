@@ -25,6 +25,7 @@ export function KanbanColumn({
   onDragStart,
 }: KanbanColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [dragOverCardIndex, setDragOverCardIndex] = useState<number | null>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -40,14 +41,9 @@ export function KanbanColumn({
     setIsDragOver(false);
     
     const taskIdStr = e.dataTransfer.getData("text/plain");
-    const sourceStatus = e.dataTransfer.getData("application/x-task-status");
-    
     if (!taskIdStr) return;
     
     const taskId = Number(taskIdStr);
-    
-    // If status matches, don't trigger unless ordering changes, but standard move to end of column is default
-    if (sourceStatus === status) return;
     
     // Position is at the end of the current task list
     onTaskMove(taskId, status, tasks.length);
@@ -127,13 +123,36 @@ export function KanbanColumn({
             </span>
           </button>
         ) : (
-          tasks.map((task) => (
-            <TaskCard
+          tasks.map((task, index) => (
+            <div
               key={task.id}
-              task={task}
-              onClick={() => onTaskClick(Number(task.id))}
-              onDragStart={onDragStart}
-            />
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragOverCardIndex(index);
+              }}
+              onDragLeave={() => {
+                setDragOverCardIndex(null);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragOverCardIndex(null);
+                const taskIdStr = e.dataTransfer.getData("text/plain");
+                if (!taskIdStr) return;
+                onTaskMove(Number(taskIdStr), status, index);
+              }}
+              className={cn(
+                "transition-all duration-200",
+                dragOverCardIndex === index && "pt-10 border-t-2 border-dashed border-brand-primary"
+              )}
+            >
+              <TaskCard
+                task={task}
+                onClick={() => onTaskClick(Number(task.id))}
+                onDragStart={onDragStart}
+              />
+            </div>
           ))
         )}
       </div>
