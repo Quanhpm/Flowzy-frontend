@@ -28,6 +28,20 @@ Da co san truoc khi bat dau feature code:
 Do do, Person 2 va Person 3 khong sua `src/shared/types/**`,
 `src/shared/lib/query-keys.ts`, provider hay AppShell.
 
+## Phase 0 — Leader Hoan Thanh Truoc Khi Chia Nhanh
+
+Leader merge baseline chung, sau do trien khai hai API dependency cua Instructor
+trong cac file rieng cua module Groups: `instructor-groups.api.ts`,
+`use-instructor-groups.ts` va types/index exports lien quan. Phase nay gom
+`GET /api/groups/instructor/me?term&courseCode` va
+`PATCH /api/groups/{groupId}/instructor` voi `{ instructorId }`, public export
+`useInstructorGroups(filters)` va `useAssignGroupInstructor()`.
+
+Person 2 va Person 3 phai tao branch tu commit Phase 0 nay. Sau do khong ai sua
+`instructor-groups.*` hoac cac exports cua no: Person 1 dung mutation cho trang
+Admin, Person 3 dung query hook de lay group scope. Cach nay xoa dependency
+giua hai nguoi lam feature.
+
 ## Phan Cong Doc Lap
 
 ### Person 1 — Platform, Admin, Feedback & Terms
@@ -39,6 +53,8 @@ Do do, Person 2 va Person 3 khong sua `src/shared/types/**`,
   `src/app/admin/groups/**`
 - `src/app/student/feedback/**`, `src/app/mentor/feedback/**`
 - `src/modules/dashboards/**` cho Admin Overview
+- Phase 0 only: `src/modules/groups/**` trong cac file `instructor-groups.*` va
+  public exports cua chung
 - `src/shared/components/layout/app-shell.tsx` chi cho navigation va mount
   notification da handoff
 
@@ -51,19 +67,20 @@ Do do, Person 2 va Person 3 khong sua `src/shared/types/**`,
   targetId, status
 - `GET /api/admin/terms`; `PATCH /api/admin/terms/{term}/close`
 - `GET /api/dashboard/admin/overview?term&courseCode&limit`
-- UI Admin su dung public API cua Groups de gan instructor, khong sua module
-  Groups
+- `GET /api/groups/instructor/me?term&courseCode`
+- `PATCH /api/groups/{groupId}/instructor` voi `{ instructorId }`
 
 **Deliverables**
 
-1. Student co danh sach feedback PENDING/SUBMITTED va form submit/update.
-2. Mentor/Instructor xem feedback tong hop an danh; Admin xem danh sach co danh
+1. Hoan thanh va merge Phase 0 truoc khi Person 2/3 tao branch.
+2. Student co danh sach feedback PENDING/SUBMITTED va form submit/update.
+3. Mentor/Instructor xem feedback tong hop an danh; Admin xem danh sach co danh
    tinh va loc/phan trang.
-3. Admin list/close term; UI yeu cau confirm truoc thao tac close.
-4. Admin Overview hien thi thong ke backend tra ve.
-5. Sau handoff cua Person 2, them navigation va mount `NotificationBell` mot
+4. Admin list/close term; UI yeu cau confirm truoc thao tac close.
+5. Admin Overview hien thi thong ke backend tra ve.
+6. Sau handoff cua Person 2, them navigation va mount `NotificationBell` mot
    lan trong AppShell.
-6. Cap nhat Admin Users de ho tro `INSTRUCTOR` va Instructor profile
+7. Cap nhat Admin Users de ho tro `INSTRUCTOR` va Instructor profile
    (`instructorCode`, `fullName`, phone, department, expertise) theo Swagger.
 
 ### Person 2 — Groups, Meetings & Notifications
@@ -83,8 +100,6 @@ Do do, Person 2 va Person 3 khong sua `src/shared/types/**`,
 - `GET /api/group-recruitment-roles`
 - `PATCH /api/groups/{groupId}/lock` voi `{ isLock }`
 - `PATCH /api/groups/{groupId}/mentor/meetings/{meetingId}/cancel`
-- `GET /api/groups/instructor/me?term&courseCode`
-- `PATCH /api/groups/{groupId}/instructor` voi `{ instructorId }`
 
 **Deliverables**
 
@@ -92,10 +107,8 @@ Do do, Person 2 va Person 3 khong sua `src/shared/types/**`,
    mark one/all read va `actionUrl` navigation an toan.
 2. `/student/notifications` co history phan trang va filter unread.
 3. Group UI dung role catalog, lock/unlock thanh vien va cancel meeting.
-4. Public export `useInstructorGroups(filters)` tu `@/modules/groups`; Person 3
-   chi duoc dung export nay, khong sua code Groups.
-5. UI/API mutation assign instructor phuc vu Admin duoc public qua module
-   Groups; Person 1 so huu trang Admin dung hook nay.
+4. Khong sua `instructor-groups.*` hoac public exports da co tu Phase 0; phan
+   nay thuoc Leader de Person 3 co the lam song song khong cho handoff.
 
 ### Person 3 — Milestones, Deliverables & Grades
 
@@ -137,10 +150,10 @@ Do do, Person 2 va Person 3 khong sua `src/shared/types/**`,
 
 ## Thu Tu Handoff
 
-1. Person 2 merge data layer Groups (`useInstructorGroups`, assign instructor)
-   va Notifications (`NotificationBell`) truoc UI integration.
-2. Person 3 co the phat trien milestones doc lap; khi can group list thi import
-   public hook da handoff.
+1. Leader merge Phase 0 (shared baseline, `useInstructorGroups` va
+   `useAssignGroupInstructor`) truoc khi Person 2 va Person 3 tao branch.
+2. Person 2 va Person 3 phat trien song song tu commit Phase 0; Person 3 import
+   public hook da co, khong can cho Person 2.
 3. Person 1 merge Admin group assignment, Feedback/Terms, sau do mount
    `NotificationBell` va them navigation trong AppShell. Day la commit duy nhat
    cham vao AppShell.

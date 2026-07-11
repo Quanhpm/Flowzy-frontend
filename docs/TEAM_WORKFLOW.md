@@ -33,6 +33,10 @@ Owner:
 - `src/modules/imports/**`
 - `src/modules/dashboards/**`
 - `src/modules/feedback/**`
+- Phase 0 only: `src/modules/groups/api/instructor-groups.api.ts`,
+  `src/modules/groups/hooks/use-instructor-groups.ts`,
+  `src/modules/groups/types/instructor-groups.types.ts` va public exports lien
+  quan. Day la exception mot lan truoc khi Person 2 tao branch.
 - `src/app/admin/users/**`
 - `src/app/admin/imports/**`
 - `src/app/admin/dashboard/**`
@@ -52,6 +56,8 @@ Endpoints:
 - `/api/feedback/**`
 - `/api/admin/feedback/**`
 - `/api/admin/terms/**`
+- Phase 0 only: `/api/groups/instructor/me`
+- Phase 0 only: `/api/groups/{groupId}/instructor`
 
 ### Person 2 - Groups, Meetings & Notifications
 
@@ -85,13 +91,12 @@ Endpoints:
 - `/api/notifications/**`
 - `/api/group-recruitment-roles`
 - `/api/groups/{groupId}/lock`
-- `/api/groups/instructor/me`
-- `/api/groups/{groupId}/instructor`
 - `/api/groups/{groupId}/mentor/meetings/{meetingId}/cancel`
 
 Note: Neu endpoint co prefix `/api/groups/{groupId}` nhung la `/board`,
 `/tasks/**`, `/problems/**`, hoac `/milestones` thi thuoc Person 3. Cac endpoint
-`/lock`, `/instructor`, invitations, join requests va mentor meetings thuoc Person 2.
+`/lock`, invitations, join requests va mentor meetings thuoc Person 2.
+`/instructor/me` va `/{groupId}/instructor` la handoff Phase 0 cua Person 1.
 
 ### Person 3 - Tasks, Milestones, Submissions & Grades
 
@@ -156,9 +161,10 @@ Khong tao type trung lap moi module neu do la contract chung trong `API.md`.
 
 ## Cross-Module Handoff (Khong Sua Chung File)
 
-- Person 2 implement va public export `useInstructorGroups` tu `modules/groups`.
-  Person 3 chi import hook public nay de render giao dien Instructor; khong sua
-  `modules/groups`.
+- Person 1 implement va public export `useInstructorGroups` va mutation
+  `useAssignGroupInstructor` tu `modules/groups` trong Phase 0. Commit nay phai
+  merge truoc khi Person 2 va Person 3 tao branch. Person 3 chi import public
+  hooks nay de render giao dien Instructor; khong sua `modules/groups`.
 - Person 2 implement `NotificationBell` trong `modules/notifications`. Sau khi
   public API nay on dinh, Person 1 mount no mot lan trong `AppShell`; Person 2
   khong sua `AppShell` hoac provider.
@@ -535,6 +541,9 @@ Neu ban la Person 1:
 
 - Hoan thanh Platform batch truoc: shared enum/query keys da co san; chi them
   DTO chung khi Swagger bo sung contract moi.
+- Trien khai va merge Phase 0 truoc khi giao task: `GET /api/groups/instructor/me`,
+  `PATCH /api/groups/{groupId}/instructor`, DTO/types, hooks va public exports.
+  Dung file rieng `instructor-groups.*` de khong chen vao phan Groups cua Person 2.
 - Lam Admin Overview, Feedback, Terms va Admin group-instructor route trong
   scope cua minh.
 - Cap nhat Admin Users de hien thi/tao/sua Instructor profile theo Swagger;
@@ -548,8 +557,8 @@ Neu ban la Person 2:
 - Tao `src/modules/notifications` va `src/app/student/notifications`.
 - Implement API/types/hooks truoc, sau do moi lam UI route.
 - Dung `queryKeys.groups`, `queryKeys.mentoring` va `queryKeys.notifications`.
-- Public export `useInstructorGroups` va `NotificationBell`; khong sua
-  `AppShell`.
+- Khong sua `instructor-groups.*` hoac public exports cua hook Phase 0. Public
+  export `NotificationBell`; khong sua `AppShell`.
 
 Neu ban la Person 3:
 
