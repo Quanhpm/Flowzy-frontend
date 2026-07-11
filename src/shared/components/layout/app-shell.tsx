@@ -1,12 +1,14 @@
 "use client";
 
 import {
+  Bell,
   BookOpen,
   CalendarClock,
   ClipboardList,
   Database,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -21,6 +23,7 @@ import {
   useAuthStore,
   useLogout,
 } from "@/modules/auth";
+import { NotificationBell } from "@/modules/notifications";
 import { cn } from "@/shared/lib";
 import type { UserRole } from "@/shared/types";
 
@@ -44,12 +47,17 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { href: "/admin/users", icon: Users, label: "Users" },
     { href: "/admin/imports", icon: Database, label: "Imports" },
     { href: "/admin/problems", icon: BookOpen, label: "Problem Bank" },
+    { href: "/admin/feedback", icon: MessageSquare, label: "Feedback" },
+    { href: "/admin/terms", icon: CalendarClock, label: "Terms" },
+    { href: "/admin/groups", icon: Users, label: "Groups" },
   ],
   STUDENT: [
     { href: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/student/groups", icon: Users, label: "Groups" },
     { href: "/student/tasks", icon: ClipboardList, label: "Tasks" },
     { href: "/student/problems", icon: BookOpen, label: "Problems" },
+    { href: "/student/feedback", icon: MessageSquare, label: "Feedback" },
+    { href: "/student/notifications", icon: Bell, label: "Notifications" },
   ],
   MENTOR: [
     { href: "/mentor/groups", icon: Users, label: "Groups" },
@@ -58,6 +66,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
       icon: CalendarClock,
       label: "Availability",
     },
+    { href: "/mentor/feedback", icon: MessageSquare, label: "Feedback" },
   ],
   INSTRUCTOR: [
     {
@@ -184,6 +193,9 @@ export function AppShell({ children, role }: AppShellProps) {
       </aside>
 
       <div className="min-w-0">
+        <header className="flex min-h-16 items-center justify-end border-b border-border bg-surface px-7 max-[960px]:min-h-14 max-[960px]:px-4">
+          <NotificationBell />
+        </header>
         <main className="min-w-0 p-7 max-[960px]:px-4 max-[960px]:py-[22px]">
           {children}
         </main>

@@ -14,16 +14,6 @@ export type AssignGroupInstructorVariables = {
   payload: AssignInstructorRequest;
 };
 
-export type InstructorGroupSummaryDto = GroupSummaryDto & {
-  instructorId: number | null;
-  instructorCode: string | null;
-  instructorName: string | null;
-  isLock: boolean;
-};
+export type InstructorGroupSummaryDto = GroupSummaryDto;
 
-export type InstructorAssignedGroupDetailDto = GroupDetailDto & {
-  instructorId: number | null;
-  instructorCode: string | null;
-  instructorName: string | null;
-  isLock: boolean;
-};
+export type InstructorAssignedGroupDetailDto = GroupDetailDto;

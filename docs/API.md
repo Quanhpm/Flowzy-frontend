@@ -145,6 +145,11 @@ Endpoints returning lists use this pagination structure inside `data`:
 }
 ```
 
+`CreateInstructorProfileRequest` va `UpdateInstructorProfileRequest` bat buoc
+`instructorCode` (toi da 50 ky tu) va `fullName` (toi da 255 ky tu). `phone`
+toi da 30 ky tu, `department` toi da 150 ky tu; `expertise` khong co gioi han
+do dai trong Swagger hien tai.
+
 ### AdminUserDetailDto
 ```json
 {
@@ -158,7 +163,8 @@ Endpoints returning lists use this pagination structure inside `data`:
   "lastLoginAt": "2025-06-01T10:00:00Z",
   "studentProfile": { /* StudentProfileDto */ },
   "mentorProfile": { /* MentorProfileDto — null if not MENTOR */ },
-  "instructorProfile": { /* InstructorProfileDto — null if not INSTRUCTOR */ }
+  "instructorProfile": { /* InstructorProfileDto — null if not INSTRUCTOR */ },
+  "groupMemberships": [ { /* StudentGroupMembershipDto */ } ]
 }
 ```
 
@@ -173,7 +179,22 @@ Endpoints returning lists use this pagination structure inside `data`:
   "fullName": "Nguyen Van A",
   "code": "SE12345",
   "createdAt": "2025-01-01T00:00:00Z",
-  "lastLoginAt": "2025-06-01T10:00:00Z"
+  "lastLoginAt": "2025-06-01T10:00:00Z",
+  "groupMemberships": [ { /* StudentGroupMembershipDto */ } ]
+}
+```
+
+### StudentGroupMembershipDto
+```json
+{
+  "groupId": 1,
+  "term": "Summer2025",
+  "courseCode": "EXE201",
+  "groupNo": "G01",
+  "name": "F-Spark Team",
+  "projectName": "F-Spark Platform",
+  "role": "LEADER",
+  "joinedAt": "2025-06-01T10:00:00Z"
 }
 ```
 
@@ -194,7 +215,12 @@ Endpoints returning lists use this pagination structure inside `data`:
   "mentorId": 1,
   "mentorCode": "MT001",
   "mentorName": "Tran Van B",
-  "selectedProblem": { /* SelectedProblemSummaryDto | null */ }
+  "instructorId": 2,
+  "instructorCode": "INS001",
+  "instructorName": "Le Thi C",
+  "isLock": false,
+  "selectedProblem": { /* SelectedProblemSummaryDto | null */ },
+  "recruitmentNeeds": [ { /* GroupRecruitmentNeedDto */ } ]
 }
 ```
 
@@ -214,8 +240,24 @@ Endpoints returning lists use this pagination structure inside `data`:
   "targetGrade": 8.0,
   "status": "ACTIVE",
   "mentor": { /* MentorProfileDto | null */ },
+  "instructorId": 2,
+  "instructorCode": "INS001",
+  "instructorName": "Le Thi C",
+  "isLock": false,
   "members": [ { /* GroupMemberDto */ } ],
-  "selectedProblem": { /* SelectedProblemSummaryDto | null */ }
+  "selectedProblem": { /* SelectedProblemSummaryDto | null */ },
+  "recruitmentNeeds": [ { /* GroupRecruitmentNeedDto */ } ]
+}
+```
+
+### GroupRecruitmentNeedDto
+```json
+{
+  "role": "SOFTWARE_DEVELOPER",
+  "category": "TECHNOLOGY",
+  "displayNameVi": "Lap trinh vien phan mem",
+  "displayNameEn": "Software Developer",
+  "quantity": 2
 }
 ```
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { Eye, Send, X } from "lucide-react";
+import { Eye, Lock, Send, X } from "lucide-react";
 
 import { Badge, Button, Card } from "@/shared/components";
 
 import type { GroupJoinRequestDto, GroupSummaryDto } from "../../types";
+import { RecruitmentNeeds } from "../recruitment-needs";
 
 type GroupCardProps = {
   group: GroupSummaryDto;
@@ -37,9 +38,16 @@ export function GroupCard({
             {group.term} - {group.courseCode} - {group.groupNo}
           </p>
         </div>
-        <Badge tone={group.status === "ACTIVE" ? "success" : "neutral"}>
-          {group.status}
-        </Badge>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Badge tone={group.status === "ACTIVE" ? "success" : "neutral"}>
+            {group.status}
+          </Badge>
+          {group.isLock && (
+            <Badge icon={<Lock size={13} />} tone="danger">
+              Locked
+            </Badge>
+          )}
+        </div>
       </div>
 
       <dl className="grid gap-2 text-sm">
@@ -69,6 +77,8 @@ export function GroupCard({
         </div>
       </dl>
 
+      <RecruitmentNeeds needs={group.recruitmentNeeds} />
+
       <div className="flex flex-wrap gap-2">
         <Button
           icon={<Eye size={16} />}
@@ -90,6 +100,10 @@ export function GroupCard({
               </Button>
             )}
           </>
+        ) : group.isLock ? (
+          <p className="m-0 self-center text-sm text-muted">
+            Membership is locked.
+          </p>
         ) : (
           onRequestJoin && (
             <Button

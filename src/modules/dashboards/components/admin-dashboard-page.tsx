@@ -23,6 +23,7 @@ import {
 import { ApiError, cn } from "@/shared/lib";
 
 import { useAdminDashboard } from "../hooks";
+import { AdminOverviewSection } from "./admin-overview-section";
 import type {
   AdminDashboardExecutionStatusDto,
   AdminDashboardGroupProgressDto,
@@ -639,6 +640,8 @@ export function AdminDashboardPage() {
         eyebrow="Admin"
         title="Dashboard"
       />
+
+      <AdminOverviewSection />
 
       {isInitialLoading ? (
         <LoadingState
