@@ -105,7 +105,7 @@ export function GoogleSignInButton({
       />
       <div
         ref={buttonContainerRef}
-        className="grid min-h-11 w-full place-items-center [&>div]:max-w-full [&_iframe]:max-w-full"
+        className="grid min-h-11 w-full min-w-0 place-items-center overflow-hidden [&>div]:!w-full [&>div]:max-w-full [&_iframe]:!w-full [&_iframe]:max-w-full"
       />
       {!isReady && (
         <div className="absolute inset-0 flex items-center justify-center gap-[9px] rounded-xl border border-border bg-surface text-[13px] font-medium text-muted">
