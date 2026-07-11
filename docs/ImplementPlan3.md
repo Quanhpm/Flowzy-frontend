@@ -74,8 +74,10 @@ giua hai nguoi lam feature.
 
 1. Hoan thanh va merge Phase 0 truoc khi Person 2/3 tao branch.
 2. Student co danh sach feedback PENDING/SUBMITTED va form submit/update.
-3. Mentor/Instructor xem feedback tong hop an danh; Admin xem danh sach co danh
-   tinh va loc/phan trang.
+3. Person 1 public export `ReceivedFeedbackPage` voi prop bat buoc
+   `audience: "MENTOR" | "INSTRUCTOR"`; route Mentor truyen `"MENTOR"`, con
+   Person 3 tai `/instructor/feedback` truyen `"INSTRUCTOR"`. Admin xem danh
+   sach co danh tinh va loc/phan trang.
 4. Admin list/close term; UI yeu cau confirm truoc thao tac close.
 5. Admin Overview hien thi thong ke backend tra ve.
 6. Sau handoff cua Person 2, them navigation va mount `NotificationBell` mot
@@ -109,6 +111,9 @@ giua hai nguoi lam feature.
 3. Group UI dung role catalog, lock/unlock thanh vien va cancel meeting.
 4. Khong sua `instructor-groups.*` hoac public exports da co tu Phase 0; phan
    nay thuoc Leader de Person 3 co the lam song song khong cho handoff.
+5. Truoc Prompt 4 cua Leader, merge va public export
+   `GroupSummaryDto`/`GroupDetailDto` co `instructorId`, `instructorCode`,
+   `instructorName`, `isLock` va `recruitmentNeeds` dung Swagger.
 
 ### Person 3 — Milestones, Deliverables & Grades
 
@@ -147,6 +152,9 @@ giua hai nguoi lam feature.
    `src/modules/groups/**`.
 6. Tao `src/app/instructor/layout.tsx` voi `AppShell role="INSTRUCTOR"`; khong
    sua AppShell.
+7. Tao `/instructor/feedback` bang public component
+   `<ReceivedFeedbackPage audience="INSTRUCTOR" />` tu `modules/feedback`;
+   khong duplicate component va khong sua module Feedback.
 
 ## Thu Tu Handoff
 
@@ -154,9 +162,13 @@ giua hai nguoi lam feature.
    `useAssignGroupInstructor`) truoc khi Person 2 va Person 3 tao branch.
 2. Person 2 va Person 3 phat trien song song tu commit Phase 0; Person 3 import
    public hook da co, khong can cho Person 2.
-3. Person 1 merge Admin group assignment, Feedback/Terms, sau do mount
-   `NotificationBell` va them navigation trong AppShell. Day la commit duy nhat
-   cham vao AppShell.
+3. Person 2 merge/public export Group DTO moi truoc khi Person 1 bat dau Prompt
+   4 harden trang Admin group assignment; Person 1 khong sua file Groups.
+4. Person 3 merge Instructor layout, milestone/submission routes va
+   `/instructor/feedback` dung `ReceivedFeedbackPage` public cua Person 1.
+5. Prompt 5 cua Person 1 chi bat dau sau khi Person 2 da public
+   `NotificationBell` va `/student/notifications`, dong thoi Person 3 da merge
+   day du cac Instructor routes o buoc 4. Day la commit duy nhat cham AppShell.
 
 ## Acceptance Checklist
 
@@ -169,4 +181,6 @@ giua hai nguoi lam feature.
 - `actionUrl` notification chi navigation noi bo; khong render HTML/payload tu
   backend.
 - Moi nguoi chay `npm run typecheck` va `npm run lint` tren branch cua minh.
+- Prompt 5 chay typecheck, lint, build va route smoke test chi sau khi ca
+  Notification va Instructor dependencies da merge.
 - PR khong sua file nam ngoai ownership, tru commit handoff cua Person 1.
