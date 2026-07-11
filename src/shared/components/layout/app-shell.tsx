@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bell,
   BookOpen,
   CalendarClock,
   ClipboardList,
@@ -22,6 +23,7 @@ import {
   useAuthStore,
   useLogout,
 } from "@/modules/auth";
+import { NotificationBell } from "@/modules/notifications";
 import { cn } from "@/shared/lib";
 import type { UserRole } from "@/shared/types";
 
@@ -55,6 +57,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { href: "/student/tasks", icon: ClipboardList, label: "Tasks" },
     { href: "/student/problems", icon: BookOpen, label: "Problems" },
     { href: "/student/feedback", icon: MessageSquare, label: "Feedback" },
+    { href: "/student/notifications", icon: Bell, label: "Notifications" },
   ],
   MENTOR: [
     { href: "/mentor/groups", icon: Users, label: "Groups" },
@@ -190,6 +193,9 @@ export function AppShell({ children, role }: AppShellProps) {
       </aside>
 
       <div className="min-w-0">
+        <header className="flex min-h-16 items-center justify-end border-b border-border bg-surface px-7 max-[960px]:min-h-14 max-[960px]:px-4">
+          <NotificationBell />
+        </header>
         <main className="min-w-0 p-7 max-[960px]:px-4 max-[960px]:py-[22px]">
           {children}
         </main>

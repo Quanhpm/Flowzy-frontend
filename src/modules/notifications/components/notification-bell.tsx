@@ -85,8 +85,8 @@ export function NotificationBell() {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label="Notifications"
-        className="size-10 px-0"
-        icon={<Bell size={18} />}
+        className="size-12 px-0"
+        icon={<Bell size={26} />}
         onClick={() => setIsOpen((current) => !current)}
         variant="ghost"
       >
