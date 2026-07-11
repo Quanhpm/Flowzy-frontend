@@ -170,11 +170,11 @@ Khong tao type trung lap moi module neu do la contract chung trong `API.md`.
   khong sua `AppShell` hoac provider.
 - Person 1 implement route Admin gan Instructor cho group trong
   `src/app/admin/groups/**`; route nay chi dung public API tu `modules/groups`.
-- Truoc khi Person 1 lam Prompt 4 (harden trang gan Instructor), Person 2 phai
-  merge va public export `GroupSummaryDto`/`GroupDetailDto` da co
+- Contract bat buoc truoc Prompt 4 la `GroupSummaryDto`/`GroupDetailDto` co
   `instructorId`, `instructorCode`, `instructorName`, `isLock` va
-  `recruitmentNeeds` theo Swagger. Person 1 chi consume public contract nay,
-  khong sua file Groups cua Person 2.
+  `recruitmentNeeds` theo Swagger. Do handoff cua Person 2 chua co, Person 1 da
+  dong bo toi thieu contract nay trong commit Prompt 4; Person 2 phai rebase va
+  consume contract da merge, khong khai bao lai cac field tren branch rieng.
 - Person 1 public export `ReceivedFeedbackPage` voi prop bat buoc
   `audience: "MENTOR" | "INSTRUCTOR"`. Person 3 dung
   `<ReceivedFeedbackPage audience="INSTRUCTOR" />` trong route
@@ -572,8 +572,8 @@ Neu ban la Person 2:
 - Tao `src/modules/notifications` va `src/app/student/notifications`.
 - Implement API/types/hooks truoc, sau do moi lam UI route.
 - Dung `queryKeys.groups`, `queryKeys.mentoring` va `queryKeys.notifications`.
-- Truoc Prompt 4 cua Leader, handoff public Group DTO co Instructor, lock va
-  recruitment fields dung Swagger.
+- Rebase tren commit Prompt 4 cua Leader da handoff public Group DTO co
+  Instructor, lock va recruitment fields; khong khai bao lai contract nay.
 - Khong sua `instructor-groups.*` hoac public exports cua hook Phase 0. Public
   export `NotificationBell`; khong sua `AppShell`.
 

@@ -111,9 +111,10 @@ giua hai nguoi lam feature.
 3. Group UI dung role catalog, lock/unlock thanh vien va cancel meeting.
 4. Khong sua `instructor-groups.*` hoac public exports da co tu Phase 0; phan
    nay thuoc Leader de Person 3 co the lam song song khong cho handoff.
-5. Truoc Prompt 4 cua Leader, merge va public export
+5. Rebase tren commit Prompt 4 cua Leader da dong bo va public export
    `GroupSummaryDto`/`GroupDetailDto` co `instructorId`, `instructorCode`,
-   `instructorName`, `isLock` va `recruitmentNeeds` dung Swagger.
+   `instructorName`, `isLock` va `recruitmentNeeds` dung Swagger; khong khai bao
+   lai contract nay tren branch Person 2.
 
 ### Person 3 — Milestones, Deliverables & Grades
 
@@ -162,8 +163,9 @@ giua hai nguoi lam feature.
    `useAssignGroupInstructor`) truoc khi Person 2 va Person 3 tao branch.
 2. Person 2 va Person 3 phat trien song song tu commit Phase 0; Person 3 import
    public hook da co, khong can cho Person 2.
-3. Person 2 merge/public export Group DTO moi truoc khi Person 1 bat dau Prompt
-   4 harden trang Admin group assignment; Person 1 khong sua file Groups.
+3. Do handoff Group DTO cua Person 2 chua co, Person 1 dong bo contract Swagger
+   toi thieu va harden trang Admin group assignment trong cung commit Prompt 4.
+   Person 2 rebase tren commit nay va khong khai bao lai cac field Group DTO.
 4. Person 3 merge Instructor layout, milestone/submission routes va
    `/instructor/feedback` dung `ReceivedFeedbackPage` public cua Person 1.
 5. Prompt 5 cua Person 1 chi bat dau sau khi Person 2 da public
