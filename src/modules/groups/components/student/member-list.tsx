@@ -15,6 +15,7 @@ import type { GroupDetailDto, GroupMemberDto } from "../../types";
 
 type MemberListProps = {
   group: GroupDetailDto;
+  isMembershipLocked: boolean;
   isLeader: boolean;
   onRemoveMember: (member: GroupMemberDto) => void;
   onTransferLeadership: (member: GroupMemberDto) => void;
@@ -22,6 +23,7 @@ type MemberListProps = {
 
 export function MemberList({
   group,
+  isMembershipLocked,
   isLeader,
   onRemoveMember,
   onTransferLeadership,
@@ -29,7 +31,11 @@ export function MemberList({
   return (
     <Card>
       <CardHeader
-        description="Current members and leader actions."
+        description={
+          isMembershipLocked
+            ? "Membership is locked. Unlock the group before removing members."
+            : "Current members and leader actions."
+        }
         title="Members"
       />
       <CardContent>
@@ -78,6 +84,7 @@ export function MemberList({
                         Make leader
                       </Button>
                       <Button
+                        disabled={isMembershipLocked}
                         icon={<Trash2 size={16} />}
                         onClick={() => onRemoveMember(member)}
                         size="sm"

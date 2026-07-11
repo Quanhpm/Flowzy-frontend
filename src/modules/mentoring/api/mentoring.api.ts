@@ -61,3 +61,9 @@ export function getGroupMeetings(groupId: number) {
     `/api/groups/${groupId}/mentor/meetings`,
   );
 }
+
+export function cancelMeeting(groupId: number, meetingId: number) {
+  return apiPatch<ApiResponse<MentorMeetingDto>>(
+    `/api/groups/${groupId}/mentor/meetings/${meetingId}/cancel`,
+  );
+}

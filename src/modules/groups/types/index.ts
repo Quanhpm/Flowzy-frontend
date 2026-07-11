@@ -56,6 +56,17 @@ export type GroupRecruitmentNeedDto = {
   quantity: number;
 };
 
+export type RecruitmentRoleDto = {
+  code: GroupRecruitmentNeedDto["role"];
+  category: GroupRecruitmentNeedDto["category"];
+  displayNameVi: string;
+  displayNameEn: string;
+};
+
+export type UpdateGroupLockRequest = {
+  isLock: boolean;
+};
+
 export type GroupSummaryDto = {
   id: number;
   term: string;

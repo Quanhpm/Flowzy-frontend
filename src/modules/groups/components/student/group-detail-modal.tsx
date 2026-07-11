@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, X } from "lucide-react";
+import { Lock, Send, X } from "lucide-react";
 
 import {
   Badge,
@@ -12,6 +12,7 @@ import { ApiError, cn } from "@/shared/lib";
 
 import { useGroup } from "../../hooks";
 import type { GroupJoinRequestDto, GroupSummaryDto } from "../../types";
+import { RecruitmentNeeds } from "../recruitment-needs";
 
 type GroupDetailModalProps = {
   groupId: number;
@@ -65,7 +66,7 @@ export function GroupDetailModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function requestJoin() {
-    if (!group || !onRequestJoin) return;
+    if (!group || !onRequestJoin || group.isLock) return;
 
     setError("");
     setIsSubmitting(true);
@@ -165,9 +166,18 @@ export function GroupDetailModal({
                   <h3 className="m-0 text-base font-bold text-foreground">
                     Project
                   </h3>
-                  <Badge tone={group.status === "ACTIVE" ? "success" : "neutral"}>
-                    {group.status}
-                  </Badge>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Badge
+                      tone={group.status === "ACTIVE" ? "success" : "neutral"}
+                    >
+                      {group.status}
+                    </Badge>
+                    {group.isLock && (
+                      <Badge icon={<Lock size={13} />} tone="danger">
+                        Locked
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <p className="m-0 text-sm leading-relaxed text-muted">
                   {group.projectName ?? "No project name yet."}
@@ -181,6 +191,8 @@ export function GroupDetailModal({
                   </span>
                 )}
               </section>
+
+              <RecruitmentNeeds needs={group.recruitmentNeeds} />
 
               {onRequestJoin && (
                 <section className="grid gap-3 rounded-xl border border-border bg-surface p-4">
@@ -208,6 +220,11 @@ export function GroupDetailModal({
                         </Button>
                       )}
                     </div>
+                  ) : group.isLock ? (
+                    <p className="m-0 text-sm leading-relaxed text-muted">
+                      This group has locked membership and is not accepting join
+                      requests.
+                    </p>
                   ) : (
                     <>
                       <textarea

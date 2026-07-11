@@ -80,7 +80,13 @@ function RequestCard({
   );
 }
 
-export function JoinRequestSection({ groupId }: { groupId: number }) {
+export function JoinRequestSection({
+  groupId,
+  isMembershipLocked = false,
+}: {
+  groupId: number;
+  isMembershipLocked?: boolean;
+}) {
   const requestsQuery = useGroupJoinRequests(groupId);
   const approveMutation = useApproveJoinRequest();
   const rejectMutation = useRejectJoinRequest();
@@ -107,7 +113,11 @@ export function JoinRequestSection({ groupId }: { groupId: number }) {
             <Badge tone="warning">{pendingRequests.length} new</Badge>
           ) : undefined
         }
-        description="Approve or reject students asking to join your group."
+        description={
+          isMembershipLocked
+            ? "Membership is locked. Unlock the group before approving requests."
+            : "Approve or reject students asking to join your group."
+        }
         title="Join Requests"
       />
       <CardContent>
@@ -130,6 +140,7 @@ export function JoinRequestSection({ groupId }: { groupId: number }) {
                 actions={
                   <div className="flex flex-wrap gap-2">
                     <Button
+                      disabled={isMembershipLocked || approveMutation.isPending}
                       icon={<Check size={16} />}
                       onClick={() =>
                         runAction(() =>
