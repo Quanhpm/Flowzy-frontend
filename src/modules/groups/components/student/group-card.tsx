@@ -1,8 +1,9 @@
 "use client";
 
-import { Eye, Lock, Send, X } from "lucide-react";
+import { Eye, Send, X } from "lucide-react";
 
 import { Badge, Button, Card } from "@/shared/components";
+import { cn } from "@/shared/lib";
 
 import type { GroupJoinRequestDto, GroupSummaryDto } from "../../types";
 import { RecruitmentNeeds } from "../recruitment-needs";
@@ -28,8 +29,18 @@ export function GroupCard({
   pendingRequest,
 }: GroupCardProps) {
   return (
-    <Card className="grid gap-4 p-5 transition-all duration-200 hover:shadow-card-interactive">
-      <div className="flex min-w-0 items-start justify-between gap-3">
+    <Card className="relative grid gap-4 overflow-hidden p-5 transition-all duration-200 hover:shadow-card-interactive">
+      <div
+        aria-label={group.isLock ? "Closed" : "Recruiting"}
+        className={cn(
+          "pointer-events-none absolute top-[18px] right-[-34px] z-10 flex h-7 w-[128px] rotate-45 items-center justify-center text-[11px] font-bold text-white uppercase shadow-sm",
+          group.isLock ? "bg-neutral-500" : "bg-brand-primary",
+        )}
+      >
+        {group.isLock ? "Closed" : "Recruiting"}
+      </div>
+
+      <div className="flex min-w-0 items-start justify-between gap-3 pr-14">
         <div className="grid min-w-0 gap-1">
           <h3 className="m-0 text-lg leading-snug font-bold text-foreground">
             {group.name}
@@ -37,16 +48,6 @@ export function GroupCard({
           <p className="m-0 text-sm text-muted">
             {group.term} - {group.courseCode} - {group.groupNo}
           </p>
-        </div>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Badge tone={group.status === "ACTIVE" ? "success" : "neutral"}>
-            {group.status}
-          </Badge>
-          {group.isLock && (
-            <Badge icon={<Lock size={13} />} tone="danger">
-              Locked
-            </Badge>
-          )}
         </div>
       </div>
 

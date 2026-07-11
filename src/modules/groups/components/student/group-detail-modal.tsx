@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Send, X } from "lucide-react";
+import { Send, X } from "lucide-react";
 
 import {
   Badge,
@@ -167,16 +167,9 @@ export function GroupDetailModal({
                     Project
                   </h3>
                   <div className="flex flex-wrap justify-end gap-2">
-                    <Badge
-                      tone={group.status === "ACTIVE" ? "success" : "neutral"}
-                    >
-                      {group.status}
+                    <Badge tone={group.isLock ? "neutral" : "success"}>
+                      {group.isLock ? "Closed" : "Recruiting"}
                     </Badge>
-                    {group.isLock && (
-                      <Badge icon={<Lock size={13} />} tone="danger">
-                        Locked
-                      </Badge>
-                    )}
                   </div>
                 </div>
                 <p className="m-0 text-sm leading-relaxed text-muted">

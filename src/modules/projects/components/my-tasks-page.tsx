@@ -377,7 +377,10 @@ export function StudentTasksPage() {
 
           {/* Render Board */}
           {selectedGroupId ? (
-            <KanbanBoard groupId={Number(selectedGroupId)} />
+            <KanbanBoard
+              groupId={Number(selectedGroupId)}
+              key={selectedGroupId}
+            />
           ) : isGroupsLoading ? (
             <LoadingState title="Loading your group info..." />
           ) : (

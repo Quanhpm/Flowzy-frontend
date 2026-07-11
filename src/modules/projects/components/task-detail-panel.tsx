@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { cn } from "@/shared/lib";
 import {
   Button,
+  DateTimeInput,
   LoadingState,
   TextInput,
   Select,
@@ -477,11 +478,9 @@ export function TaskDetailPanel({ groupId, taskId, onClose }: TaskDetailPanelPro
               <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Due Date
               </label>
-              <input
-                type="datetime-local"
+              <DateTimeInput
                 value={toLocalDatetime(task.dueAt)}
                 onChange={(e) => handleDateChange(e.target.value)}
-                className="w-full h-10 rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
               />
             </div>
           </div>

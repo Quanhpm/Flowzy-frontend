@@ -176,12 +176,18 @@ export type CreateGroupRequest = {
   targetGrade?: number;
 };
 
+export type RecruitmentNeedRequest = {
+  role: GroupRecruitmentNeedDto["role"];
+  quantity: number;
+};
+
 export type UpdateGroupRequest = {
   name?: string;
   projectName?: string;
   ideaDescription?: string;
   researchDomain?: string;
   requiredGpa?: number;
+  recruitmentNeeds?: RecruitmentNeedRequest[];
   targetGrade?: number;
 };
 

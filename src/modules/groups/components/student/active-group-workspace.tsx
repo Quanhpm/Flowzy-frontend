@@ -11,6 +11,7 @@ import {
   CardContent,
   CardHeader,
   PageHeader,
+  Select,
 } from "@/shared/components";
 
 import {
@@ -22,7 +23,11 @@ import {
   useUpdateGroup,
   useUpdateGroupLock,
 } from "../../hooks";
-import type { GroupDetailDto, GroupMemberDto } from "../../types";
+import type {
+  GroupDetailDto,
+  GroupMemberDto,
+  GroupSummaryDto,
+} from "../../types";
 import { ConfirmDialog } from "./confirm-dialog";
 import { GroupFormModal } from "./group-form-modal";
 import { InvitationList } from "./invitation-list";
@@ -41,6 +46,8 @@ type ConfirmAction = {
 
 type ActiveGroupWorkspaceProps = {
   group: GroupDetailDto;
+  groups: GroupSummaryDto[];
+  onGroupChange: (groupId: number) => void;
   sessionEmail?: string;
 };
 
@@ -80,6 +87,8 @@ function InfoItem({
 
 export function ActiveGroupWorkspace({
   group,
+  groups,
+  onGroupChange,
   sessionEmail,
 }: ActiveGroupWorkspaceProps) {
   const router = useRouter();
@@ -182,39 +191,56 @@ export function ActiveGroupWorkspace({
     <div className="grid min-w-0 gap-6">
       <PageHeader
         actions={
-          <div className="flex flex-wrap gap-2 pt-[50px]">
-            {isLeader && (
-              <>
-                <Button
-                  icon={<Pencil size={16} />}
-                  onClick={() => setIsEditOpen(true)}
-                  variant="secondary"
-                >
-                  Edit group
-                </Button>
-                <Button
-                  icon={<UserPlus size={16} />}
-                  disabled={group.isLock}
-                  onClick={() => router.push("/student/groups/invite")}
-                >
-                  Invite member
-                </Button>
-                <Button
-                  icon={group.isLock ? <Unlock size={16} /> : <Lock size={16} />}
-                  onClick={requestToggleGroupLock}
-                  variant={group.isLock ? "secondary" : "danger"}
-                >
-                  {group.isLock ? "Unlock group" : "Lock group"}
-                </Button>
-              </>
-            )}
-            <Button
-              icon={<LogOut size={16} />}
-              onClick={requestLeaveGroup}
-              variant="danger"
+          <div className="grid justify-items-end gap-3 max-[760px]:justify-items-stretch">
+            <Select
+              fieldClassName="w-full min-[761px]:w-[280px]"
+              id="group-workspace-selector"
+              label="Group workspace"
+              onChange={(event) => onGroupChange(Number(event.target.value))}
+              value={group.id}
             >
-              Leave group
-            </Button>
+              {groups.map((groupOption) => (
+                <option key={groupOption.id} value={groupOption.id}>
+                  {groupOption.groupNo} - {groupOption.name} (
+                  {groupOption.courseCode})
+                </option>
+              ))}
+            </Select>
+
+            <div className="flex flex-wrap justify-end gap-2 max-[760px]:justify-start">
+              {isLeader && (
+                <>
+                  <Button
+                    icon={<Pencil size={16} />}
+                    onClick={() => setIsEditOpen(true)}
+                    variant="secondary"
+                  >
+                    Edit group
+                  </Button>
+                  <Button
+                    icon={<UserPlus size={16} />}
+                    disabled={group.isLock}
+                    onClick={() => router.push("/student/groups/invite")}
+                  >
+                    Invite member
+                  </Button>
+                  <Button
+                    icon={group.isLock ? <Unlock size={16} /> : <Lock size={16} />}
+                    onClick={requestToggleGroupLock}
+                    variant={group.isLock ? "secondary" : "danger"}
+                  >
+                    {group.isLock ? "Unlock group" : "Lock group"}
+                  </Button>
+                </>
+              )}
+              <Button
+                icon={<LogOut size={16} />}
+                onClick={requestLeaveGroup}
+                variant="danger"
+              >
+                Leave group
+              </Button>
+            </div>
           </div>
         }
         description="Manage your group profile, members, invitations, join requests, and mentor meetings."
@@ -237,14 +263,9 @@ export function ActiveGroupWorkspace({
         <CardHeader
           actions={
             <div className="flex flex-wrap justify-end gap-2">
-              <Badge tone={group.status === "ACTIVE" ? "success" : "neutral"}>
-                {group.status}
+              <Badge tone={group.isLock ? "neutral" : "success"}>
+                {group.isLock ? "Closed" : "Recruiting"}
               </Badge>
-              {group.isLock && (
-                <Badge icon={<Lock size={13} />} tone="danger">
-                  Locked
-                </Badge>
-              )}
             </div>
           }
           description={`${group.term} - ${group.courseCode} - ${group.groupNo}`}

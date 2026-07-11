@@ -2,22 +2,30 @@
 
 import type { FormEvent } from "react";
 import { useState } from "react";
-import { X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 
 import { Button, Select, TextInput } from "@/shared/components";
 import { ApiError, cn } from "@/shared/lib";
 
+import { useRecruitmentRoles } from "../../hooks";
 import type {
   CreateGroupRequest,
   GroupDetailDto,
+  GroupRecruitmentNeedDto,
   UpdateGroupRequest,
 } from "../../types";
+
+type RecruitmentNeedFormItem = {
+  quantity: string;
+  role: GroupRecruitmentNeedDto["role"];
+};
 
 type GroupFormState = {
   courseCode: string;
   ideaDescription: string;
   name: string;
   projectName: string;
+  recruitmentNeeds: RecruitmentNeedFormItem[];
   requiredGpa: string;
   researchDomain: string;
   targetGrade: string;
@@ -43,6 +51,7 @@ const EMPTY_GROUP_FORM: GroupFormState = {
   ideaDescription: "",
   name: "",
   projectName: "",
+  recruitmentNeeds: [],
   requiredGpa: "",
   researchDomain: "",
   targetGrade: "",
@@ -84,6 +93,10 @@ function createFormFromGroup(group: GroupDetailDto): GroupFormState {
     ideaDescription: group.ideaDescription ?? "",
     name: group.name,
     projectName: group.projectName ?? "",
+    recruitmentNeeds: group.recruitmentNeeds.map((need) => ({
+      quantity: String(need.quantity),
+      role: need.role,
+    })),
     requiredGpa: group.requiredGpa?.toString() ?? "",
     researchDomain: group.researchDomain ?? "",
     targetGrade: group.targetGrade?.toString() ?? "",
@@ -116,6 +129,20 @@ function validateGroupForm(form: GroupFormState, mode: "create" | "edit") {
     return "Target grade must be between 0 and 10.";
   }
 
+  const selectedRoles = new Set<GroupRecruitmentNeedDto["role"]>();
+  for (const need of form.recruitmentNeeds) {
+    if (!need.role) return "Select a role for every recruitment need.";
+    if (selectedRoles.has(need.role)) {
+      return "Each recruitment role can only be selected once.";
+    }
+    selectedRoles.add(need.role);
+
+    const quantity = Number(need.quantity);
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      return "Recruitment quantity must be a whole number greater than 0.";
+    }
+  }
+
   return "";
 }
 
@@ -131,11 +158,132 @@ function createGroupPayload(form: GroupFormState): CreateGroupRequest {
   };
 }
 
+function RecruitmentNeedsEditor({
+  needs,
+  onChange,
+}: {
+  needs: RecruitmentNeedFormItem[];
+  onChange: (needs: RecruitmentNeedFormItem[]) => void;
+}) {
+  const rolesQuery = useRecruitmentRoles();
+  const roles = rolesQuery.data?.data ?? [];
+  const selectedRoles = new Set(needs.map((need) => need.role));
+  const firstAvailableRole = roles.find((role) => !selectedRoles.has(role.code));
+
+  return (
+    <section className="col-span-full grid gap-3 border-t border-border pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="grid gap-1">
+          <h3 className="m-0 text-sm font-bold text-foreground">
+            Recruitment needs
+          </h3>
+          <p className="m-0 text-xs text-muted">
+            Choose the roles and number of students this group is recruiting.
+          </p>
+        </div>
+        <Button
+          disabled={!firstAvailableRole || rolesQuery.isLoading}
+          icon={<Plus size={16} />}
+          onClick={() =>
+            firstAvailableRole &&
+            onChange([
+              ...needs,
+              { quantity: "1", role: firstAvailableRole.code },
+            ])
+          }
+          size="sm"
+          type="button"
+          variant="secondary"
+        >
+          Add role
+        </Button>
+      </div>
+
+      {rolesQuery.isLoading ? (
+        <p className="m-0 text-sm text-muted">Loading role catalog...</p>
+      ) : rolesQuery.isError ? (
+        <p className="m-0 text-sm text-red-700">
+          {getErrorMessage(rolesQuery.error)}
+        </p>
+      ) : needs.length === 0 ? (
+        <p className="m-0 rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted">
+          This group is not recruiting any roles.
+        </p>
+      ) : (
+        <div className="grid gap-3">
+          {needs.map((need, index) => (
+            <div
+              className="grid grid-cols-[minmax(0,1fr)_120px_40px] items-end gap-3 max-[560px]:grid-cols-[minmax(0,1fr)_40px]"
+              key={`${need.role}-${index}`}
+            >
+              <Select
+                label="Role"
+                onChange={(event) => {
+                  const nextNeeds = [...needs];
+                  nextNeeds[index] = {
+                    ...need,
+                    role: event.target.value as GroupRecruitmentNeedDto["role"],
+                  };
+                  onChange(nextNeeds);
+                }}
+                value={need.role}
+              >
+                {roles.map((role) => (
+                  <option
+                    disabled={
+                      role.code !== need.role && selectedRoles.has(role.code)
+                    }
+                    key={role.code}
+                    value={role.code}
+                  >
+                    {role.displayNameVi || role.displayNameEn}
+                  </option>
+                ))}
+              </Select>
+              <TextInput
+                fieldClassName="max-[560px]:col-start-1"
+                label="Quantity"
+                min={1}
+                onChange={(event) => {
+                  const nextNeeds = [...needs];
+                  nextNeeds[index] = { ...need, quantity: event.target.value };
+                  onChange(nextNeeds);
+                }}
+                step={1}
+                type="number"
+                value={need.quantity}
+              />
+              <Button
+                aria-label={`Remove ${need.role}`}
+                className="size-10 min-h-0 min-w-0 p-0"
+                icon={<Trash2 size={16} />}
+                onClick={() =>
+                  onChange(
+                    needs.filter((_, itemIndex) => itemIndex !== index),
+                  )
+                }
+                size="sm"
+                title="Remove role"
+                type="button"
+                variant="ghost"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function updateGroupPayload(form: GroupFormState): UpdateGroupRequest {
   return {
     ideaDescription: optional(form.ideaDescription),
     name: form.name.trim(),
     projectName: optional(form.projectName),
+    recruitmentNeeds: form.recruitmentNeeds.map((need) => ({
+      quantity: Number(need.quantity),
+      role: need.role,
+    })),
     requiredGpa: optionalNumber(form.requiredGpa),
     researchDomain: optional(form.researchDomain),
     targetGrade: optionalNumber(form.targetGrade),
@@ -314,6 +462,14 @@ export function GroupFormModal(props: GroupFormModalProps) {
                 value={form.ideaDescription}
               />
             </label>
+            {mode === "edit" && (
+              <RecruitmentNeedsEditor
+                needs={form.recruitmentNeeds}
+                onChange={(recruitmentNeeds) =>
+                  updateField("recruitmentNeeds", recruitmentNeeds)
+                }
+              />
+            )}
           </div>
         </div>
 

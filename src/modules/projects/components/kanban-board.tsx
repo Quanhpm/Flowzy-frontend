@@ -1,6 +1,7 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Button,
+  DateTimeInput,
   EmptyState,
   LoadingState,
   TextInput,
@@ -107,8 +108,16 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
   const [newAssignees, setNewAssignees] = useState<number[]>([]);
 
   // Queries
-  const { data: groupResponse } = useGroupDetails(groupId);
-  const { data: taskBoardsResponse } = useTaskBoards(groupId);
+  const {
+    data: groupResponse,
+    error: groupError,
+    isLoading: isGroupLoading,
+  } = useGroupDetails(groupId);
+  const {
+    data: taskBoardsResponse,
+    error: taskBoardsError,
+    isLoading: isTaskBoardsLoading,
+  } = useTaskBoards(groupId);
 
   const group = groupResponse?.data;
   const taskBoards = useMemo(
@@ -182,11 +191,12 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
     }),
     [activeTaskBoardId, assigneeFilter, includeArchived, priorityFilter, searchFilter],
   );
+  const createTaskBoardMutation = useCreateTaskBoard();
   const {
     data: boardResponse,
     isLoading: isBoardLoading,
     error: boardError,
-  } = useGroupBoard(groupId, boardFilters);
+  } = useGroupBoard(groupId, boardFilters, activeTaskBoardId !== undefined);
 
   const board = boardResponse?.data;
   const allTasks = useMemo(
@@ -196,8 +206,53 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
 
   // Mutations
   const createTaskMutation = useCreateTask(groupId);
-  const createTaskBoardMutation = useCreateTaskBoard();
   const reorderTaskMutation = useReorderTask(groupId);
+  const initialBoardCreationRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    const firstMilestone = milestones[0];
+    const hasLoadedGroup = Boolean(groupResponse?.data);
+    const hasLoadedBoards = Boolean(taskBoardsResponse);
+
+    if (!firstMilestone || !hasLoadedGroup || !hasLoadedBoards) return;
+
+    const existingBoard = boardsByName.get(
+      normalizeBoardName(firstMilestone.label),
+    );
+    if (existingBoard) return;
+
+    const creationKey = `${groupId}:${firstMilestone.label}`;
+    if (initialBoardCreationRef.current.has(creationKey)) return;
+
+    initialBoardCreationRef.current.add(creationKey);
+    createTaskBoardMutation.mutate(
+      {
+        groupId,
+        payload: { name: firstMilestone.label },
+      },
+      {
+        onError: (error) => {
+          setBoardActionError(
+            error instanceof Error
+              ? error.message
+              : `Could not create ${firstMilestone.label}.`,
+          );
+        },
+        onSuccess: (response) => {
+          setActiveBoardId(response.data.id);
+          setActiveBoardName(response.data.name);
+          setSelectedTaskId(null);
+        },
+      },
+    );
+  }, [
+    boardsByName,
+    createTaskBoardMutation,
+    groupId,
+    groupResponse?.data,
+    milestones,
+    taskBoardsResponse,
+  ]);
 
   const handleDragStart = (
     e: React.DragEvent,
@@ -388,15 +443,26 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
     );
   };
 
-  if (isBoardLoading) {
+  if (
+    isGroupLoading ||
+    isTaskBoardsLoading ||
+    isBoardLoading ||
+    (activeTaskBoardId === undefined &&
+      !boardActionError &&
+      !groupError &&
+      !taskBoardsError)
+  ) {
     return <LoadingState title="Loading task board..." />;
   }
 
-  if (boardError || !board) {
+  if (groupError || taskBoardsError || boardError || !board) {
     return (
       <EmptyState
         title="Could not load Kanban Board"
-        description="Please verify that your group is active and has a project set up."
+        description={
+          boardActionError ||
+          "Please verify that your group is active and has a project set up."
+        }
       />
     );
   }
@@ -647,11 +713,9 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                   <label className="mb-1.5 block text-xs font-bold tracking-wider text-muted-foreground uppercase">
                     Due Date
                   </label>
-                  <input
-                    type="datetime-local"
+                  <DateTimeInput
                     value={newDueAt}
                     onChange={(e) => setNewDueAt(e.target.value)}
-                    className="h-10 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                   />
                 </div>
               </div>
