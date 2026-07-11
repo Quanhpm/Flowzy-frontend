@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/shared/lib";
+import { StudentMilestoneSubmissionsPanel } from "@/modules/milestones";
 import {
   Button,
   Card,
@@ -18,10 +19,10 @@ import { KanbanBoard } from "./kanban-board";
 import { TaskStatusBadge } from "./task-status-badge";
 import { TaskPriorityBadge } from "./task-priority-badge";
 import { TaskDetailPanel } from "./task-detail-panel";
-import { ChevronRight, ListTodo, Kanban } from "lucide-react";
+import { CalendarClock, ChevronRight, ListTodo, Kanban } from "lucide-react";
 
 export function StudentTasksPage() {
-  const [activeTab, setActiveTab] = useState<"list" | "board">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "board" | "submissions">("list");
   
   // My Tasks list filters
   const [listStatus, setListStatus] = useState<string>("");
@@ -139,6 +140,19 @@ export function StudentTasksPage() {
           >
             <Kanban className="size-4" />
             Group Kanban Board
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("submissions")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all rounded-lg",
+              activeTab === "submissions"
+                ? "bg-surface shadow-sm text-brand-primary"
+                : "text-muted hover:bg-surface/50"
+            )}
+          >
+            <CalendarClock className="size-4" />
+            Deliverables
           </button>
         </div>
       </div>
@@ -340,7 +354,7 @@ export function StudentTasksPage() {
             )}
           </CardContent>
         </Card>
-      ) : (
+      ) : activeTab === "board" ? (
         /* Board view */
         <div className="space-y-6 min-w-0 w-full overflow-hidden">
           {/* Group Project Selector */}
@@ -373,6 +387,17 @@ export function StudentTasksPage() {
             />
           )}
         </div>
+      ) : (
+        <StudentMilestoneSubmissionsPanel
+          groups={myGroups}
+          initialGroupId={
+            selectedGroupId
+              ? Number(selectedGroupId)
+              : activeGroup
+                ? Number(activeGroup.id)
+                : null
+          }
+        />
       )}
 
       {/* Task Details Side Panel (shared for both list & board) */}
