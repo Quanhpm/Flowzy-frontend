@@ -17,6 +17,45 @@ export type SelectedProblemSummaryDto = {
   status: ProblemStatus;
 };
 
+export type GroupRecruitmentNeedDto = {
+  role:
+    | "SOFTWARE_DEVELOPER"
+    | "WEB_MOBILE_DEVELOPER"
+    | "AI_ML_ENGINEER"
+    | "DATA_ANALYST"
+    | "CYBERSECURITY_SPECIALIST"
+    | "CLOUD_DEVOPS_ENGINEER"
+    | "SYSTEM_BUSINESS_ANALYST"
+    | "ROBOTICS_IOT_ENGINEER"
+    | "EMBEDDED_SEMICONDUCTOR_ENGINEER"
+    | "AUTOMOTIVE_TECH_ENGINEER"
+    | "UI_UX_DESIGNER"
+    | "GRAPHIC_DESIGNER"
+    | "MULTIMEDIA_DESIGNER"
+    | "PRODUCT_MANAGER"
+    | "BUSINESS_DEVELOPMENT"
+    | "MARKETING_SPECIALIST"
+    | "E_COMMERCE_SPECIALIST"
+    | "FINANCE_FINTECH_SPECIALIST"
+    | "LOGISTICS_SUPPLY_CHAIN_SPECIALIST"
+    | "CUSTOMER_EXPERIENCE_SPECIALIST"
+    | "CONTENT_CREATOR"
+    | "PUBLIC_RELATIONS_SPECIALIST"
+    | "BRAND_COMMUNICATION_SPECIALIST"
+    | "EVENT_MANAGER"
+    | "TRANSLATOR_LOCALIZATION_SPECIALIST"
+    | "LEGAL_COMPLIANCE_SPECIALIST";
+  category:
+    | "TECHNOLOGY"
+    | "DESIGN"
+    | "BUSINESS"
+    | "COMMUNICATION"
+    | "LANGUAGE_LEGAL";
+  displayNameVi: string;
+  displayNameEn: string;
+  quantity: number;
+};
+
 export type GroupSummaryDto = {
   id: number;
   term: string;
@@ -32,7 +71,12 @@ export type GroupSummaryDto = {
   mentorId: number | null;
   mentorCode: string | null;
   mentorName: string | null;
+  instructorId: number | null;
+  instructorCode: string | null;
+  instructorName: string | null;
+  isLock: boolean;
   selectedProblem: SelectedProblemSummaryDto | null;
+  recruitmentNeeds: GroupRecruitmentNeedDto[];
 };
 
 export type GroupMemberRole = "LEADER" | "MEMBER";
@@ -59,8 +103,13 @@ export type GroupDetailDto = {
   targetGrade: number | null;
   status: GroupStatus;
   mentor: MentorProfileDto | null;
+  instructorId: number | null;
+  instructorCode: string | null;
+  instructorName: string | null;
+  isLock: boolean;
   members: GroupMemberDto[];
   selectedProblem: SelectedProblemSummaryDto | null;
+  recruitmentNeeds: GroupRecruitmentNeedDto[];
 };
 
 export type InvitationDto = {

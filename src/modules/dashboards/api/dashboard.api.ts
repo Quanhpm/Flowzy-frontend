@@ -2,6 +2,8 @@ import { apiGet } from "@/shared/lib";
 import type { ApiResponse } from "@/shared/types";
 
 import type {
+  AdminDashboardOverviewDto,
+  AdminDashboardOverviewQuery,
   AdminDashboardExecutionStatusDto,
   AdminDashboardGroupProgressDto,
   AdminDashboardMeetingDto,
@@ -70,5 +72,14 @@ export function getAdminDashboardGroups() {
 export function getAdminDashboardExecutionStatus() {
   return apiGet<ApiResponse<AdminDashboardExecutionStatusDto>>(
     "/api/dashboard/admin/execution-status",
+  );
+}
+
+export function getAdminDashboardOverview(
+  query: AdminDashboardOverviewQuery = {},
+) {
+  return apiGet<ApiResponse<AdminDashboardOverviewDto>>(
+    "/api/dashboard/admin/overview",
+    { query },
   );
 }

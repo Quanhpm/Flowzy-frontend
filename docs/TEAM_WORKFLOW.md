@@ -170,8 +170,21 @@ Khong tao type trung lap moi module neu do la contract chung trong `API.md`.
   khong sua `AppShell` hoac provider.
 - Person 1 implement route Admin gan Instructor cho group trong
   `src/app/admin/groups/**`; route nay chi dung public API tu `modules/groups`.
+- Contract bat buoc truoc Prompt 4 la `GroupSummaryDto`/`GroupDetailDto` co
+  `instructorId`, `instructorCode`, `instructorName`, `isLock` va
+  `recruitmentNeeds` theo Swagger. Do handoff cua Person 2 chua co, Person 1 da
+  dong bo toi thieu contract nay trong commit Prompt 4; Person 2 phai rebase va
+  consume contract da merge, khong khai bao lai cac field tren branch rieng.
+- Person 1 public export `ReceivedFeedbackPage` voi prop bat buoc
+  `audience: "MENTOR" | "INSTRUCTOR"`. Person 3 dung
+  `<ReceivedFeedbackPage audience="INSTRUCTOR" />` trong route
+  `/instructor/feedback`; khong fork component hoac sua module Feedback.
 - Neu can them navigation, chi Person 1 sua `AppShell`. Nguoi tao route gui
   exact path/label/icon trong PR handoff, khong tu sua file shared.
+- Prompt 5 (navigation va `NotificationBell`) chi bat dau sau khi Person 2 da
+  public export `NotificationBell` va route `/student/notifications`, dong thoi
+  Person 3 da merge Instructor layout, milestone/submission routes va
+  `/instructor/feedback`.
 - `/api/instructor/milestones/**` va `/api/course-milestones/**` la aliases.
   Person 3 dung prefix `/api/instructor/milestones/**` cho code moi; khong goi
   cac endpoint `*/outcomes` vi Swagger danh dau deprecated.
@@ -548,8 +561,10 @@ Neu ban la Person 1:
   scope cua minh.
 - Cap nhat Admin Users de hien thi/tao/sua Instructor profile theo Swagger;
   `UserRole` va login redirect cua INSTRUCTOR da duoc setup trong baseline.
+- Chi harden trang gan Instructor sau khi Person 2 handoff Group DTO moi.
 - Nhung thay doi `AppShell` chi duoc merge sau khi Person 2 public
-  `NotificationBell` va cac route da chot.
+  `NotificationBell`/notification route va Person 3 merge day du Instructor
+  routes, gom `/instructor/feedback`.
 
 Neu ban la Person 2:
 
@@ -557,6 +572,8 @@ Neu ban la Person 2:
 - Tao `src/modules/notifications` va `src/app/student/notifications`.
 - Implement API/types/hooks truoc, sau do moi lam UI route.
 - Dung `queryKeys.groups`, `queryKeys.mentoring` va `queryKeys.notifications`.
+- Rebase tren commit Prompt 4 cua Leader da handoff public Group DTO co
+  Instructor, lock va recruitment fields; khong khai bao lai contract nay.
 - Khong sua `instructor-groups.*` hoac public exports cua hook Phase 0. Public
   export `NotificationBell`; khong sua `AppShell`.
 
@@ -566,5 +583,8 @@ Neu ban la Person 3:
 - Tao `src/modules/milestones` va `src/app/instructor`.
 - Dung `queryKeys.tasks`, `queryKeys.problems` va `queryKeys.milestones`.
 - Chi import `useInstructorGroups` tu public entry point cua `modules/groups`.
+- Tai `/instructor/feedback`, import `ReceivedFeedbackPage` tu public entry
+  point cua `modules/feedback` va truyen `audience="INSTRUCTOR"`; khong duplicate
+  UI feedback.
 
 Neu can shared contract moi, tao PR/commit rieng hoac bao Person 1 de them, tranh moi nguoi sua chung mot file cung luc.
