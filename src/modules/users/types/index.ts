@@ -46,17 +46,15 @@ export type InstructorProfileDto = {
   status: UserStatus;
 };
 
-export type AdminUserGroupDto = {
-  id?: number | null;
-  groupId?: number | null;
-  groupNo?: string | null;
-  name?: string | null;
-  groupName?: string | null;
-  projectName?: string | null;
-  courseCode?: string | null;
-  term?: string | null;
-  mentorName?: string | null;
-  status?: string | null;
+export type StudentGroupMembershipDto = {
+  groupId: number;
+  term: string;
+  courseCode: string;
+  groupNo: string;
+  name: string;
+  projectName: string;
+  role: string;
+  joinedAt: ISODateTimeString;
 };
 
 export type AdminUserDetailDto = {
@@ -71,7 +69,7 @@ export type AdminUserDetailDto = {
   studentProfile: StudentProfileDto | null;
   mentorProfile: MentorProfileDto | null;
   instructorProfile: InstructorProfileDto | null;
-  group?: AdminUserGroupDto | null;
+  groupMemberships: StudentGroupMembershipDto[];
 };
 
 export type AdminUserSummaryDto = {
@@ -84,7 +82,7 @@ export type AdminUserSummaryDto = {
   code: string | null;
   createdAt: ISODateTimeString;
   lastLoginAt: ISODateTimeString | null;
-  group?: AdminUserGroupDto | null;
+  groupMemberships: StudentGroupMembershipDto[];
 };
 
 export type AdminUsersQuery = ApiListQuery & {
