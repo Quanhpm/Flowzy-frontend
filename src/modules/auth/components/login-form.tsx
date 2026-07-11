@@ -35,6 +35,7 @@ type FormErrors = {
 function getDefaultWorkspacePath(role: AuthUser["role"]) {
   if (role === "ADMIN") return "/admin/users";
   if (role === "MENTOR") return "/mentor/groups";
+  if (role === "INSTRUCTOR") return "/instructor/milestones";
   return "/student/dashboard";
 }
 

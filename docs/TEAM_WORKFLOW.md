@@ -9,7 +9,9 @@ Muc tieu: moi nguoi code theo module rieng, dung chung foundation, han che confl
 - Styling: Tailwind CSS v4 utilities, with theme tokens in `src/app/globals.css`.
 - Data fetching/cache: TanStack React Query.
 - Auth state: Zustand persisted store.
-- Backend reference: `API.md`.
+- Backend reference: `API.md`; phan **OpenAPI Update — 2026-07-11** la contract
+  cua batch hien tai.
+- Nguon chuan khi co sai khac: `https://api-fspark.kusl.io.vn/v3/api-docs`.
 - Base API URL mac dinh: `https://api-fspark.kusl.io.vn`.
 - Shared API client: `src/shared/lib/api-client.ts`.
 - Shared API response/types/enums: `src/shared/types`.
@@ -17,21 +19,28 @@ Muc tieu: moi nguoi code theo module rieng, dung chung foundation, han che confl
 
 ## Module Ownership
 
-### Person 1 - Core, Auth, Admin Users, Imports, Admin Dashboard
+### Person 1 - Platform, Admin, Feedback & Terms
 
 Owner:
 
 - `src/shared/lib/**`
 - `src/shared/types/**`
 - `src/shared/constants/**`
+- `src/shared/components/layout/app-shell.tsx`
 - `src/providers/**`
 - `src/modules/auth/**`
 - `src/modules/users/**`
 - `src/modules/imports/**`
 - `src/modules/dashboards/**`
+- `src/modules/feedback/**`
 - `src/app/admin/users/**`
 - `src/app/admin/imports/**`
 - `src/app/admin/dashboard/**`
+- `src/app/admin/feedback/**`
+- `src/app/admin/terms/**`
+- `src/app/admin/groups/**`
+- `src/app/student/feedback/**`
+- `src/app/mentor/feedback/**`
 
 Endpoints:
 
@@ -39,16 +48,22 @@ Endpoints:
 - `/api/admin/users/**`
 - `/api/imports/**`
 - `/api/dashboard/admin/**`
+- `/api/dashboard/admin/overview`
+- `/api/feedback/**`
+- `/api/admin/feedback/**`
+- `/api/admin/terms/**`
 
-### Person 2 - Groups, Invitations, Mentor Scheduling
+### Person 2 - Groups, Meetings & Notifications
 
 Owner:
 
 - `src/modules/groups/**`
 - `src/modules/mentoring/**`
+- `src/modules/notifications/**`
 - `src/app/student/groups/**`
 - `src/app/mentor/availability/**`
 - `src/app/mentor/groups/**`
+- `src/app/student/notifications/**`
 
 Endpoints:
 
@@ -67,19 +82,30 @@ Endpoints:
 - `/api/students/ungrouped`
 - `/api/dashboard/student/groups`
 - `/api/dashboard/mentor/**`
+- `/api/notifications/**`
+- `/api/group-recruitment-roles`
+- `/api/groups/{groupId}/lock`
+- `/api/groups/instructor/me`
+- `/api/groups/{groupId}/instructor`
+- `/api/groups/{groupId}/mentor/meetings/{meetingId}/cancel`
 
-Note: Neu endpoint co prefix `/api/groups/{groupId}` nhung la `/board`, `/tasks/**`, hoac `/problems/**` thi thuoc Person 3.
+Note: Neu endpoint co prefix `/api/groups/{groupId}` nhung la `/board`,
+`/tasks/**`, `/problems/**`, hoac `/milestones` thi thuoc Person 3. Cac endpoint
+`/lock`, `/instructor`, invitations, join requests va mentor meetings thuoc Person 2.
 
-### Person 3 - Tasks, Kanban, Problems, Problem Bank
+### Person 3 - Tasks, Milestones, Submissions & Grades
 
 Owner:
 
 - `src/modules/projects/**`
 - `src/modules/problems/**`
+- `src/modules/milestones/**`
 - `src/app/student/tasks/**`
 - `src/app/student/problems/**`
 - `src/app/admin/problems/**`
 - `src/app/student/boards/**`
+- `src/app/student/tasks/submissions/**`
+- `src/app/instructor/**`
 
 Endpoints:
 
@@ -97,6 +123,12 @@ Endpoints:
 - `/api/problem-domains`
 - `/api/admin/problem-domains/**`
 - `/api/problem-evaluation-criteria`
+- `/api/instructor/milestones/**`
+- `/api/instructor/submissions`
+- `/api/course-milestones/**`
+- `/api/groups/{groupId}/milestones`
+- `/api/milestone-submissions/**`
+- `/api/student-groups/{groupId}/average-grade`
 
 Note: Person 3 co the doc group id/member data de render UI, nhung khong sua module `groups` neu khong can.
 
@@ -109,13 +141,34 @@ Khong tu y sua cac file nay neu khong phai owner hoac chua bao team:
 - `src/shared/types/**`
 - `src/shared/constants/**`
 - `src/providers/app-providers.tsx`
+- `src/shared/components/layout/app-shell.tsx`
 - `src/app/layout.tsx`
 - `src/app/globals.css`
 - `src/modules/index.ts`
 
-Neu module can type/enum/query key chung moi, uu tien bao Person 1 them vao shared. Khong tao type trung lap moi module neu do la contract chung trong `API.md`.
+Shared baseline da duoc khai bao san trong `src/shared/types/enums.ts` va
+`src/shared/lib/query-keys.ts`: enum cua Feedback/Term/Milestone/Notification,
+query keys cua Notifications, Feedback, Terms, Milestones, instructor groups va
+Admin Overview. Neu can contract chung moi, chi Person 1 sua shared files.
+Khong tao type trung lap moi module neu do la contract chung trong `API.md`.
 
 `src/app/globals.css` chi duoc dung cho Tailwind import, theme tokens, CSS variables tuong thich `COLORS`, va base element rules. Khong them layout/style rieng cua module vao file nay.
+
+## Cross-Module Handoff (Khong Sua Chung File)
+
+- Person 2 implement va public export `useInstructorGroups` tu `modules/groups`.
+  Person 3 chi import hook public nay de render giao dien Instructor; khong sua
+  `modules/groups`.
+- Person 2 implement `NotificationBell` trong `modules/notifications`. Sau khi
+  public API nay on dinh, Person 1 mount no mot lan trong `AppShell`; Person 2
+  khong sua `AppShell` hoac provider.
+- Person 1 implement route Admin gan Instructor cho group trong
+  `src/app/admin/groups/**`; route nay chi dung public API tu `modules/groups`.
+- Neu can them navigation, chi Person 1 sua `AppShell`. Nguoi tao route gui
+  exact path/label/icon trong PR handoff, khong tu sua file shared.
+- `/api/instructor/milestones/**` va `/api/course-milestones/**` la aliases.
+  Person 3 dung prefix `/api/instructor/milestones/**` cho code moi; khong goi
+  cac endpoint `*/outcomes` vi Swagger danh dau deprecated.
 
 ## Module Folder Standard
 
@@ -269,8 +322,9 @@ type PageResponse<T> = {
 
 Important:
 
-- User role theo API chi co `"ADMIN" | "STUDENT" | "MENTOR"`.
-- Khong dung `"INSTRUCTOR"` cho API role.
+- User role theo API la `"ADMIN" | "STUDENT" | "MENTOR" | "INSTRUCTOR"`.
+- Route cua Instructor dung `AppShell role="INSTRUCTOR"` va bat dau tai
+  `/instructor/milestones`.
 - Ngay gio ISO dung `ISODateTimeString`.
 - ID backend la `number`.
 
@@ -367,16 +421,34 @@ queryKeys.tasks.detail(groupId, taskId)
 queryKeys.tasks.mine(filters)
 queryKeys.tasks.boards(groupId)
 queryKeys.groups.joinRequests(groupId)
-queryKeys.dashboard.student.progress()
-queryKeys.dashboard.student.projects()
-queryKeys.dashboard.student.groups()
-queryKeys.dashboard.mentor.meetings()
-queryKeys.dashboard.mentor.groups()
+queryKeys.dashboard.studentProgress()
+queryKeys.dashboard.studentProjects()
+queryKeys.dashboard.studentGroups()
+queryKeys.dashboard.mentorMeetings()
+queryKeys.dashboard.mentorGroups()
 queryKeys.dashboard.admin.timeline()
 queryKeys.dashboard.admin.projects()
 queryKeys.dashboard.admin.mentors()
 queryKeys.dashboard.admin.groups()
 queryKeys.dashboard.admin.executionStatus()
+queryKeys.dashboard.admin.overview(filters)
+queryKeys.groups.instructorMe(filters)
+queryKeys.groups.recruitmentRoles()
+queryKeys.notifications.list(filters)
+queryKeys.notifications.unreadCount()
+queryKeys.feedback.me(filters)
+queryKeys.feedback.received(filters)
+queryKeys.feedback.admin(filters)
+queryKeys.terms.list()
+queryKeys.milestones.list(filters)
+queryKeys.milestones.detail(milestoneId)
+queryKeys.milestones.group(groupId)
+queryKeys.milestones.submissions(milestoneId)
+queryKeys.milestones.submissionsByGroup(groupId)
+queryKeys.milestones.instructorSubmissions(filters)
+queryKeys.milestones.grades(groupId)
+queryKeys.milestones.gradeForSubmission(submissionId)
+queryKeys.milestones.averageGrade(groupId)
 ```
 
 Neu can key moi cho module cua minh:
@@ -459,16 +531,31 @@ Truoc khi sua code, AI phai:
 
 ## Handoff Summary For Teammates
 
+Neu ban la Person 1:
+
+- Hoan thanh Platform batch truoc: shared enum/query keys da co san; chi them
+  DTO chung khi Swagger bo sung contract moi.
+- Lam Admin Overview, Feedback, Terms va Admin group-instructor route trong
+  scope cua minh.
+- Cap nhat Admin Users de hien thi/tao/sua Instructor profile theo Swagger;
+  `UserRole` va login redirect cua INSTRUCTOR da duoc setup trong baseline.
+- Nhung thay doi `AppShell` chi duoc merge sau khi Person 2 public
+  `NotificationBell` va cac route da chot.
+
 Neu ban la Person 2:
 
 - Bat dau trong `src/modules/groups` va `src/modules/mentoring`.
+- Tao `src/modules/notifications` va `src/app/student/notifications`.
 - Implement API/types/hooks truoc, sau do moi lam UI route.
-- Dung `queryKeys.groups` va `queryKeys.mentoring`.
+- Dung `queryKeys.groups`, `queryKeys.mentoring` va `queryKeys.notifications`.
+- Public export `useInstructorGroups` va `NotificationBell`; khong sua
+  `AppShell`.
 
 Neu ban la Person 3:
 
 - Bat dau trong `src/modules/projects` cho task board/Kanban.
-- Bat dau trong `src/modules/problems` cho problem bank.
-- Dung `queryKeys.tasks` va `queryKeys.problems`.
+- Tao `src/modules/milestones` va `src/app/instructor`.
+- Dung `queryKeys.tasks`, `queryKeys.problems` va `queryKeys.milestones`.
+- Chi import `useInstructorGroups` tu public entry point cua `modules/groups`.
 
 Neu can shared contract moi, tao PR/commit rieng hoac bao Person 1 de them, tranh moi nguoi sua chung mot file cung luc.

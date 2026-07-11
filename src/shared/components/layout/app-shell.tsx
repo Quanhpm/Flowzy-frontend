@@ -59,6 +59,18 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
       label: "Availability",
     },
   ],
+  INSTRUCTOR: [
+    {
+      href: "/instructor/milestones",
+      icon: CalendarClock,
+      label: "Milestones",
+    },
+    {
+      href: "/instructor/submissions",
+      icon: ClipboardList,
+      label: "Submissions",
+    },
+  ],
 };
 
 export function AppShell({ children, role }: AppShellProps) {
