@@ -7,6 +7,7 @@ import {
   Database,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -44,12 +45,16 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { href: "/admin/users", icon: Users, label: "Users" },
     { href: "/admin/imports", icon: Database, label: "Imports" },
     { href: "/admin/problems", icon: BookOpen, label: "Problem Bank" },
+    { href: "/admin/feedback", icon: MessageSquare, label: "Feedback" },
+    { href: "/admin/terms", icon: CalendarClock, label: "Terms" },
+    { href: "/admin/groups", icon: Users, label: "Groups" },
   ],
   STUDENT: [
     { href: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/student/groups", icon: Users, label: "Groups" },
     { href: "/student/tasks", icon: ClipboardList, label: "Tasks" },
     { href: "/student/problems", icon: BookOpen, label: "Problems" },
+    { href: "/student/feedback", icon: MessageSquare, label: "Feedback" },
   ],
   MENTOR: [
     { href: "/mentor/groups", icon: Users, label: "Groups" },
@@ -58,6 +63,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
       icon: CalendarClock,
       label: "Availability",
     },
+    { href: "/mentor/feedback", icon: MessageSquare, label: "Feedback" },
   ],
   INSTRUCTOR: [
     {

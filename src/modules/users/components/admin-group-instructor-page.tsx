@@ -20,6 +20,7 @@ import { ApiError, cn } from "@/shared/lib";
 import { useAdminUsers } from "../hooks/use-admin-users";
 
 const INSTRUCTOR_PAGE_SIZE = 50;
+const GROUP_PAGE_SIZE = 10;
 const pageClassName = "grid min-w-0 gap-6";
 const filterClassName =
   "grid grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)_auto] items-end gap-3 max-[760px]:grid-cols-[minmax(0,1fr)]";
@@ -64,6 +65,7 @@ export function AdminGroupInstructorPage() {
     groupSearch: "",
     instructorSearch: "",
   });
+  const [groupPage, setGroupPage] = useState(0);
   const [instructorPage, setInstructorPage] = useState(0);
   const [selectedInstructorIds, setSelectedInstructorIds] = useState<
     Record<number, string>
@@ -85,6 +87,11 @@ export function AdminGroupInstructorPage() {
   });
   const assignInstructorMutation = useAssignGroupInstructor();
   const groups = groupsQuery.data?.data ?? [];
+  const groupTotalPages = Math.ceil(groups.length / GROUP_PAGE_SIZE);
+  const paginatedGroups = groups.slice(
+    groupPage * GROUP_PAGE_SIZE,
+    (groupPage + 1) * GROUP_PAGE_SIZE,
+  );
   const instructorPageData = instructorsQuery.data?.data;
   const instructors = instructorPageData?.content ?? [];
 
@@ -99,7 +106,13 @@ export function AdminGroupInstructorPage() {
       groupSearch: groupSearchInput.trim(),
       instructorSearch: instructorSearchInput.trim(),
     });
+    setGroupPage(0);
     setInstructorPage(0);
+    clearSelections();
+  }
+
+  function handleGroupPageChange(nextPage: number) {
+    setGroupPage(nextPage);
     clearSelections();
   }
 
@@ -260,7 +273,7 @@ export function AdminGroupInstructorPage() {
                 </tr>
               </thead>
               <tbody>
-                {groups.map((group) => {
+                {paginatedGroups.map((group) => {
                   const selectedInstructorId = selectedInstructorIds[group.id] ?? "";
                   const isSameInstructor =
                     Boolean(selectedInstructorId) &&
@@ -369,6 +382,33 @@ export function AdminGroupInstructorPage() {
               </tbody>
             </table>
           </div>
+          {groupTotalPages > 1 && (
+            <div className="flex items-center justify-between gap-4 border-t border-border px-6 py-4 max-[680px]:flex-col max-[680px]:items-start">
+              <span className="text-sm text-muted">
+                Page {groupPage + 1} of {groupTotalPages} ({groups.length} groups)
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  disabled={assigningGroupId !== null || groupPage === 0}
+                  onClick={() => handleGroupPageChange(Math.max(0, groupPage - 1))}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={
+                    assigningGroupId !== null || groupPage >= groupTotalPages - 1
+                  }
+                  onClick={() => handleGroupPageChange(groupPage + 1)}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>
