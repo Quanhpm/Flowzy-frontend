@@ -1,14 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarClock, ChevronDown, ChevronUp, Users } from "lucide-react";
+import {
+  CalendarClock,
+  ChevronDown,
+  ChevronUp,
+  Users,
+  XCircle,
+} from "lucide-react";
 
 import {
   MentorDashboardSection,
   useMentorDashboardGroups,
 } from "@/modules/dashboards";
 import type { DashboardGroupProgressDto } from "@/modules/dashboards";
-import { useGroupMeetings } from "@/modules/mentoring";
+import { useCancelMeeting, useGroupMeetings } from "@/modules/mentoring";
+import type { MentorMeetingDto } from "@/modules/mentoring";
 import {
   Badge,
   Button,
@@ -23,6 +30,7 @@ import type { GroupStatus } from "@/shared/types";
 
 import { useGroup, useMentorGroups } from "../../hooks";
 import type { GroupDetailDto, GroupSummaryDto } from "../../types";
+import { ConfirmDialog } from "../student/confirm-dialog";
 
 const pageClassName = "grid min-w-0 gap-6";
 const gridClassName =
@@ -108,7 +116,11 @@ function ProgressSummary({
 
 function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
   const meetingsQuery = useGroupMeetings(group.id);
+  const cancelMeetingMutation = useCancelMeeting();
   const meetings = meetingsQuery.data?.data ?? [];
+  const [meetingToCancel, setMeetingToCancel] =
+    useState<MentorMeetingDto | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   return (
     <div className="grid gap-5 border-t border-border pt-5">
@@ -149,6 +161,11 @@ function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
         <h3 className="m-0 text-sm font-bold text-foreground">
           Upcoming meetings
         </h3>
+        {successMessage && (
+          <p className="m-0 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">
+            {successMessage}
+          </p>
+        )}
         {meetingsQuery.isLoading ? (
           <LoadingState title="Loading meetings" />
         ) : meetingsQuery.isError ? (
@@ -191,12 +208,45 @@ function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
                   >
                     Meet
                   </Button>
+                  {meeting.status === "SCHEDULED" && (
+                    <Button
+                      disabled={cancelMeetingMutation.isPending}
+                      icon={<XCircle size={15} />}
+                      onClick={() => {
+                        setSuccessMessage("");
+                        setMeetingToCancel(meeting);
+                      }}
+                      size="sm"
+                      variant="danger"
+                    >
+                      Cancel meeting
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {meetingToCancel && (
+        <ConfirmDialog
+          confirmLabel="Cancel meeting"
+          description={`Cancel the meeting scheduled for ${formatDateTime(
+            meetingToCancel.startAt,
+          )}?`}
+          onClose={() => setMeetingToCancel(null)}
+          onConfirm={async () => {
+            await cancelMeetingMutation.mutateAsync({
+              groupId: group.id,
+              meetingId: meetingToCancel.id,
+            });
+            setSuccessMessage("Meeting canceled successfully.");
+          }}
+          title="Cancel mentor meeting"
+          tone="danger"
+        />
+      )}
     </div>
   );
 }

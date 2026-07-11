@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LogOut, Pencil, UserPlus } from "lucide-react";
+import { Lock, LogOut, Pencil, Unlock, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -20,6 +20,7 @@ import {
   useRemoveMember,
   useTransferLeadership,
   useUpdateGroup,
+  useUpdateGroupLock,
 } from "../../hooks";
 import type { GroupDetailDto, GroupMemberDto } from "../../types";
 import { ConfirmDialog } from "./confirm-dialog";
@@ -28,6 +29,7 @@ import { InvitationList } from "./invitation-list";
 import { JoinRequestSection } from "./join-request-section";
 import { MeetingBookingSection } from "./meeting-booking-section";
 import { MemberList } from "./member-list";
+import { RecruitmentNeeds } from "../recruitment-needs";
 
 type ConfirmAction = {
   confirmLabel: string;
@@ -84,12 +86,14 @@ export function ActiveGroupWorkspace({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [localError, setLocalError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const updateGroupMutation = useUpdateGroup();
   const cancelInvitationMutation = useCancelInvitation();
   const leaveGroupMutation = useLeaveGroup();
   const removeMemberMutation = useRemoveMember();
   const transferLeadershipMutation = useTransferLeadership();
+  const updateGroupLockMutation = useUpdateGroupLock();
   const invitationsQuery = useGroupInvitations(group.id);
 
   const invitations = invitationsQuery.data?.data ?? [];
@@ -97,6 +101,7 @@ export function ActiveGroupWorkspace({
 
   function requestLeaveGroup() {
     setLocalError("");
+    setSuccessMessage("");
 
     if (isLeader && group.members.length > 1) {
       setLocalError("Transfer leadership before leaving this group.");
@@ -113,6 +118,14 @@ export function ActiveGroupWorkspace({
   }
 
   function requestRemoveMember(member: GroupMemberDto) {
+    setLocalError("");
+    setSuccessMessage("");
+
+    if (group.isLock) {
+      setLocalError("Unlock group membership before removing members.");
+      return;
+    }
+
     setConfirmAction({
       confirmLabel: "Remove member",
       description: `Remove ${member.fullName} from this group?`,
@@ -139,6 +152,32 @@ export function ActiveGroupWorkspace({
     });
   }
 
+  function requestToggleGroupLock() {
+    const isLock = !group.isLock;
+
+    setLocalError("");
+    setSuccessMessage("");
+    setConfirmAction({
+      confirmLabel: isLock ? "Lock group" : "Unlock group",
+      description: isLock
+        ? "Lock membership? Students will no longer be able to join, and member changes will be disabled."
+        : "Unlock membership so students can join and members can be managed again?",
+      onConfirm: async () => {
+        await updateGroupLockMutation.mutateAsync({
+          groupId: group.id,
+          payload: { isLock },
+        });
+        setSuccessMessage(
+          isLock
+            ? "Group membership is now locked."
+            : "Group membership is now unlocked.",
+        );
+      },
+      title: isLock ? "Lock group membership" : "Unlock group membership",
+      tone: isLock ? "danger" : "default",
+    });
+  }
+
   return (
     <div className="grid min-w-0 gap-6">
       <PageHeader
@@ -155,9 +194,17 @@ export function ActiveGroupWorkspace({
                 </Button>
                 <Button
                   icon={<UserPlus size={16} />}
+                  disabled={group.isLock}
                   onClick={() => router.push("/student/groups/invite")}
                 >
                   Invite member
+                </Button>
+                <Button
+                  icon={group.isLock ? <Unlock size={16} /> : <Lock size={16} />}
+                  onClick={requestToggleGroupLock}
+                  variant={group.isLock ? "secondary" : "danger"}
+                >
+                  {group.isLock ? "Unlock group" : "Lock group"}
                 </Button>
               </>
             )}
@@ -180,10 +227,26 @@ export function ActiveGroupWorkspace({
           {localError}
         </p>
       )}
+      {successMessage && (
+        <p className="m-0 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">
+          {successMessage}
+        </p>
+      )}
 
       <Card>
         <CardHeader
-          actions={<Badge tone={group.status === "ACTIVE" ? "success" : "neutral"}>{group.status}</Badge>}
+          actions={
+            <div className="flex flex-wrap justify-end gap-2">
+              <Badge tone={group.status === "ACTIVE" ? "success" : "neutral"}>
+                {group.status}
+              </Badge>
+              {group.isLock && (
+                <Badge icon={<Lock size={13} />} tone="danger">
+                  Locked
+                </Badge>
+              )}
+            </div>
+          }
           description={`${group.term} - ${group.courseCode} - ${group.groupNo}`}
           title={group.name}
         />
@@ -205,12 +268,14 @@ export function ActiveGroupWorkspace({
                 {group.ideaDescription ?? "No idea description yet."}
               </p>
             </div>
+            <RecruitmentNeeds needs={group.recruitmentNeeds} />
           </div>
         </CardContent>
       </Card>
 
       <MemberList
         group={group}
+        isMembershipLocked={group.isLock}
         isLeader={isLeader}
         onRemoveMember={requestRemoveMember}
         onTransferLeadership={requestTransferLeadership}
@@ -218,7 +283,10 @@ export function ActiveGroupWorkspace({
 
       {isLeader && (
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] gap-6 max-[1080px]:grid-cols-1">
-          <JoinRequestSection groupId={group.id} />
+          <JoinRequestSection
+            groupId={group.id}
+            isMembershipLocked={group.isLock}
+          />
           <InvitationList
             emptyDescription="No sent invitations for this group."
             invitations={invitations}
