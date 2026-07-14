@@ -48,7 +48,8 @@ export function ResponsiveDialog({
     <div
       className={cn(
         "fixed inset-0 z-50 flex min-w-0 items-end justify-center overflow-hidden bg-foreground/30 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm min-[481px]:items-center min-[481px]:p-4",
-        mobileMode === "fullscreen" && "p-0",
+        mobileMode === "fullscreen" &&
+          "max-[760px]:items-stretch max-[760px]:p-0",
       )}
     >
       {closeOnBackdrop ? (
@@ -71,7 +72,7 @@ export function ResponsiveDialog({
           "relative flex max-h-[calc(100dvh-env(safe-area-inset-top))] w-full min-w-0 flex-col overflow-hidden border border-border bg-surface shadow-modal min-[481px]:max-h-[calc(100dvh-2rem)] min-[481px]:max-w-[640px] min-[481px]:rounded-2xl",
           mobileMode === "sheet" && "rounded-t-2xl border-b-0",
           mobileMode === "fullscreen" &&
-            "h-dvh max-h-dvh rounded-none border-y-0 min-[481px]:h-auto min-[481px]:border-y",
+            "h-dvh max-h-dvh rounded-none border-y-0 min-[761px]:h-auto min-[761px]:max-h-[calc(100dvh-2rem)] min-[761px]:rounded-2xl min-[761px]:border-y",
           className,
         )}
         ref={dialogRef}
