@@ -1,3 +1,4 @@
-export { InstructorMilestonesPage } from "./instructor-milestones-page";
-export { InstructorSubmissionsPage } from "./instructor-submissions-page";
-export { StudentMilestoneSubmissionsPanel } from "./student-milestone-submissions-panel";
+export { InstructorMilestonesPage } from "./instructor/instructor-milestones-page";
+export { InstructorSubmissionsPage } from "./instructor/instructor-submissions-page";
+export { StudentMilestoneSubmissionsPanel } from "./student/student-milestone-submissions-panel";
+export { StudentSubmissionsPage } from "./student/student-submissions-page";
