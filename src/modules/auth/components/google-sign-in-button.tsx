@@ -71,7 +71,7 @@ export function GoogleSignInButton({
   if (!GOOGLE_CLIENT_ID) {
     return (
       <button
-        className="flex h-12 w-full items-center justify-center gap-[11px] rounded-xl border border-border bg-surface text-sm font-medium text-foreground transition-[background-color,border-color] duration-[160ms] ease-in-out hover:border-slate-300 hover:bg-background"
+        className="flex min-h-[50px] w-full items-center justify-center gap-[11px] rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground transition-[background-color,border-color] duration-[160ms] ease-in-out hover:border-slate-300 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
         type="button"
         onClick={() =>
           onConfigurationError(
@@ -88,7 +88,7 @@ export function GoogleSignInButton({
   return (
     <div
       className={cn(
-        "relative min-h-11 w-full overflow-hidden rounded-xl",
+        "relative min-h-[50px] w-full overflow-hidden rounded-xl",
         disabled && "opacity-60",
       )}
       aria-busy={!isReady || disabled}
@@ -105,7 +105,7 @@ export function GoogleSignInButton({
       />
       <div
         ref={buttonContainerRef}
-        className="grid min-h-11 w-full place-items-center [&>div]:max-w-full [&_iframe]:max-w-full"
+        className="grid min-h-[50px] w-full place-items-center [&>div]:max-w-full [&_iframe]:max-w-full"
       />
       {!isReady && (
         <div className="absolute inset-0 flex items-center justify-center gap-[9px] rounded-xl border border-border bg-surface text-[13px] font-medium text-muted">
