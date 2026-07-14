@@ -43,6 +43,10 @@ Owner:
 - `src/app/admin/feedback/**`
 - `src/app/admin/terms/**`
 - `src/app/admin/groups/**`
+- `src/app/admin/profile/**`
+- `src/app/student/profile/**`
+- `src/app/mentor/profile/**`
+- `src/app/instructor/profile/**`
 - `src/app/student/feedback/**`
 - `src/app/mentor/feedback/**`
 
@@ -56,6 +60,7 @@ Endpoints:
 - `/api/feedback/**`
 - `/api/admin/feedback/**`
 - `/api/admin/terms/**`
+- `/api/profile/**`
 - Phase 0 only: `/api/groups/instructor/me`
 - Phase 0 only: `/api/groups/{groupId}/instructor`
 

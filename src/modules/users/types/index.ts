@@ -72,6 +72,30 @@ export type AdminUserDetailDto = {
   groupMemberships: StudentGroupMembershipDto[];
 };
 
+export type SelfProfileResponseDto = AdminUserDetailDto;
+
+export type UpdateSelfProfileRequest = {
+  fullName?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: Gender;
+  address?: string;
+  major?: string;
+  cohort?: string;
+  className?: string;
+  jobTitle?: string;
+  company?: string;
+  expertise?: string;
+  yearsOfExperience?: number;
+  linkedinUrl?: string;
+  department?: string;
+};
+
+export type ChangeOwnPasswordRequest = {
+  currentPassword: string;
+  newPassword: string;
+};
+
 export type AdminUserSummaryDto = {
   id: number;
   email: string;

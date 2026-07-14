@@ -326,11 +326,11 @@ export function AdminGroupInstructorPage() {
                       </td>
                       <td className={tableCellClassName}>
                         {group.instructorName || group.instructorCode ? (
-                          <div className="grid gap-1">
-                            <Badge tone="neutral">
+                          <div className="grid min-w-0 gap-1">
+                            <span className="min-w-0 break-words font-medium">
                               {group.instructorName ?? "Assigned instructor"}
-                            </Badge>
-                            <span className="text-xs text-muted">
+                            </span>
+                            <span className="break-all text-xs text-muted">
                               {group.instructorCode ?? "No instructor code"}
                             </span>
                           </div>

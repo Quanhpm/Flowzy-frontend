@@ -1,6 +1,6 @@
 import type { FormEvent, ReactNode } from "react";
 import { useState } from "react";
-import { cn } from "@/shared/lib";
+import { cn, getMinimumDateTimeLocal } from "@/shared/lib";
 import {
   Button,
   DateTimeInput,
@@ -259,6 +259,7 @@ export function TaskDetailPanel({ groupId, taskId, onClose }: TaskDetailPanelPro
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [isEditingTitleDesc, setIsEditingTitleDesc] = useState(false);
+  const [dateError, setDateError] = useState("");
 
   const handleStartEdit = () => {
     if (task) {
@@ -294,13 +295,21 @@ export function TaskDetailPanel({ groupId, taskId, onClose }: TaskDetailPanelPro
   const handleDateChange = (val: string) => {
     if (!task) return;
     if (!val) {
+      setDateError("");
       updateTaskMutation.mutate({
         clearDueAt: true,
         version: task.version,
       });
     } else {
+      const dueAt = new Date(val).getTime();
+      if (!Number.isFinite(dueAt) || dueAt <= Date.now()) {
+        setDateError("Due date must be in the future.");
+        return;
+      }
+
+      setDateError("");
       updateTaskMutation.mutate({
-        dueAt: new Date(val).toISOString(),
+        dueAt: new Date(dueAt).toISOString(),
         version: task.version,
       });
     }
@@ -515,9 +524,13 @@ export function TaskDetailPanel({ groupId, taskId, onClose }: TaskDetailPanelPro
                 Due Date
               </label>
               <DateTimeInput
+                min={getMinimumDateTimeLocal()}
                 value={toLocalDatetime(task.dueAt)}
                 onChange={(e) => handleDateChange(e.target.value)}
               />
+              {dateError && (
+                <p className="mt-1 text-xs text-red-600">{dateError}</p>
+              )}
             </div>
           </div>
 
