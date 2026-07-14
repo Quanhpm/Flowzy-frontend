@@ -15,7 +15,7 @@ import {
   TextInput,
   Select,
 } from "@/shared/components";
-import { cn } from "@/shared/lib";
+import { cn, getMinimumDateTimeLocal } from "@/shared/lib";
 import type { TaskPriority, TaskStatus, EntityId } from "@/shared/types";
 import { useCreateTaskBoard, useGroupBoard, useGroupDetails, useTaskBoards } from "../hooks";
 import { useCreateTask, useReorderTask } from "../hooks/use-task-mutations";
@@ -116,6 +116,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
   const [newPriority, setNewPriority] = useState<TaskPriority>("MEDIUM");
   const [newDueAt, setNewDueAt] = useState("");
   const [newAssignees, setNewAssignees] = useState<number[]>([]);
+  const [taskFormError, setTaskFormError] = useState("");
 
   // Queries
   const {
@@ -312,6 +313,16 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
     e.preventDefault();
     if (!newTitle.trim() || !addTaskStatus) return;
 
+    if (newDueAt) {
+      const dueAt = new Date(newDueAt).getTime();
+      if (!Number.isFinite(dueAt) || dueAt <= Date.now()) {
+        setTaskFormError("Due date must be in the future.");
+        return;
+      }
+    }
+
+    setTaskFormError("");
+
     createTaskMutation.mutate(
       {
         title: newTitle.trim(),
@@ -331,6 +342,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
           setNewPriority("MEDIUM");
           setNewDueAt("");
           setNewAssignees([]);
+          setTaskFormError("");
         },
       },
     );
@@ -455,7 +467,10 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
             label={col.label}
             tasks={getTasksByStatus(col.status)}
             onTaskClick={(id) => setSelectedTaskId(id)}
-            onAddTaskClick={(status) => setAddTaskStatus(status)}
+            onAddTaskClick={(status) => {
+              setTaskFormError("");
+              setAddTaskStatus(status);
+            }}
             onTaskMove={handleTaskMove}
             onTaskStatusChange={handleTaskStatusChange}
             onDragStart={handleDragStart}
@@ -579,7 +594,13 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                 {board.overdueTaskCount} overdue
               </span>
             </div>
-            <Button onClick={() => setAddTaskStatus("TODO")} size="sm">
+            <Button
+              onClick={() => {
+                setTaskFormError("");
+                setAddTaskStatus("TODO");
+              }}
+              size="sm"
+            >
               <Plus className="size-4" />
               New Task
             </Button>
@@ -688,7 +709,10 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
           footer={
             <>
               <Button
-                onClick={() => setAddTaskStatus(null)}
+                onClick={() => {
+                  setTaskFormError("");
+                  setAddTaskStatus(null);
+                }}
                 variant="secondary"
               >
                 Cancel
@@ -703,7 +727,10 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
             </>
           }
           mobileMode="fullscreen"
-          onClose={() => setAddTaskStatus(null)}
+          onClose={() => {
+            setTaskFormError("");
+            setAddTaskStatus(null);
+          }}
           title={`Add Task to ${
             columnsConfig.find((column) => column.status === addTaskStatus)
               ?.label ?? "Board"
@@ -757,11 +784,21 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                     Due Date
                   </label>
                   <DateTimeInput
+                    min={getMinimumDateTimeLocal()}
                     value={newDueAt}
-                    onChange={(e) => setNewDueAt(e.target.value)}
+                    onChange={(e) => {
+                      setTaskFormError("");
+                      setNewDueAt(e.target.value);
+                    }}
                   />
                 </div>
               </div>
+
+              {taskFormError && (
+                <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {taskFormError}
+                </p>
+              )}
 
               <div>
                 <label className="mb-1.5 block text-xs font-bold tracking-wider text-muted-foreground uppercase">

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { Button, ResponsiveDialog } from "@/shared/components";
-import { ApiError } from "@/shared/lib";
+import { ApiError, cn } from "@/shared/lib";
 
 type ConfirmDialogProps = {
   children?: ReactNode;
@@ -50,8 +50,11 @@ export function ConfirmDialog({
 
   return (
     <ResponsiveDialog
-      bodyClassName="grid gap-4"
-      className="min-[761px]:max-w-[520px]"
+      bodyClassName={cn(
+        "grid flex-none gap-4",
+        !children && !error && "hidden",
+      )}
+      className="min-[761px]:max-w-[520px] [&>footer]:border-t-0 [&>header]:border-b-0"
       closeOnBackdrop={false}
       description={description}
       footer={

@@ -34,7 +34,7 @@ import { ConfirmDialog } from "../student/confirm-dialog";
 
 const pageClassName = "grid min-w-0 gap-6";
 const gridClassName =
-  "grid grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] gap-4";
+  "grid grid-cols-3 gap-4 max-[960px]:grid-cols-2 max-[760px]:grid-cols-1";
 const errorPanelClassName =
   "rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm leading-normal text-red-700";
 const detailGridClassName =

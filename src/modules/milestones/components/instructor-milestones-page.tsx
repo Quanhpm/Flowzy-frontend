@@ -24,7 +24,7 @@ import {
   Select,
   TextInput,
 } from "@/shared/components";
-import { ApiError } from "@/shared/lib";
+import { ApiError, getMinimumDateTimeLocal } from "@/shared/lib";
 import type { CourseMilestoneStatus } from "@/shared/types";
 
 import {
@@ -201,6 +201,13 @@ function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
       throw new Error("Position must be a whole number greater than or equal to 0.");
     }
 
+    if (deadlineAt) {
+      const deadline = new Date(deadlineAt).getTime();
+      if (!Number.isFinite(deadline) || deadline <= Date.now()) {
+        throw new Error("Deadline must be in the future.");
+      }
+    }
+
     return {
       deadlineAt: toIsoDateTime(deadlineAt),
       description: optional(description),
@@ -369,6 +376,7 @@ function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
             <input
               className="h-[50px] min-w-0 rounded-xl border border-border bg-surface px-3.5 text-base outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)] min-[761px]:text-sm"
               onChange={(event) => setDeadlineAt(event.target.value)}
+              min={getMinimumDateTimeLocal()}
               type="datetime-local"
               value={deadlineAt}
             />

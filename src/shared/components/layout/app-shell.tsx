@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  UserRound,
   Users,
   X,
 } from "lucide-react";
@@ -52,6 +53,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { href: "/admin/feedback", icon: MessageSquare, label: "Feedback" },
     { href: "/admin/terms", icon: CalendarClock, label: "Terms" },
     { href: "/admin/groups", icon: Users, label: "Groups" },
+    { href: "/admin/profile", icon: UserRound, label: "Profile" },
   ],
   STUDENT: [
     { href: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -60,6 +62,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { href: "/student/problems", icon: BookOpen, label: "Problems" },
     { href: "/student/feedback", icon: MessageSquare, label: "Feedback" },
     { href: "/student/notifications", icon: Bell, label: "Notifications" },
+    { href: "/student/profile", icon: UserRound, label: "Profile" },
   ],
   MENTOR: [
     { href: "/mentor/groups", icon: Users, label: "Groups" },
@@ -69,6 +72,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
       label: "Availability",
     },
     { href: "/mentor/feedback", icon: MessageSquare, label: "Feedback" },
+    { href: "/mentor/profile", icon: UserRound, label: "Profile" },
   ],
   INSTRUCTOR: [
     {
@@ -81,6 +85,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
       icon: ClipboardList,
       label: "Submissions",
     },
+    { href: "/instructor/profile", icon: UserRound, label: "Profile" },
   ],
 };
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { LockKeyhole } from "lucide-react";
+import type { FormEvent } from "react";
+import { useId, useState } from "react";
+import { LockKeyhole, Plus } from "lucide-react";
 
 import {
   Badge,
@@ -11,10 +12,15 @@ import {
   LoadingState,
   PageHeader,
   ResponsiveDialog,
+  TextInput,
 } from "@/shared/components";
 import { ApiError, cn } from "@/shared/lib";
 
-import { useAcademicTerms, useCloseAcademicTerm } from "../hooks";
+import {
+  useAcademicTerms,
+  useCloseAcademicTerm,
+  useCreateAcademicTerm,
+} from "../hooks";
 import type { AcademicTermResponseDto } from "../types";
 
 const pageClassName = "grid min-w-0 gap-6";
@@ -41,6 +47,12 @@ function getCloseErrorMessage(error: unknown) {
     : "Unable to complete this action. Please try again.";
 }
 
+function getCreateErrorMessage(error: unknown) {
+  return error instanceof ApiError
+    ? error.message
+    : "Unable to create the academic term. Please try again.";
+}
+
 function formatDateTime(value: string | null) {
   if (!value) return "-";
 
@@ -54,6 +66,90 @@ function getFeedbackProgress(term: AcademicTermResponseDto) {
   if (!term.totalExpectedFeedbacks) return 0;
   return Math.round(
     (term.totalSubmittedFeedbacks / term.totalExpectedFeedbacks) * 100,
+  );
+}
+
+type CreateTermModalProps = {
+  onClose: () => void;
+};
+
+function CreateTermModal({ onClose }: CreateTermModalProps) {
+  const createTermMutation = useCreateAcademicTerm();
+  const formId = useId();
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const normalizedCode = code.trim();
+
+    if (!normalizedCode) {
+      setError("Term code is required.");
+      return;
+    }
+
+    if (normalizedCode.length > 30) {
+      setError("Term code must be 30 characters or fewer.");
+      return;
+    }
+
+    setError("");
+
+    try {
+      await createTermMutation.mutateAsync({ code: normalizedCode });
+      onClose();
+    } catch (mutationError) {
+      setError(getCreateErrorMessage(mutationError));
+    }
+  }
+
+  return (
+    <ResponsiveDialog
+      bodyClassName="grid gap-4"
+      className="min-[761px]:max-w-[510px]"
+      closeLabel="Close create term dialog"
+      closeOnBackdrop={false}
+      description="Create an open term that students can select when creating a group."
+      footer={
+        <>
+          <Button
+            disabled={createTermMutation.isPending}
+            onClick={onClose}
+            variant="secondary"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={createTermMutation.isPending}
+            form={formId}
+            icon={<Plus size={16} />}
+            type="submit"
+          >
+            {createTermMutation.isPending ? "Creating..." : "Create term"}
+          </Button>
+        </>
+      }
+      onClose={onClose}
+      title="Create academic term"
+    >
+      <form className="grid gap-3" id={formId} onSubmit={handleSubmit}>
+        <TextInput
+          aria-invalid={Boolean(error)}
+          autoFocus
+          error={error}
+          hint={`${code.length}/30`}
+          label="Term code"
+          maxLength={30}
+          onChange={(event) => {
+            setCode(event.target.value);
+            if (error) setError("");
+          }}
+          placeholder="e.g. FA26"
+          required
+          value={code}
+        />
+      </form>
+    </ResponsiveDialog>
   );
 }
 
@@ -127,13 +223,23 @@ function CloseTermModal({ onClose, term }: CloseTermModalProps) {
 
 export function AdminTermsPage() {
   const termsQuery = useAcademicTerms();
-  const [termToClose, setTermToClose] = useState<AcademicTermResponseDto | null>(null);
+  const [isCreateTermOpen, setIsCreateTermOpen] = useState(false);
+  const [termToClose, setTermToClose] =
+    useState<AcademicTermResponseDto | null>(null);
   const terms = termsQuery.data?.data ?? [];
 
   return (
     <div className={pageClassName}>
       <PageHeader
-        description="Review term-level feedback progress and close a term when its academic cycle is complete."
+        actions={
+          <Button
+            icon={<Plus size={16} />}
+            onClick={() => setIsCreateTermOpen(true)}
+          >
+            Create term
+          </Button>
+        }
+        description="Create academic terms, review feedback progress, and close a term when its cycle is complete."
         eyebrow="Admin"
         title="Academic terms"
       />
@@ -289,6 +395,9 @@ export function AdminTermsPage() {
 
       {termToClose && (
         <CloseTermModal onClose={() => setTermToClose(null)} term={termToClose} />
+      )}
+      {isCreateTermOpen && (
+        <CreateTermModal onClose={() => setIsCreateTermOpen(false)} />
       )}
     </div>
   );

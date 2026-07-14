@@ -1011,6 +1011,18 @@ GET /api/students/ungrouped
 
 ---
 
+#### 3.12 Get Student by ID
+```
+GET /api/students/{id}
+```
+**Auth Required:** Yes (STUDENT)
+
+**Path Parameters:** `id` (long) — Student profile ID
+
+**Response:** `APIResponse<StudentProfileDto>`
+
+---
+
 ### 4. Group Invitations
 
 #### 4.1 Invite Student to Group
@@ -2356,6 +2368,7 @@ token; response van boc trong `ApiResponse<T>` tru khi Swagger ghi khac.
 | PUT | `/api/feedback/{id}` | `{ rating, comment? }` | Submit hoac cap nhat feedback |
 | GET | `/api/admin/feedback` | `page?`, `size?`, `term?`, `courseCode?`, `targetType?`, `targetId?`, `status?` | Admin xem feedback co danh tinh |
 | GET | `/api/admin/terms` | — | Danh sach ky hoc va tien do feedback |
+| GET | `/api/terms/available` | — | Danh sach ky hoc OPEN cho student tao group |
 | PATCH | `/api/admin/terms/{term}/close` | — | Dong ky hoc |
 
 `rating` bat buoc, trong khoang 1..5; `comment` toi da 2,000 ky tu.
@@ -2436,3 +2449,15 @@ maxScore, feedback, submitted/graded timestamps va version.
 `CreateMilestoneGradeRequest` bat buoc `score` (co `instructorId?`, `feedback?`);
 update grade cung bat buoc `score`. `AverageGradeDto` co `averageGrade` va
 `average` — UI can chap nhan gia tri khong null nao backend tra ve.
+
+### 20. Self Profile
+
+| Method | Path | Payload | Muc dich |
+|--------|------|---------|----------|
+| GET | `/api/profile/me` | — | Lay account va profile theo role cua user hien tai |
+| PATCH | `/api/profile/me` | `UpdateSelfProfileRequest` | Cap nhat cac profile field an toan theo role |
+| PATCH | `/api/profile/me/password` | `{ currentPassword, newPassword }` | Doi mat khau sau khi xac minh mat khau hien tai |
+
+`SelfProfileResponse` gom account fields, `studentProfile`, `mentorProfile`,
+`instructorProfile` va `groupMemberships`. Email, code, role va status la
+read-only. `newPassword` toi thieu 6 ky tu; `currentPassword` bat buoc.

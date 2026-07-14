@@ -59,7 +59,7 @@ type ConfirmAction = {
 
 type GroupsSection = "workspace" | "discover" | "invitations";
 
-const DISCOVER_PAGE_SIZE = 6;
+const DISCOVER_PAGE_SIZE = 8;
 
 function getErrorMessage(error: unknown) {
   return error instanceof ApiError

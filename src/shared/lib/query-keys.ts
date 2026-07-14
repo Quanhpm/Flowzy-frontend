@@ -5,6 +5,10 @@ export const queryKeys = {
     all: ["auth"] as const,
     me: ["auth", "me"] as const,
   },
+  profile: {
+    all: ["profile"] as const,
+    me: () => [...queryKeys.profile.all, "me"] as const,
+  },
   users: {
     all: ["admin-users"] as const,
     lists: () => [...queryKeys.users.all, "list"] as const,
@@ -41,6 +45,7 @@ export const queryKeys = {
   },
   students: {
     all: ["students"] as const,
+    detail: (id: number) => [...queryKeys.students.all, "detail", id] as const,
     ungrouped: (filters?: QueryFilters) =>
       [...queryKeys.students.all, "ungrouped", filters ?? {}] as const,
   },
@@ -116,6 +121,7 @@ export const queryKeys = {
   terms: {
     all: ["terms"] as const,
     list: () => [...queryKeys.terms.all, "list"] as const,
+    available: () => [...queryKeys.terms.all, "available"] as const,
   },
   milestones: {
     all: ["milestones"] as const,

@@ -11,6 +11,7 @@ import {
   TextInput,
 } from "@/shared/components";
 import { ApiError, cn } from "@/shared/lib";
+import { useAvailableAcademicTerms } from "@/modules/feedback";
 
 import { useRecruitmentRoles } from "../../hooks";
 import type {
@@ -299,6 +300,8 @@ function updateGroupPayload(form: GroupFormState): UpdateGroupRequest {
 export function GroupFormModal(props: GroupFormModalProps) {
   const { mode, onClose } = props;
   const formId = useId();
+  const availableTermsQuery = useAvailableAcademicTerms(mode === "create");
+  const availableTerms = availableTermsQuery.data?.data ?? [];
   const [form, setForm] = useState<GroupFormState>(() =>
     mode === "edit" ? createFormFromGroup(props.group) : EMPTY_GROUP_FORM,
   );
@@ -383,13 +386,42 @@ export function GroupFormModal(props: GroupFormModalProps) {
           )}
 
           <div className="grid grid-cols-2 gap-4 max-[680px]:grid-cols-1">
-            <TextInput
-              disabled={mode === "edit"}
+            <Select
+              disabled={
+                mode === "edit" ||
+                availableTermsQuery.isLoading ||
+                availableTermsQuery.isError ||
+                availableTerms.length === 0
+              }
               label="Term"
               onChange={(event) => updateField("term", event.target.value)}
-              placeholder="Summer2026"
+              required={mode === "create"}
               value={form.term}
-            />
+            >
+              {mode === "create" ? (
+                <option value="">
+                  {availableTermsQuery.isLoading
+                    ? "Loading terms..."
+                    : availableTermsQuery.isError
+                      ? "Unable to load terms"
+                      : availableTerms.length === 0
+                        ? "No terms available"
+                        : "Select term"}
+                </option>
+              ) : (
+                <option value={form.term}>{form.term}</option>
+              )}
+              {availableTerms.map((term) => (
+                <option key={term.id} value={term.code}>
+                  {term.code}
+                </option>
+              ))}
+            </Select>
+            {mode === "create" && availableTermsQuery.isError && (
+              <p className="-mt-2 m-0 text-xs text-red-700">
+                {getErrorMessage(availableTermsQuery.error)}
+              </p>
+            )}
             <Select
               disabled={mode === "edit"}
               label="Course code"

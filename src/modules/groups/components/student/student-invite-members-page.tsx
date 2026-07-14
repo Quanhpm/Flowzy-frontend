@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
+  Eye,
   Mail,
   Search,
   Send,
@@ -36,6 +37,7 @@ import {
   useUngroupedStudents,
 } from "../../hooks";
 import type { GroupDetailDto } from "../../types";
+import { StudentProfileModal } from "./student-profile-modal";
 
 function getErrorMessage(error: unknown) {
   return error instanceof ApiError
@@ -66,6 +68,7 @@ function StudentInviteRow({
   onInvite,
   onMessageChange,
   onOpen,
+  onView,
   student,
 }: {
   activeStudentId: number | null;
@@ -75,6 +78,7 @@ function StudentInviteRow({
   onInvite: (student: StudentProfileDto) => void;
   onMessageChange: (message: string) => void;
   onOpen: (student: StudentProfileDto) => void;
+  onView: (student: StudentProfileDto) => void;
   student: StudentProfileDto;
 }) {
   const isOpen = activeStudentId === student.id;
@@ -95,15 +99,24 @@ function StudentInviteRow({
             {student.email} - {student.className ?? "No class"}
           </span>
         </div>
-        <Button
-          className="max-[480px]:min-h-11 max-[480px]:w-full"
-          icon={<UserPlus size={16} />}
-          onClick={() => onOpen(student)}
-          size="sm"
-          variant={isOpen ? "secondary" : "primary"}
-        >
-          {isOpen ? "Editing invite" : "Invite"}
-        </Button>
+        <div className="flex flex-wrap justify-end gap-2 max-[480px]:grid max-[480px]:w-full max-[480px]:[&>button]:w-full">
+          <Button
+            icon={<Eye size={16} />}
+            onClick={() => onView(student)}
+            size="sm"
+            variant="secondary"
+          >
+            View information
+          </Button>
+          <Button
+            icon={<UserPlus size={16} />}
+            onClick={() => onOpen(student)}
+            size="sm"
+            variant={isOpen ? "secondary" : "primary"}
+          >
+            {isOpen ? "Editing invite" : "Invite"}
+          </Button>
+        </div>
       </div>
 
       {isOpen && (
@@ -154,6 +167,7 @@ export function StudentInviteMembersPage() {
   const [manualTarget, setManualTarget] = useState("");
   const [manualMessage, setManualMessage] = useState("");
   const [activeStudentId, setActiveStudentId] = useState<number | null>(null);
+  const [viewingStudentId, setViewingStudentId] = useState<number | null>(null);
   const [studentMessage, setStudentMessage] = useState("");
   const [actionError, setActionError] = useState("");
 
@@ -373,6 +387,10 @@ export function StudentInviteMembersPage() {
                         setStudentMessage("");
                         setActionError("");
                       }}
+                      onView={(selectedStudent) => {
+                        setViewingStudentId(selectedStudent.id);
+                        setActionError("");
+                      }}
                       student={student}
                     />
                   ))}
@@ -411,6 +429,19 @@ export function StudentInviteMembersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {viewingStudentId !== null && (
+        <StudentProfileModal
+          onClose={() => setViewingStudentId(null)}
+          onInvite={(selectedStudent) => {
+            setViewingStudentId(null);
+            setActiveStudentId(selectedStudent.id);
+            setStudentMessage("");
+            setActionError("");
+          }}
+          studentId={viewingStudentId}
+        />
+      )}
     </div>
   );
 }
