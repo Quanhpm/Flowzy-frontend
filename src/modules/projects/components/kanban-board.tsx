@@ -1,9 +1,17 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Button,
   DateTimeInput,
   EmptyState,
   LoadingState,
+  ResponsiveDialog,
   TextInput,
   Select,
 } from "@/shared/components";
@@ -19,7 +27,7 @@ import {
   TaskDueTasksView,
   TaskTimelineView,
 } from "./task-board-views";
-import { Circle, Plus, Search, X } from "lucide-react";
+import { Circle, Plus, Search } from "lucide-react";
 
 type KanbanBoardProps = {
   groupId: EntityId;
@@ -82,6 +90,8 @@ function getMilestonesForCourse(courseCode: string): {
 }
 
 export function KanbanBoard({ groupId }: KanbanBoardProps) {
+  const taskFormId = useId();
+  const boardFormId = useId();
   const [activeBoardId, setActiveBoardId] = useState<EntityId | null>(null);
   const [activeBoardName, setActiveBoardName] = useState("");
   const [activeView, setActiveView] = useState<BoardView>("board");
@@ -268,7 +278,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
     targetStatus: TaskStatus,
     position: number,
   ) => {
-    if (!board) return;
+    if (!board || reorderTaskMutation.isPending) return;
 
     let sourceTask = null;
     for (const col of board.columns) {
@@ -286,6 +296,16 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
       targetStatus,
       targetIndex: position,
     });
+  };
+
+  const handleTaskStatusChange = (
+    taskId: number,
+    targetStatus: TaskStatus,
+  ) => {
+    const targetColumn = board?.columns.find(
+      (column) => column.status === targetStatus,
+    );
+    handleTaskMove(taskId, targetStatus, targetColumn?.tasks.length ?? 0);
   };
 
   const handleCreateTask = (e: FormEvent) => {
@@ -426,9 +446,10 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
     }
 
     return (
-      <div className="flex w-full max-w-full gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex w-full min-w-0 max-w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 pr-[12vw] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[761px]:snap-none min-[761px]:pr-0">
         {columnsConfig.map((col) => (
           <KanbanColumn
+            isMoving={reorderTaskMutation.isPending}
             key={col.status}
             status={col.status}
             label={col.label}
@@ -436,6 +457,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
             onTaskClick={(id) => setSelectedTaskId(id)}
             onAddTaskClick={(status) => setAddTaskStatus(status)}
             onTaskMove={handleTaskMove}
+            onTaskStatusChange={handleTaskStatusChange}
             onDragStart={handleDragStart}
           />
         ))}
@@ -468,11 +490,11 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-[#e8eaee] shadow-sm">
+    <div className="min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-[#e8eaee] shadow-sm">
       <div className="border-b border-border bg-surface px-4 py-4 sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-            <span className="mr-1 text-xs font-extrabold tracking-[0.22em] text-muted uppercase">
+          <div className="flex min-w-0 flex-wrap items-center gap-2.5 max-[640px]:w-full max-[640px]:snap-x max-[640px]:flex-nowrap max-[640px]:overflow-x-auto max-[640px]:overscroll-x-contain max-[640px]:[scrollbar-width:none] max-[640px]:[&::-webkit-scrollbar]:hidden">
+            <span className="mr-1 shrink-0 text-xs font-extrabold tracking-[0.22em] text-muted uppercase">
               {milestoneLabel}
             </span>
             {milestones.map((milestone) => {
@@ -492,7 +514,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                   onClick={() => handlePresetBoardClick(milestone)}
                   disabled={createTaskBoardMutation.isPending}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-[background,border-color,color,box-shadow]",
+                    "inline-flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-[background,border-color,color,box-shadow] min-[641px]:h-9 min-[641px]:min-h-0",
                     isActive
                       ? "border-brand-secondary/30 bg-[#eef2ff] text-brand-primary shadow-sm"
                       : isCreated
@@ -521,14 +543,16 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                   type="button"
                   onClick={() => handleCustomBoardClick(taskBoard)}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-[background,border-color,color,box-shadow]",
+                    "inline-flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-[background,border-color,color,box-shadow] min-[641px]:h-9 min-[641px]:min-h-0",
                     isActive
                       ? "border-brand-secondary/30 bg-[#eef2ff] text-brand-primary shadow-sm"
                       : "border-border bg-surface text-muted hover:border-brand-secondary/30 hover:text-foreground",
                   )}
                 >
                   <span className="size-2 rounded-full bg-brand-primary" />
-                  {taskBoard.name}
+                  <span className="max-w-48 truncate" title={taskBoard.name}>
+                    {taskBoard.name}
+                  </span>
                 </button>
               );
             })}
@@ -539,14 +563,14 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                 setBoardActionError("");
                 setIsCreateBoardOpen(true);
               }}
-              className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-dashed border-border bg-surface px-3 text-xs font-bold text-muted transition-colors hover:border-brand-primary hover:text-brand-primary"
+              className="inline-flex min-h-11 shrink-0 snap-start items-center justify-center gap-1 rounded-xl border border-dashed border-border bg-surface px-3 text-xs font-bold text-muted transition-colors hover:border-brand-primary hover:text-brand-primary min-[641px]:h-9 min-[641px]:min-h-0"
             >
               <Plus className="size-3.5" />
               <span>Board</span>
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 max-[480px]:grid max-[480px]:w-full max-[480px]:[&>button]:w-full">
             <div className="flex items-center gap-2 text-xs font-bold text-muted">
               <Circle className="size-2 fill-emerald-400 text-emerald-400" />
               <span>{board.activeTaskCount} active</span>
@@ -570,14 +594,20 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
 
       <div className="border-b border-border bg-surface px-4 py-3 sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex max-w-full overflow-x-auto rounded-xl border border-border bg-surface-base p-1">
+          <div
+            aria-label="Board views"
+            className="inline-flex max-w-full snap-x overflow-x-auto rounded-xl border border-border bg-surface-base p-1"
+            role="tablist"
+          >
             {boardViews.map((view) => (
               <button
+                aria-selected={activeView === view.id}
                 key={view.id}
+                role="tab"
                 type="button"
                 onClick={() => setActiveView(view.id)}
                 className={cn(
-                  "h-8 shrink-0 rounded-lg px-4 text-xs font-bold text-muted transition-[background,color,box-shadow]",
+                  "min-h-11 shrink-0 snap-start rounded-lg px-4 text-xs font-bold text-muted transition-[background,color,box-shadow] min-[641px]:h-8 min-[641px]:min-h-0",
                   activeView === view.id
                     ? "bg-surface text-foreground shadow-sm"
                     : "hover:text-foreground",
@@ -595,15 +625,15 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
               onChange={(e) => setSearchFilter(e.target.value)}
               placeholder="Search tasks"
               fieldClassName="w-[210px] max-[640px]:w-full"
-              shellClassName="h-9 rounded-full px-3"
-              className="text-xs"
+              shellClassName="h-11 rounded-full px-3 min-[641px]:h-9"
+              className="text-base min-[641px]:text-xs"
             />
             <Select
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
               fieldClassName="w-[150px] max-[640px]:w-full"
-              shellClassName="h-9 rounded-full"
-              className="text-xs"
+              shellClassName="h-11 rounded-full min-[641px]:h-9"
+              className="text-base min-[641px]:text-xs"
             >
               <option value="">Assignees</option>
               {(group?.members || []).map((m) => (
@@ -616,8 +646,8 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
               fieldClassName="w-[130px] max-[640px]:w-full"
-              shellClassName="h-9 rounded-full"
-              className="text-xs"
+              shellClassName="h-11 rounded-full min-[641px]:h-9"
+              className="text-base min-[641px]:text-xs"
             >
               <option value="">Priority</option>
               <option value="LOW">Low</option>
@@ -625,7 +655,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
               <option value="HIGH">High</option>
               <option value="URGENT">Urgent</option>
             </Select>
-            <label className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface px-3 text-xs font-bold text-muted max-[640px]:w-full">
+            <label className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-3 text-xs font-bold text-muted max-[640px]:w-full min-[641px]:h-9 min-[641px]:min-h-0">
               <input
                 type="checkbox"
                 checked={includeArchived}
@@ -638,7 +668,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
         </div>
       </div>
 
-      <div className="min-h-[560px] bg-[#e8eaee] p-4 sm:p-5">
+      <div className="min-h-[560px] min-w-0 max-w-full overflow-hidden bg-[#e8eaee] p-4 sm:p-5">
         {renderActiveView()}
       </div>
 
@@ -651,25 +681,38 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
       )}
 
       {addTaskStatus !== null && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6">
-          <div className="grid max-h-[90vh] w-[min(540px,100%)] grid-rows-[auto_1fr_auto] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal">
-            <div className="flex items-center justify-between border-b border-border px-6 py-4">
-              <h3 className="m-0 text-lg font-bold text-foreground">
-                Add Task to{" "}
-                {columnsConfig.find((c) => c.status === addTaskStatus)?.label}
-              </h3>
+        <ResponsiveDialog
+          className="min-[761px]:max-w-[540px]"
+          closeLabel="Close task form"
+          closeOnBackdrop={false}
+          footer={
+            <>
               <Button
-                variant="secondary"
                 onClick={() => setAddTaskStatus(null)}
-                className="size-8 rounded-lg p-0"
+                variant="secondary"
               >
-                <X className="size-4" />
+                Cancel
               </Button>
-            </div>
-
+              <Button
+                disabled={createTaskMutation.isPending}
+                form={taskFormId}
+                type="submit"
+              >
+                {createTaskMutation.isPending ? "Creating..." : "Create Task"}
+              </Button>
+            </>
+          }
+          mobileMode="fullscreen"
+          onClose={() => setAddTaskStatus(null)}
+          title={`Add Task to ${
+            columnsConfig.find((column) => column.status === addTaskStatus)
+              ?.label ?? "Board"
+          }`}
+        >
             <form
+              id={taskFormId}
               onSubmit={handleCreateTask}
-              className="flex-1 space-y-4 overflow-y-auto p-6"
+              className="grid min-w-0 gap-4"
             >
               <TextInput
                 label="Task Title"
@@ -687,7 +730,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   placeholder="Task details, instructions, etc."
-                  className="min-h-[80px] w-full rounded-xl border border-border bg-surface p-3 text-sm outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
+                  className="min-h-[80px] w-full min-w-0 rounded-xl border border-border bg-surface p-3 text-base outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary min-[761px]:text-sm"
                 />
               </div>
 
@@ -729,7 +772,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                     {group.members.map((member) => (
                       <label
                         key={member.studentId}
-                        className="flex cursor-pointer items-center gap-2 py-1 text-xs font-medium"
+                        className="flex min-h-11 min-w-0 cursor-pointer items-center gap-2 py-1 text-xs font-medium"
                       >
                         <input
                           type="checkbox"
@@ -744,7 +787,9 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                           }
                           className="size-4 rounded accent-brand-primary"
                         />
-                        <span className="truncate">{member.fullName}</span>
+                        <span className="min-w-0 break-words">
+                          {member.fullName}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -755,49 +800,50 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end gap-2.5 border-t border-border pt-4">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setAddTaskStatus(null)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Create Task</Button>
-              </div>
             </form>
-          </div>
-        </div>
+        </ResponsiveDialog>
       )}
 
       {isCreateBoardOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6">
-          <div className="grid max-h-[90vh] w-[min(520px,100%)] grid-rows-[auto_1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal">
-            <div className="flex items-center justify-between border-b border-border px-6 py-4">
-              <div>
-                <h3 className="m-0 text-lg font-bold text-foreground">
-                  Create board
-                </h3>
-                <p className="mt-1 mb-0 text-sm text-muted">
-                  Add a custom task board for this group.
-                </p>
-              </div>
+        <ResponsiveDialog
+          className="min-[481px]:max-w-[520px]"
+          closeLabel="Close board form"
+          closeOnBackdrop={false}
+          description="Add a custom task board for this group."
+          footer={
+            <>
               <Button
-                variant="secondary"
                 onClick={() => {
                   setIsCreateBoardOpen(false);
                   setNewBoardName("");
                   setNewBoardDescription("");
                 }}
-                className="size-8 rounded-lg p-0"
+                variant="secondary"
               >
-                <X className="size-4" />
+                Cancel
               </Button>
-            </div>
-
+              <Button
+                disabled={createTaskBoardMutation.isPending}
+                form={boardFormId}
+                type="submit"
+              >
+                {createTaskBoardMutation.isPending
+                  ? "Creating..."
+                  : "Create board"}
+              </Button>
+            </>
+          }
+          onClose={() => {
+            setIsCreateBoardOpen(false);
+            setNewBoardName("");
+            setNewBoardDescription("");
+          }}
+          title="Create board"
+        >
             <form
+              id={boardFormId}
               onSubmit={handleCreateCustomBoard}
-              className="space-y-4 overflow-y-auto p-6"
+              className="grid min-w-0 gap-4"
             >
               <TextInput
                 label="Board name"
@@ -814,30 +860,8 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
                 placeholder="Optional context for this board"
                 value={newBoardDescription}
               />
-              <div className="flex justify-end gap-2.5 border-t border-border pt-4">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    setIsCreateBoardOpen(false);
-                    setNewBoardName("");
-                    setNewBoardDescription("");
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={createTaskBoardMutation.isPending}
-                  type="submit"
-                >
-                  {createTaskBoardMutation.isPending
-                    ? "Creating..."
-                    : "Create board"}
-                </Button>
-              </div>
             </form>
-          </div>
-        </div>
+        </ResponsiveDialog>
       )}
     </div>
   );
