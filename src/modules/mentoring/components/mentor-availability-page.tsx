@@ -1,8 +1,8 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
-import { CalendarClock, Copy, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useId, useMemo, useState } from "react";
+import { CalendarClock, Copy, Pencil, Plus, Trash2 } from "lucide-react";
 
 import {
   Badge,
@@ -13,10 +13,11 @@ import {
   EmptyState,
   LoadingState,
   PageHeader,
+  ResponsiveDialog,
   Select,
   TextInput,
 } from "@/shared/components";
-import { ApiError, cn } from "@/shared/lib";
+import { ApiError } from "@/shared/lib";
 import type { SlotStatus } from "@/shared/types";
 
 import {
@@ -58,24 +59,10 @@ const EMPTY_SLOT_FORM: SlotFormState = {
 const pageClassName = "grid min-w-0 gap-6";
 const toolbarClassName =
   "grid grid-cols-[minmax(180px,240px)] items-end gap-3 max-[680px]:grid-cols-[minmax(0,1fr)]";
-const actionsClassName = "flex flex-wrap justify-end gap-2";
+const actionsClassName =
+  "flex flex-wrap justify-end gap-2 max-[480px]:grid max-[480px]:[&>button]:min-h-11 max-[480px]:[&>button]:w-full";
 const errorPanelClassName =
   "rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm leading-normal text-red-700";
-const modalBackdropClassName =
-  "fixed inset-0 z-40 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6 max-[680px]:p-3";
-const modalClassName =
-  "grid w-[min(620px,100%)] max-h-[min(760px,calc(100svh-48px))] grid-rows-[auto_1fr_auto] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal max-[680px]:max-h-[calc(100svh-24px)]";
-const modalSmallClassName = "w-[min(500px,100%)]";
-const modalHeaderClassName =
-  "flex items-start justify-between gap-4 border-b border-border px-6 py-[22px] max-[680px]:px-[18px]";
-const modalTitleClassName =
-  "m-0 text-xl leading-tight font-bold text-foreground";
-const modalDescriptionClassName =
-  "mt-1.5 mb-0 text-sm leading-[1.55] text-muted";
-const modalBodyClassName =
-  "grid gap-[18px] overflow-y-auto p-6 max-[680px]:px-[18px]";
-const modalFooterClassName =
-  "flex justify-end gap-2.5 border-t border-border bg-surface px-6 py-[18px] max-[680px]:px-[18px]";
 
 function getErrorMessage(error: unknown) {
   return error instanceof ApiError
@@ -186,41 +173,30 @@ function ConfirmDialog({
   }
 
   return (
-    <div className={modalBackdropClassName}>
-      <div
-        aria-label={action.title}
-        aria-modal="true"
-        className={cn(modalClassName, modalSmallClassName)}
-        role="dialog"
-      >
-        <header className={modalHeaderClassName}>
-          <div>
-            <h2 className={modalTitleClassName}>{action.title}</h2>
-            <p className={modalDescriptionClassName}>
-              {action.description}
-            </p>
-          </div>
-          <Button
-            aria-label="Close"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-        <div className={modalBodyClassName}>
-          {formError && <div className={errorPanelClassName}>{formError}</div>}
-        </div>
-        <footer className={modalFooterClassName}>
+    <ResponsiveDialog
+      bodyClassName="grid gap-4"
+      className="min-[481px]:max-w-[500px]"
+      closeOnBackdrop={false}
+      description={action.description}
+      footer={
+        <>
           <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
-          <Button disabled={isSubmitting} onClick={handleConfirm} variant="danger">
+          <Button
+            disabled={isSubmitting}
+            onClick={handleConfirm}
+            variant="danger"
+          >
             {isSubmitting ? "Canceling..." : action.confirmLabel}
           </Button>
-        </footer>
-      </div>
-    </div>
+        </>
+      }
+      onClose={onClose}
+      title={action.title}
+    >
+      {formError && <div className={errorPanelClassName}>{formError}</div>}
+    </ResponsiveDialog>
   );
 }
 
@@ -235,6 +211,7 @@ function SlotFormModal({
   onSubmit: (form: SlotFormState) => Promise<unknown>;
   slot?: MentorAvailabilitySlotDto;
 }) {
+  const formId = useId();
   const [form, setForm] = useState<SlotFormState>(() =>
     slot ? createFormFromSlot(slot) : EMPTY_SLOT_FORM,
   );
@@ -277,30 +254,31 @@ function SlotFormModal({
         : "Create slot";
 
   return (
-    <div className={modalBackdropClassName}>
+    <ResponsiveDialog
+      className="min-[761px]:max-w-[620px]"
+      closeLabel="Close slot form"
+      closeOnBackdrop={false}
+      description="Publish a Google Meet slot that assigned groups can book."
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">
+            Cancel
+          </Button>
+          <Button disabled={isSubmitting} form={formId} type="submit">
+            {isSubmitting ? "Saving..." : "Save slot"}
+          </Button>
+        </>
+      }
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title={title}
+    >
       <form
         aria-label={title}
-        aria-modal="true"
-        className={modalClassName}
+        className="grid min-w-0 gap-[18px]"
+        id={formId}
         onSubmit={handleSubmit}
-        role="dialog"
       >
-        <header className={modalHeaderClassName}>
-          <div>
-            <h2 className={modalTitleClassName}>{title}</h2>
-            <p className={modalDescriptionClassName}>
-              Publish a Google Meet slot that assigned groups can book.
-            </p>
-          </div>
-          <Button
-            aria-label="Close"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-        <div className={modalBodyClassName}>
           {formError && <div className={errorPanelClassName}>{formError}</div>}
           <TextInput
             icon={<CalendarClock size={16} />}
@@ -328,17 +306,8 @@ function SlotFormModal({
             placeholder="Office hours, project review..."
             value={form.note}
           />
-        </div>
-        <footer className={modalFooterClassName}>
-          <Button onClick={onClose} variant="secondary">
-            Cancel
-          </Button>
-          <Button disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Saving..." : "Save slot"}
-          </Button>
-        </footer>
       </form>
-    </div>
+    </ResponsiveDialog>
   );
 }
 
@@ -388,7 +357,9 @@ function AvailabilitySlotTimeline({
             key={date}
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="m-0 text-base font-bold text-foreground">{date}</h3>
+              <h3 className="m-0 break-words text-base font-bold text-foreground">
+                {date}
+              </h3>
               <Badge tone="neutral">{daySlots.length} slots</Badge>
             </div>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-3">
@@ -398,11 +369,11 @@ function AvailabilitySlotTimeline({
                   key={slot.id}
                 >
                   <div className="flex min-w-0 items-start justify-between gap-3">
-                    <div className="grid gap-1">
-                      <strong className="text-base text-foreground">
+                    <div className="grid min-w-0 gap-1">
+                      <strong className="break-words text-base text-foreground">
                         {formatTime(slot.startAt)} - {formatTime(slot.endAt)}
                       </strong>
-                      <span className="text-xs text-muted">
+                      <span className="break-words text-xs text-muted">
                         {formatDateTime(slot.startAt)}
                       </span>
                     </div>
@@ -410,11 +381,11 @@ function AvailabilitySlotTimeline({
                       {slot.status}
                     </Badge>
                   </div>
-                  <p className="m-0 text-sm leading-relaxed text-muted">
+                  <p className="m-0 break-words text-sm leading-relaxed text-muted">
                     {slot.note ?? "No note"}
                   </p>
                   <a
-                    className="text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
+                    className="inline-flex min-h-11 items-center break-words text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
                     href={slot.meetLink}
                     rel="noreferrer"
                     target="_blank"
