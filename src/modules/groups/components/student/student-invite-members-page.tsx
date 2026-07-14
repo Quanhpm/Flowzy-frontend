@@ -84,18 +84,19 @@ function StudentInviteRow({
       <div className="flex min-w-0 items-center justify-between gap-3 max-[680px]:grid">
         <div className="grid min-w-0 gap-1">
           <div className="flex flex-wrap items-center gap-2">
-            <strong className="text-sm text-foreground">
+            <strong className="break-words text-sm text-foreground">
               {student.fullName}
             </strong>
             <Badge tone="neutral" size="sm">
               {student.studentCode}
             </Badge>
           </div>
-          <span className="text-xs text-muted">
+          <span className="break-all text-xs text-muted">
             {student.email} - {student.className ?? "No class"}
           </span>
         </div>
         <Button
+          className="max-[480px]:min-h-11 max-[480px]:w-full"
           icon={<UserPlus size={16} />}
           onClick={() => onOpen(student)}
           size="sm"
@@ -113,7 +114,7 @@ function StudentInviteRow({
             </span>
             <textarea
               className={cn(
-                "min-h-24 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-sm text-foreground outline-0 transition-[border-color,box-shadow] duration-[160ms]",
+                "min-h-24 min-w-0 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-base text-foreground outline-0 transition-[border-color,box-shadow] duration-[160ms] min-[761px]:text-sm",
                 "focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]",
               )}
               onChange={(event) => onMessageChange(event.target.value)}
@@ -121,7 +122,7 @@ function StudentInviteRow({
               value={message}
             />
           </label>
-          <div className="flex flex-wrap justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2 max-[480px]:grid max-[480px]:[&>button]:min-h-11 max-[480px]:[&>button]:w-full">
             <Button
               icon={<X size={16} />}
               onClick={onCancel}
@@ -176,7 +177,7 @@ export function StudentInviteMembersPage() {
   const isLeader = group ? isCurrentUserLeader(group, sessionEmail) : false;
 
   async function sendInvite(target: string, message: string) {
-    if (!group) return;
+    if (!group || inviteStudentMutation.isPending) return;
 
     setActionError("");
 
@@ -321,6 +322,7 @@ export function StudentInviteMembersPage() {
                   value={manualMessage}
                 />
                 <Button
+                  className="max-[860px]:w-full"
                   disabled={inviteStudentMutation.isPending}
                   icon={<Send size={16} />}
                   type="submit"
@@ -376,11 +378,11 @@ export function StudentInviteMembersPage() {
                   ))}
 
                   {pageData && pageData.totalPages > 1 && (
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <span className="text-sm text-muted">
+                    <div className="flex flex-wrap items-center justify-between gap-3 max-[480px]:grid">
+                      <span className="break-words text-sm text-muted">
                         Page {pageData.number + 1} of {pageData.totalPages}
                       </span>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 max-[480px]:grid max-[480px]:grid-cols-2 max-[480px]:[&>button]:min-h-11 max-[480px]:[&>button]:min-w-0">
                         <Button
                           disabled={!pageData.hasPrevious}
                           onClick={() =>

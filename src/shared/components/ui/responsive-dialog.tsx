@@ -72,7 +72,7 @@ export function ResponsiveDialog({
           "relative flex max-h-[calc(100dvh-env(safe-area-inset-top))] w-full min-w-0 flex-col overflow-hidden border border-border bg-surface shadow-modal min-[481px]:max-h-[calc(100dvh-2rem)] min-[481px]:max-w-[640px] min-[481px]:rounded-2xl",
           mobileMode === "sheet" && "rounded-t-2xl border-b-0",
           mobileMode === "fullscreen" &&
-            "h-dvh max-h-dvh rounded-none border-y-0 min-[761px]:h-auto min-[761px]:max-h-[calc(100dvh-2rem)] min-[761px]:rounded-2xl min-[761px]:border-y",
+            "h-dvh max-h-dvh rounded-none border-y-0 max-[760px]:max-w-none min-[761px]:h-auto min-[761px]:max-h-[calc(100dvh-2rem)] min-[761px]:rounded-2xl min-[761px]:border-y",
           className,
         )}
         ref={dialogRef}

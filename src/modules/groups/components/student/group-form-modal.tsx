@@ -1,10 +1,15 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
-import { Plus, Trash2, X } from "lucide-react";
+import { useId, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 
-import { Button, Select, TextInput } from "@/shared/components";
+import {
+  Button,
+  ResponsiveDialog,
+  Select,
+  TextInput,
+} from "@/shared/components";
 import { ApiError, cn } from "@/shared/lib";
 
 import { useRecruitmentRoles } from "../../hooks";
@@ -172,8 +177,8 @@ function RecruitmentNeedsEditor({
 
   return (
     <section className="col-span-full grid gap-3 border-t border-border pt-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="grid gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 max-[480px]:grid">
+        <div className="grid min-w-0 gap-1">
           <h3 className="m-0 text-sm font-bold text-foreground">
             Recruitment needs
           </h3>
@@ -182,6 +187,7 @@ function RecruitmentNeedsEditor({
           </p>
         </div>
         <Button
+          className="max-[480px]:w-full"
           disabled={!firstAvailableRole || rolesQuery.isLoading}
           icon={<Plus size={16} />}
           onClick={() =>
@@ -213,7 +219,7 @@ function RecruitmentNeedsEditor({
         <div className="grid gap-3">
           {needs.map((need, index) => (
             <div
-              className="grid grid-cols-[minmax(0,1fr)_120px_40px] items-end gap-3 max-[560px]:grid-cols-[minmax(0,1fr)_40px]"
+              className="grid grid-cols-[minmax(0,1fr)_120px_44px] items-end gap-3 max-[560px]:grid-cols-[minmax(0,1fr)_44px]"
               key={`${need.role}-${index}`}
             >
               <Select
@@ -255,7 +261,7 @@ function RecruitmentNeedsEditor({
               />
               <Button
                 aria-label={`Remove ${need.role}`}
-                className="size-10 min-h-0 min-w-0 p-0"
+                className="size-11 min-h-0 min-w-0 p-0"
                 icon={<Trash2 size={16} />}
                 onClick={() =>
                   onChange(
@@ -292,6 +298,7 @@ function updateGroupPayload(form: GroupFormState): UpdateGroupRequest {
 
 export function GroupFormModal(props: GroupFormModalProps) {
   const { mode, onClose } = props;
+  const formId = useId();
   const [form, setForm] = useState<GroupFormState>(() =>
     mode === "edit" ? createFormFromGroup(props.group) : EMPTY_GROUP_FORM,
   );
@@ -346,28 +353,29 @@ export function GroupFormModal(props: GroupFormModalProps) {
       : "Update group details, project information, and criteria.";
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm">
+    <ResponsiveDialog
+      className="min-[761px]:max-w-[760px]"
+      closeLabel="Close group form"
+      description={description}
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">
+            Cancel
+          </Button>
+          <Button disabled={isSubmitting} form={formId} type="submit">
+            {isSubmitting ? "Saving..." : "Save group"}
+          </Button>
+        </>
+      }
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title={title}
+    >
       <form
-        className="w-[min(760px,100%)] overflow-hidden rounded-2xl border border-border bg-surface shadow-card"
+        className="grid min-w-0 gap-4"
+        id={formId}
         onSubmit={handleSubmit}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
-          <div className="grid gap-1">
-            <h2 className="m-0 text-lg font-bold text-foreground">{title}</h2>
-            <p className="m-0 text-sm leading-relaxed text-muted">
-              {description}
-            </p>
-          </div>
-          <Button
-            aria-label="Close group form"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-
-        <div className="grid max-h-[70vh] gap-4 overflow-y-auto px-6 py-5">
           {error && (
             <p className="m-0 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
@@ -452,7 +460,7 @@ export function GroupFormModal(props: GroupFormModalProps) {
               </span>
               <textarea
                 className={cn(
-                  "min-h-28 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-sm text-foreground outline-0 transition-[border-color,box-shadow] duration-[160ms]",
+                  "min-h-28 min-w-0 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-base text-foreground outline-0 transition-[border-color,box-shadow] duration-[160ms] min-[761px]:text-sm",
                   "focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]",
                 )}
                 onChange={(event) =>
@@ -471,17 +479,7 @@ export function GroupFormModal(props: GroupFormModalProps) {
               />
             )}
           </div>
-        </div>
-
-        <footer className="flex flex-wrap justify-end gap-2 border-t border-border px-6 py-4">
-          <Button onClick={onClose} variant="secondary">
-            Cancel
-          </Button>
-          <Button disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Saving..." : "Save group"}
-          </Button>
-        </footer>
       </form>
-    </div>
+    </ResponsiveDialog>
   );
 }
