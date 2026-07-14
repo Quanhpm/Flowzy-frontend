@@ -1,30 +1,23 @@
 "use client";
 
-import { type FormEvent, useId, useMemo, useState } from "react";
 import {
-  AlertTriangle,
-  CalendarClock,
-  Pencil,
-  Plus,
-  Save,
-  Trash2,
-} from "lucide-react";
+  type FormEvent,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from "react";
+import { Plus, Save } from "lucide-react";
 
 import { useInstructorGroups } from "@/modules/groups";
 import {
-  Badge,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
-  EmptyState,
-  LoadingState,
   PageHeader,
   ResponsiveDialog,
   Select,
   TextInput,
 } from "@/shared/components";
-import { ApiError, getMinimumDateTimeLocal } from "@/shared/lib";
+import { ApiError } from "@/shared/lib";
 import type { CourseMilestoneStatus } from "@/shared/types";
 
 import {
@@ -32,12 +25,14 @@ import {
   useCreateCourseMilestone,
   useDeleteCourseMilestone,
   useUpdateCourseMilestone,
-} from "../hooks";
+} from "../../hooks";
 import type {
   CourseMilestoneDto,
   CreateCourseMilestoneRequest,
   UpdateCourseMilestoneRequest,
-} from "../types";
+} from "../../types";
+import { MilestoneFilters } from "./milestone-filters";
+import { MilestoneList } from "./milestone-list";
 
 type MilestoneFormProps = {
   filters: {
@@ -56,6 +51,31 @@ const milestoneStatuses: CourseMilestoneStatus[] = [
 ];
 
 const defaultCourseCodes = ["EXE101", "EXE201", "EXE401"] as const;
+const TERM_SEARCH_MIN_LENGTH = 2;
+const TERM_SEARCH_DEBOUNCE_MS = 350;
+
+function useDebouncedTermSearch(value: string) {
+  const [debouncedValue, setDebouncedValue] = useState("");
+
+  useEffect(() => {
+    const normalizedValue = value.trim();
+    const timeoutId = window.setTimeout(
+      () =>
+        setDebouncedValue(
+          normalizedValue.length >= TERM_SEARCH_MIN_LENGTH
+            ? normalizedValue
+            : "",
+        ),
+      normalizedValue.length >= TERM_SEARCH_MIN_LENGTH
+        ? TERM_SEARCH_DEBOUNCE_MS
+        : 0,
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [value]);
+
+  return debouncedValue;
+}
 
 function getErrorMessage(error: unknown) {
   return error instanceof ApiError || error instanceof Error
@@ -86,28 +106,6 @@ function toIsoDateTime(value: string) {
 function toOptionalNumber(value: string) {
   if (!value.trim()) return undefined;
   return Number(value);
-}
-
-function formatDateTime(value: string | null | undefined) {
-  if (!value) return "No deadline";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Invalid date";
-
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-}
-
-function formatNumber(value: number | null | undefined, suffix = "") {
-  return typeof value === "number" ? `${value}${suffix}` : "Not set";
-}
-
-function getStatusTone(status: CourseMilestoneStatus) {
-  if (status === "ACTIVE") return "success";
-  if (status === "CLOSED") return "warning";
-  if (status === "ARCHIVED") return "danger";
-  return "neutral";
 }
 
 function sortMilestones(milestones: CourseMilestoneDto[]) {
@@ -199,13 +197,6 @@ function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
       (!Number.isInteger(parsedPosition) || parsedPosition < 0)
     ) {
       throw new Error("Position must be a whole number greater than or equal to 0.");
-    }
-
-    if (deadlineAt) {
-      const deadline = new Date(deadlineAt).getTime();
-      if (!Number.isFinite(deadline) || deadline <= Date.now()) {
-        throw new Error("Deadline must be in the future.");
-      }
     }
 
     return {
@@ -376,7 +367,6 @@ function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
             <input
               className="h-[50px] min-w-0 rounded-xl border border-border bg-surface px-3.5 text-base outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)] min-[761px]:text-sm"
               onChange={(event) => setDeadlineAt(event.target.value)}
-              min={getMinimumDateTimeLocal()}
               type="datetime-local"
               value={deadlineAt}
             />
@@ -399,22 +389,21 @@ export function InstructorMilestonesPage() {
   const [activeMilestone, setActiveMilestone] =
     useState<CourseMilestoneDto | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const debouncedTerm = useDebouncedTermSearch(term);
 
-  const groupFilters = {
-    courseCode: optional(courseCode),
-    term: optional(term),
-  };
-  const instructorGroupsQuery = useInstructorGroups(groupFilters);
+  const allInstructorGroupsQuery = useInstructorGroups();
+  const allAssignedGroups = useMemo(
+    () => allInstructorGroupsQuery.data?.data ?? [],
+    [allInstructorGroupsQuery.data?.data],
+  );
+  const isTermSettled = term.trim() === debouncedTerm;
+  const activeTerm = isTermSettled ? debouncedTerm : "";
   const milestonesQuery = useCourseMilestones({
     courseCode: courseCode.trim(),
-    term: term.trim(),
+    term: activeTerm,
   });
   const deleteMutation = useDeleteCourseMilestone();
 
-  const assignedGroups = useMemo(
-    () => instructorGroupsQuery.data?.data ?? [],
-    [instructorGroupsQuery.data?.data],
-  );
   const milestones = useMemo(
     () => sortMilestones(milestonesQuery.data?.data ?? []),
     [milestonesQuery.data?.data],
@@ -422,18 +411,20 @@ export function InstructorMilestonesPage() {
 
   const uniqueTerms = useMemo(
     () =>
-      Array.from(new Set(assignedGroups.map((group) => group.term).filter(Boolean))).sort(),
-    [assignedGroups],
+      Array.from(
+        new Set(allAssignedGroups.map((group) => group.term).filter(Boolean)),
+      ).sort(),
+    [allAssignedGroups],
   );
   const courseOptions = useMemo(
     () =>
       buildCourseOptions(
-        assignedGroups.map((group) => group.courseCode).filter(Boolean),
+        allAssignedGroups.map((group) => group.courseCode).filter(Boolean),
       ),
-    [assignedGroups],
+    [allAssignedGroups],
   );
 
-  const hasRequiredFilters = Boolean(term.trim() && courseCode.trim());
+  const hasRequiredFilters = Boolean(activeTerm && courseCode.trim());
 
   function handleArchive(milestone: CourseMilestoneDto) {
     const confirmed = window.confirm(
@@ -462,187 +453,26 @@ export function InstructorMilestonesPage() {
         title="Milestones"
       />
 
-      <Card>
-        <CardContent className="grid gap-5">
-          <div className="grid grid-cols-[repeat(2,minmax(180px,240px))_minmax(0,1fr)] items-end gap-3 max-[760px]:grid-cols-1">
-            <TextInput
-              label="Term"
-              list="milestone-term-options"
-              onChange={(event) => setTerm(event.target.value)}
-              placeholder="Summer2026"
-              value={term}
-            />
-            <datalist id="milestone-term-options">
-              {uniqueTerms.map((item) => (
-                <option key={item} value={item} />
-              ))}
-            </datalist>
-            <Select
-              label="Course code"
-              onChange={(event) => setCourseCode(event.target.value)}
-              value={courseCode}
-            >
-              <option value="">All courses</option>
-              {courseOptions.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </Select>
-            <Button
-              className="w-fit justify-self-end border-neutral-200 bg-neutral-100 px-4 text-muted [&:hover:not(:disabled)]:border-neutral-300 [&:hover:not(:disabled)]:bg-neutral-200 max-[760px]:w-full max-[760px]:justify-self-stretch"
-              onClick={() => {
-                setTerm("");
-                setCourseCode("");
-              }}
-              variant="secondary"
-            >
-              Clear filters
-            </Button>
-          </div>
+      <MilestoneFilters
+        courseCode={courseCode}
+        courseOptions={courseOptions}
+        onCourseCodeChange={setCourseCode}
+        onTermChange={setTerm}
+        term={term}
+        termOptions={uniqueTerms}
+      />
 
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 rounded-xl border border-border bg-background p-4 max-[760px]:grid-cols-1">
-            <div className="grid gap-1">
-              <span className="text-sm font-bold text-foreground">
-                Assigned group scope
-              </span>
-              <span className="break-words text-sm text-muted">
-                Use one of your assigned groups to choose the term and course
-                before loading milestones.
-              </span>
-            </div>
-            <Badge tone="neutral">{assignedGroups.length} groups</Badge>
-            {instructorGroupsQuery.isLoading ? (
-              <LoadingState className="col-span-full min-h-24" title="Loading assigned groups" />
-            ) : assignedGroups.length > 0 ? (
-              <div className="col-span-full flex flex-wrap gap-2">
-                {assignedGroups.map((group) => (
-                  <button
-                    className="inline-flex min-h-11 min-w-0 flex-wrap items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left text-xs font-medium text-muted transition-colors hover:border-brand-secondary hover:text-foreground"
-                    key={group.id}
-                    onClick={() => {
-                      setTerm(group.term);
-                      setCourseCode(group.courseCode);
-                    }}
-                    type="button"
-                  >
-                    <span className="font-bold text-foreground">
-                      {group.groupNo}
-                    </span>
-                    <span>{group.term}</span>
-                    <span>{group.courseCode}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="col-span-full m-0 text-sm text-muted">
-                No assigned groups were returned for the current filters.
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader
-          actions={
-            hasRequiredFilters && (
-              <Badge tone="brand">
-                {term.trim()} / {courseCode.trim()}
-              </Badge>
-            )
-          }
-          description="Only canonical /api/instructor/milestones endpoints are used here."
-          title="Timeline milestones"
-        />
-        <CardContent>
-          {!hasRequiredFilters ? (
-            <EmptyState
-              icon={<CalendarClock size={22} />}
-              title="Select a term and course"
-              description="Milestones load after both filters are set."
-            />
-          ) : milestonesQuery.isLoading ? (
-            <LoadingState title="Loading milestones" />
-          ) : milestonesQuery.error ? (
-            <EmptyState
-              className="border-red-200 bg-red-50"
-              description={getErrorMessage(milestonesQuery.error)}
-              icon={<AlertTriangle size={22} />}
-              title="Unable to load milestones"
-            />
-          ) : milestones.length === 0 ? (
-            <EmptyState
-              title="No milestones yet"
-              description="Create the first timeline item for this term and course."
-            />
-          ) : (
-            <div className="grid gap-3">
-              {milestones.map((milestone) => (
-                <div
-                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 rounded-xl border border-border bg-surface p-4 transition-shadow hover:shadow-card-interactive max-[760px]:grid-cols-1"
-                  key={milestone.id}
-                >
-                  <div className="grid min-w-0 gap-3">
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <Badge tone={getStatusTone(milestone.status)}>
-                        {milestone.status}
-                      </Badge>
-                      <span className="text-xs font-medium text-muted">
-                        Position {formatNumber(milestone.position)}
-                      </span>
-                      <span className="text-xs font-medium text-muted">
-                        {formatDateTime(milestone.deadlineAt)}
-                      </span>
-                    </div>
-                    <div className="grid min-w-0 gap-1">
-                      <h3 className="m-0 break-words text-base font-bold text-foreground">
-                        {milestone.title}
-                      </h3>
-                      {milestone.description && (
-                        <p className="m-0 break-words text-sm leading-6 text-muted">
-                          {milestone.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-xs text-muted">
-                      <span className="rounded-full border border-border bg-background px-3 py-1">
-                        Weight {formatNumber(milestone.weight, "%")}
-                      </span>
-                      <span className="rounded-full border border-border bg-background px-3 py-1">
-                        Max score {formatNumber(milestone.maxScore)}
-                      </span>
-                      <span className="rounded-full border border-border bg-background px-3 py-1">
-                        #{milestone.id}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start justify-end gap-2 max-[480px]:grid max-[480px]:[&>button]:min-h-11 max-[480px]:[&>button]:w-full">
-                    <Button
-                      icon={<Pencil size={15} />}
-                      onClick={() => setActiveMilestone(milestone)}
-                      size="sm"
-                      variant="secondary"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      disabled={deleteMutation.isPending}
-                      icon={<Trash2 size={15} />}
-                      onClick={() => handleArchive(milestone)}
-                      size="sm"
-                      variant="danger"
-                    >
-                      Archive
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <MilestoneList
+        courseCode={courseCode}
+        error={milestonesQuery.error}
+        hasRequiredFilters={hasRequiredFilters}
+        isArchiving={deleteMutation.isPending}
+        isLoading={!isTermSettled || milestonesQuery.isLoading}
+        milestones={milestones}
+        onArchive={handleArchive}
+        onEdit={setActiveMilestone}
+        term={activeTerm}
+      />
 
       {isCreating && (
         <MilestoneForm

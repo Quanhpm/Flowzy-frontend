@@ -9,6 +9,7 @@ import {
   Search,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { useAuthStore } from "@/modules/auth";
 import {
@@ -80,7 +81,12 @@ function buildPendingRequestMap(requests: GroupJoinRequestDto[]) {
   );
 }
 
-export function StudentGroupsPage() {
+type StudentGroupsPageProps = {
+  initialGroupId?: number | null;
+};
+
+export function StudentGroupsPage({ initialGroupId }: StudentGroupsPageProps) {
+  const router = useRouter();
   const sessionEmail = useAuthStore((state) => state.session?.user.email);
   const [activeSection, setActiveSection] =
     useState<GroupsSection>("workspace");
@@ -104,7 +110,9 @@ export function StudentGroupsPage() {
     () => myGroupsQuery.data?.data ?? [],
     [myGroupsQuery.data?.data],
   );
-  const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
+  const [activeGroupId, setActiveGroupId] = useState<number | null>(
+    initialGroupId ?? null,
+  );
   const effectiveGroupId = myGroups.some((group) => group.id === activeGroupId)
     ? activeGroupId
     : (myGroups[0]?.id ?? null);
@@ -129,6 +137,11 @@ export function StudentGroupsPage() {
   const pendingRequestCount = joinRequests.filter(
     (request) => request.status === "PENDING",
   ).length;
+
+  function selectActiveGroup(groupId: number) {
+    setActiveGroupId(groupId);
+    router.replace(`/student/groups?groupId=${groupId}`, { scroll: false });
+  }
 
   const recruitingGroups = useMemo(() => {
     const groups = groupsQuery.data?.data ?? [];
@@ -296,7 +309,8 @@ export function StudentGroupsPage() {
           <ActiveGroupWorkspace
             group={activeGroup}
             groups={myGroups}
-            onGroupChange={setActiveGroupId}
+            key={activeGroup.id}
+            onGroupChange={selectActiveGroup}
             sessionEmail={sessionEmail}
           />
         ))}
@@ -441,7 +455,7 @@ export function StudentGroupsPage() {
           onClose={() => setIsCreateOpen(false)}
           onSubmit={async (payload) => {
             const response = await createGroupMutation.mutateAsync(payload);
-            setActiveGroupId(response.data.id);
+            selectActiveGroup(response.data.id);
             setActiveSection("workspace");
           }}
         />

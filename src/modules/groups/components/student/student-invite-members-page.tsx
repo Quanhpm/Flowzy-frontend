@@ -60,6 +60,10 @@ function isCurrentUserLeader(group: GroupDetailDto, email: string | undefined) {
   );
 }
 
+type StudentInviteMembersPageProps = {
+  requestedGroupId?: number | null;
+};
+
 function StudentInviteRow({
   activeStudentId,
   isSubmitting,
@@ -159,7 +163,9 @@ function StudentInviteRow({
   );
 }
 
-export function StudentInviteMembersPage() {
+export function StudentInviteMembersPage({
+  requestedGroupId,
+}: StudentInviteMembersPageProps) {
   const router = useRouter();
   const sessionEmail = useAuthStore((state) => state.session?.user.email);
   const [search, setSearch] = useState("");
@@ -172,10 +178,18 @@ export function StudentInviteMembersPage() {
   const [actionError, setActionError] = useState("");
 
   const myGroupsQuery = useMyGroups();
-  const myGroup = myGroupsQuery.data?.data?.[0] ?? null;
+  const myGroups = myGroupsQuery.data?.data ?? [];
+  const myGroup =
+    typeof requestedGroupId === "number"
+      ? (myGroups.find((candidate) => candidate.id === requestedGroupId) ?? null)
+      : (myGroups[0] ?? null);
   const groupQuery = useGroup(myGroup?.id);
   const group = groupQuery.data?.data ?? null;
   const inviteStudentMutation = useInviteStudent();
+  const backToGroupHref =
+    typeof requestedGroupId === "number"
+      ? `/student/groups?groupId=${requestedGroupId}`
+      : "/student/groups";
 
   const studentsQuery = useUngroupedStudents({
     courseCode: group?.courseCode ?? "",
@@ -232,7 +246,7 @@ export function StudentInviteMembersPage() {
         actions={
           <Button
             icon={<ArrowLeft size={16} />}
-            onClick={() => router.push("/student/groups")}
+            onClick={() => router.push(backToGroupHref)}
             variant="secondary"
           >
             Back to group
@@ -252,7 +266,7 @@ export function StudentInviteMembersPage() {
         actions={
           <Button
             icon={<ArrowLeft size={16} />}
-            onClick={() => router.push("/student/groups")}
+            onClick={() => router.push(backToGroupHref)}
             variant="secondary"
           >
             Back to groups
@@ -271,7 +285,7 @@ export function StudentInviteMembersPage() {
         actions={
           <Button
             icon={<ArrowLeft size={16} />}
-            onClick={() => router.push("/student/groups")}
+            onClick={() => router.push(backToGroupHref)}
             variant="secondary"
           >
             Back to group
@@ -290,7 +304,7 @@ export function StudentInviteMembersPage() {
         actions={
           <Button
             icon={<ArrowLeft size={16} />}
-            onClick={() => router.push("/student/groups")}
+            onClick={() => router.push(backToGroupHref)}
             variant="secondary"
           >
             Back to group

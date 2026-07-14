@@ -11,6 +11,7 @@ import {
   Menu,
   MessageSquare,
   UserRound,
+  Upload,
   Users,
   X,
 } from "lucide-react";
@@ -59,6 +60,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { href: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/student/groups", icon: Users, label: "Groups" },
     { href: "/student/tasks", icon: ClipboardList, label: "Tasks" },
+    { href: "/student/submissions", icon: Upload, label: "Submissions" },
     { href: "/student/problems", icon: BookOpen, label: "Problems" },
     { href: "/student/feedback", icon: MessageSquare, label: "Feedback" },
     { href: "/student/notifications", icon: Bell, label: "Notifications" },
@@ -75,6 +77,11 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { href: "/mentor/profile", icon: UserRound, label: "Profile" },
   ],
   INSTRUCTOR: [
+    {
+      href: "/instructor/groups",
+      icon: Users,
+      label: "Groups",
+    },
     {
       href: "/instructor/milestones",
       icon: CalendarClock,
