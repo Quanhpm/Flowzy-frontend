@@ -199,11 +199,20 @@ export function ProblemDetailModal({
               isGroupLeader &&
               currentGroupId &&
               (isSelected ? (
-                <Button onClick={handleClear} variant="danger">
+                <Button
+                  disabled={clearProblemMutation.isPending}
+                  onClick={handleClear}
+                  variant="danger"
+                >
                   Clear Selected Problem
                 </Button>
               ) : (
-                <Button onClick={handleSelect}>Select for Group</Button>
+                <Button
+                  disabled={selectProblemMutation.isPending}
+                  onClick={handleSelect}
+                >
+                  Select for Group
+                </Button>
               ))}
 
             {isAdmin && (
