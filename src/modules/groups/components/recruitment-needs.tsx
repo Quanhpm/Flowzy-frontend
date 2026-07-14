@@ -22,7 +22,7 @@ export function RecruitmentNeeds({ needs }: RecruitmentNeedsProps) {
   return (
     <section className="grid gap-3 rounded-xl border border-border bg-background p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="m-0 text-sm font-bold text-foreground">
+        <h3 className="m-0 break-words text-sm font-bold text-foreground">
           Recruitment needs
         </h3>
         {needs.length > 0 && (
@@ -52,7 +52,11 @@ export function RecruitmentNeeds({ needs }: RecruitmentNeedsProps) {
               role?.displayNameVi || need.displayNameVi || role?.displayNameEn;
 
             return (
-              <Badge key={need.role} tone="neutral">
+              <Badge
+                className="max-w-full whitespace-normal break-words"
+                key={need.role}
+                tone="neutral"
+              >
                 {displayName} · {need.quantity}
               </Badge>
             );

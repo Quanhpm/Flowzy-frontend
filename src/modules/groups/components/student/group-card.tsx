@@ -42,17 +42,17 @@ export function GroupCard({
 
       <div className="flex min-w-0 items-start justify-between gap-3 pr-14">
         <div className="grid min-w-0 gap-1">
-          <h3 className="m-0 text-lg leading-snug font-bold text-foreground">
+          <h3 className="m-0 break-words text-lg leading-snug font-bold text-foreground">
             {group.name}
           </h3>
-          <p className="m-0 text-sm text-muted">
+          <p className="m-0 break-words text-sm text-muted">
             {group.term} - {group.courseCode} - {group.groupNo}
           </p>
         </div>
       </div>
 
       <dl className="grid gap-2 text-sm">
-        <div className="flex justify-between gap-3">
+        <div className="flex min-w-0 justify-between gap-3">
           <dt className="text-muted">Members</dt>
           <dd className="m-0 font-medium text-foreground">
             {group.memberCount}/6
@@ -60,7 +60,7 @@ export function GroupCard({
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-muted">Leader</dt>
-          <dd className="m-0 text-right font-medium text-foreground">
+          <dd className="m-0 min-w-0 break-words text-right font-medium text-foreground">
             {formatNullable(group.leaderName)}
           </dd>
         </div>
@@ -80,7 +80,7 @@ export function GroupCard({
 
       <RecruitmentNeeds needs={group.recruitmentNeeds} />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2 max-[480px]:grid max-[480px]:[&>button]:w-full">
         <Button
           icon={<Eye size={16} />}
           onClick={() => onViewDetails(group.id)}
@@ -90,7 +90,9 @@ export function GroupCard({
         </Button>
         {pendingRequest ? (
           <>
-            <Badge tone="warning">Request pending</Badge>
+            <Badge className="max-w-full break-words" tone="warning">
+              Request pending
+            </Badge>
             {onCancelRequest && (
               <Button
                 icon={<X size={16} />}

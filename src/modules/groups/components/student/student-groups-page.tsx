@@ -212,7 +212,7 @@ export function StudentGroupsPage() {
     <div className="grid min-w-0 gap-6">
       <div
         aria-label="Group sections"
-        className="flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-border bg-surface p-1"
+        className="flex w-fit max-w-full snap-x snap-mandatory items-center gap-1 overflow-x-auto overscroll-x-contain rounded-xl border border-border bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[480px]:w-full"
         role="tablist"
       >
         {(
@@ -240,7 +240,7 @@ export function StudentGroupsPage() {
           <button
             aria-selected={activeSection === section.id}
             className={cn(
-              "inline-flex h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-bold text-muted transition-[background,color,box-shadow]",
+              "inline-flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-lg px-3 text-sm font-bold text-muted transition-[background,color,box-shadow]",
               activeSection === section.id
                 ? "bg-background text-foreground shadow-sm"
                 : "hover:bg-background/70 hover:text-foreground",
@@ -369,8 +369,8 @@ export function StudentGroupsPage() {
                 )}
 
                 {recruitingGroups.length > 0 && (
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
-                    <span className="text-xs font-medium text-muted">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 max-[560px]:grid">
+                    <span className="break-words text-xs font-medium text-muted">
                       Showing{" "}
                       {effectiveDiscoverPage * DISCOVER_PAGE_SIZE + 1}-
                       {Math.min(
@@ -379,7 +379,7 @@ export function StudentGroupsPage() {
                       )}{" "}
                       of {recruitingGroups.length} groups
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 max-[560px]:grid max-[560px]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] max-[560px]:[&>button]:min-w-0">
                       <Button
                         disabled={effectiveDiscoverPage === 0}
                         onClick={() =>
