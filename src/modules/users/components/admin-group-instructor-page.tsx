@@ -24,7 +24,11 @@ const GROUP_PAGE_SIZE = 10;
 const pageClassName = "grid min-w-0 gap-6";
 const filterClassName =
   "grid grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)_auto] items-end gap-3 max-[760px]:grid-cols-[minmax(0,1fr)]";
-const tableWrapClassName = "w-full overflow-x-auto";
+const tableWrapClassName = "w-full overflow-x-auto max-[760px]:hidden";
+const mobileListClassName =
+  "hidden min-w-0 gap-3 p-4 max-[760px]:grid max-[480px]:p-3";
+const mobileCardClassName =
+  "grid min-w-0 gap-4 rounded-xl border border-border bg-background p-4";
 const tableClassName = "w-full min-w-[1180px] border-collapse";
 const tableHeadCellClassName =
   "border-b border-border px-4 py-3 text-left text-xs font-bold tracking-[0.04em] text-muted uppercase";
@@ -106,6 +110,15 @@ export function AdminGroupInstructorPage() {
       groupSearch: groupSearchInput.trim(),
       instructorSearch: instructorSearchInput.trim(),
     });
+    setGroupPage(0);
+    setInstructorPage(0);
+    clearSelections();
+  }
+
+  function handleResetFilters() {
+    setGroupSearchInput("");
+    setInstructorSearchInput("");
+    setAppliedFilters({ groupSearch: "", instructorSearch: "" });
     setGroupPage(0);
     setInstructorPage(0);
     clearSelections();
@@ -196,17 +209,22 @@ export function AdminGroupInstructorPage() {
               placeholder="Name, code, or email"
               value={instructorSearchInput}
             />
-            <Button type="submit">Apply filters</Button>
+            <div className="flex flex-wrap gap-2 max-[480px]:grid max-[480px]:grid-cols-1 max-[480px]:[&>button]:w-full">
+              <Button type="submit">Apply filters</Button>
+              <Button onClick={handleResetFilters} variant="secondary">
+                Reset
+              </Button>
+            </div>
           </form>
 
           {instructorPageData && instructorPageData.totalElements > 0 && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-border pt-4 max-[480px]:grid">
               <span className="text-sm text-muted">
                 Instructor page {instructorPageData.page + 1} of{" "}
                 {instructorPageData.totalPages} ({instructorPageData.totalElements}{" "}
                 active accounts)
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 max-[480px]:grid max-[480px]:w-full max-[480px]:grid-cols-2 max-[480px]:[&>button]:w-full">
                 <Button
                   disabled={
                     assigningGroupId !== null || !instructorPageData.hasPrevious
@@ -236,9 +254,11 @@ export function AdminGroupInstructorPage() {
           {!instructorsQuery.isLoading &&
             !instructorsQuery.isError &&
             instructors.length === 0 && (
-              <div className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 text-sm text-muted">
-                <UserRoundPlus size={18} />
-                No active instructors match the current instructor filter.
+              <div className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-background p-3 text-sm text-muted">
+                <UserRoundPlus className="shrink-0" size={18} />
+                <span className="break-words">
+                  No active instructors match the current instructor filter.
+                </span>
               </div>
             )}
         </CardContent>
@@ -306,11 +326,11 @@ export function AdminGroupInstructorPage() {
                       </td>
                       <td className={tableCellClassName}>
                         {group.instructorName || group.instructorCode ? (
-                          <div className="grid gap-1">
-                            <Badge tone="neutral">
+                          <div className="grid min-w-0 gap-1">
+                            <span className="min-w-0 break-words font-medium">
                               {group.instructorName ?? "Assigned instructor"}
-                            </Badge>
-                            <span className="text-xs text-muted">
+                            </span>
+                            <span className="break-all text-xs text-muted">
                               {group.instructorCode ?? "No instructor code"}
                             </span>
                           </div>
@@ -382,12 +402,126 @@ export function AdminGroupInstructorPage() {
               </tbody>
             </table>
           </div>
+          <div className={mobileListClassName}>
+            {paginatedGroups.map((group) => {
+              const selectedInstructorId =
+                selectedInstructorIds[group.id] ?? "";
+              const isSameInstructor =
+                Boolean(selectedInstructorId) &&
+                Number(selectedInstructorId) === group.instructorId;
+              const isCurrentRowPending = assigningGroupId === group.id;
+              const feedback = rowFeedback[group.id];
+
+              return (
+                <article className={mobileCardClassName} key={group.id}>
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+                    <div className="grid min-w-0 gap-1">
+                      <h3 className="m-0 break-words text-base font-bold text-foreground">
+                        {group.name}
+                      </h3>
+                      <span className="break-all text-xs text-muted">
+                        {group.groupNo}
+                      </span>
+                    </div>
+                    <Badge tone="neutral">{group.status}</Badge>
+                  </div>
+
+                  <dl className="m-0 grid min-w-0 grid-cols-2 gap-3 max-[480px]:grid-cols-1">
+                    <div className="grid min-w-0 gap-1">
+                      <dt className="text-[11px] font-bold text-muted uppercase">
+                        Term / course
+                      </dt>
+                      <dd className="m-0 break-words text-sm text-foreground">
+                        {group.term} · {group.courseCode}
+                      </dd>
+                    </div>
+                    <div className="grid min-w-0 gap-1">
+                      <dt className="text-[11px] font-bold text-muted uppercase">
+                        Mentor
+                      </dt>
+                      <dd className="m-0 break-words text-sm text-foreground">
+                        {group.mentorName ?? "Unassigned"}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="grid min-w-0 gap-1 border-t border-border pt-3">
+                    <span className="text-[11px] font-bold text-muted uppercase">
+                      Current instructor
+                    </span>
+                    <span className="break-words text-sm font-medium text-foreground">
+                      {group.instructorName ?? "Unassigned"}
+                    </span>
+                    <span className="break-all text-xs text-muted">
+                      {group.instructorCode ?? "No instructor code"}
+                    </span>
+                  </div>
+
+                  <div className="grid min-w-0 gap-3 border-t border-border pt-3">
+                    <Select
+                      aria-label={`New instructor for ${group.name}`}
+                      disabled={
+                        assigningGroupId !== null || instructors.length === 0
+                      }
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setSelectedInstructorIds((current) => ({
+                          ...current,
+                          [group.id]: value,
+                        }));
+                        setRowFeedback((current) => ({
+                          ...current,
+                          [group.id]: undefined,
+                        }));
+                      }}
+                      value={selectedInstructorId}
+                    >
+                      <option value="">Choose active instructor</option>
+                      {instructors.map((instructor) => (
+                        <option key={instructor.id} value={instructor.id}>
+                          {instructor.fullName ?? instructor.email} ({
+                            instructor.code ?? "-"
+                          })
+                        </option>
+                      ))}
+                    </Select>
+                    {feedback && (
+                      <span
+                        className={cn(
+                          "break-words text-xs",
+                          feedback.tone === "success"
+                            ? "text-green-800"
+                            : "text-red-700",
+                        )}
+                        role="status"
+                      >
+                        {feedback.message}
+                      </span>
+                    )}
+                    <Button
+                      className="w-full"
+                      disabled={
+                        assigningGroupId !== null ||
+                        !selectedInstructorId ||
+                        isSameInstructor
+                      }
+                      onClick={() =>
+                        handleAssign(group.id, group.instructorId)
+                      }
+                    >
+                      {isCurrentRowPending ? "Saving..." : "Assign instructor"}
+                    </Button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
           {groupTotalPages > 1 && (
-            <div className="flex items-center justify-between gap-4 border-t border-border px-6 py-4 max-[680px]:flex-col max-[680px]:items-start">
+            <div className="flex min-w-0 items-center justify-between gap-4 border-t border-border px-6 py-4 max-[680px]:flex-col max-[680px]:items-stretch max-[480px]:px-4">
               <span className="text-sm text-muted">
                 Page {groupPage + 1} of {groupTotalPages} ({groups.length} groups)
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 max-[480px]:grid max-[480px]:grid-cols-2 max-[480px]:[&>button]:w-full">
                 <Button
                   disabled={assigningGroupId !== null || groupPage === 0}
                   onClick={() => handleGroupPageChange(Math.max(0, groupPage - 1))}

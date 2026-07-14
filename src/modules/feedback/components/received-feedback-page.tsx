@@ -138,7 +138,9 @@ export function ReceivedFeedbackPage({
               placeholder="EXE101"
               value={courseCodeInput}
             />
-            <Button type="submit">Apply filters</Button>
+            <Button className="max-[760px]:w-full" type="submit">
+              Apply filters
+            </Button>
           </form>
         </CardContent>
       </Card>
@@ -172,7 +174,7 @@ export function ReceivedFeedbackPage({
             </div>
             <div className={metricClassName}>
               <span className="text-sm text-muted">Scope</span>
-              <strong className="text-base text-foreground">
+              <strong className="break-words text-base text-foreground">
                 {summary.term || "All terms"} · {summary.courseCode || "All courses"}
               </strong>
             </div>
@@ -200,12 +202,14 @@ export function ReceivedFeedbackPage({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <FeedbackRating value={entry.rating} />
-                      <Badge tone="neutral">{entry.termCode} · {entry.courseCode}</Badge>
+                      <Badge className="max-w-full whitespace-normal break-words" tone="neutral">
+                        {entry.termCode} · {entry.courseCode}
+                      </Badge>
                     </div>
-                    <p className="m-0 text-sm leading-relaxed text-foreground">
+                    <p className="m-0 break-words text-sm leading-relaxed text-foreground">
                       {entry.comment || "No comment provided."}
                     </p>
-                    <span className="text-xs text-muted">
+                    <span className="break-words text-xs text-muted">
                       {entry.groupName} · Submitted {formatDateTime(entry.submittedAt)}
                     </span>
                   </article>

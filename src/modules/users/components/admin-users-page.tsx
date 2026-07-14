@@ -9,6 +9,7 @@ import {
   EmptyState,
   LoadingState,
   PageHeader,
+  ResponsiveDialog,
   Select,
   TextInput,
 } from "@/shared/components";
@@ -19,9 +20,8 @@ import {
   Plus,
   Search,
   Trash2,
-  X,
 } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useId, useMemo, useState } from "react";
 
 import { useAdminUser } from "../hooks/use-admin-user";
 import { useAdminUsers } from "../hooks/use-admin-users";
@@ -111,7 +111,11 @@ const INSTRUCTOR_DEPARTMENT_MAX_LENGTH = 150;
 const pageClassName = "grid min-w-0 gap-6";
 const toolbarClassName =
   "grid grid-cols-[minmax(240px,1fr)_minmax(150px,190px)_minmax(150px,190px)] items-end gap-3 max-[860px]:grid-cols-[minmax(0,1fr)]";
-const tableWrapClassName = "w-full overflow-x-auto";
+const tableWrapClassName = "w-full overflow-x-auto max-[760px]:hidden";
+const mobileListClassName =
+  "hidden min-w-0 gap-3 border-t border-border p-4 max-[760px]:grid max-[480px]:p-3";
+const mobileCardClassName =
+  "grid min-w-0 gap-4 rounded-xl border border-border bg-background p-4";
 const tableClassName =
   "w-full min-w-[1040px] border-collapse [&_tbody_tr:last-child_td]:border-b-0";
 const tableHeadCellClassName =
@@ -120,32 +124,16 @@ const tableCellClassName =
   "border-b border-border px-[18px] py-[15px] text-left align-middle text-sm text-foreground";
 const mutedTableCellClassName = cn(tableCellClassName, "text-muted");
 const userCellClassName = "grid min-w-0 gap-1";
-const userNameClassName =
-  "overflow-hidden text-ellipsis whitespace-nowrap font-bold";
-const userEmailClassName =
-  "overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-muted";
-const actionsClassName = "flex justify-end gap-2";
+const userNameClassName = "min-w-0 break-words font-bold";
+const userEmailClassName = "min-w-0 break-all text-[13px] text-muted";
+const actionsClassName = "flex flex-wrap justify-end gap-2";
 const paginationClassName =
-  "flex items-center justify-between gap-4 border-t border-border px-6 py-4 max-[680px]:flex-col max-[680px]:items-start";
+  "flex min-w-0 items-center justify-between gap-4 border-t border-border px-6 py-4 max-[680px]:flex-col max-[680px]:items-stretch max-[480px]:px-4";
 const paginationTextClassName = "text-[13px] text-muted";
-const paginationActionsClassName = "flex gap-2";
+const paginationActionsClassName =
+  "flex flex-wrap gap-2 max-[480px]:grid max-[480px]:grid-cols-2 [&>button]:min-w-24 max-[480px]:[&>button]:w-full max-[480px]:[&>button]:min-w-0";
 const errorPanelClassName =
   "rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm leading-normal text-red-700";
-const modalBackdropClassName =
-  "fixed inset-0 z-40 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6 max-[680px]:p-3";
-const modalClassName =
-  "grid w-[min(760px,100%)] max-h-[min(760px,calc(100svh-48px))] grid-rows-[auto_1fr_auto] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal max-[680px]:max-h-[calc(100svh-24px)]";
-const modalSmallClassName = "w-[min(480px,100%)]";
-const modalHeaderClassName =
-  "flex items-start justify-between gap-4 border-b border-border px-6 py-[22px] max-[680px]:px-[18px]";
-const modalTitleClassName =
-  "m-0 text-xl leading-tight font-bold text-foreground";
-const modalDescriptionClassName =
-  "mt-1.5 mb-0 text-sm leading-[1.55] text-muted";
-const modalBodyClassName =
-  "grid gap-[18px] overflow-y-auto p-6 max-[680px]:px-[18px]";
-const modalFooterClassName =
-  "flex justify-end gap-2.5 border-t border-border bg-surface px-6 py-[18px] max-[680px]:px-[18px]";
 const formGridClassName =
   "grid grid-cols-2 gap-3.5 max-[680px]:grid-cols-[minmax(0,1fr)]";
 const fullSpanClassName = "col-span-full";
@@ -417,6 +405,7 @@ function UserFormModal({
   );
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formId = useId();
 
   function updateField<K extends keyof UserFormState>(
     field: K,
@@ -453,30 +442,31 @@ function UserFormModal({
       : "Update account status, profile details, and password-change policy.";
 
   return (
-    <div className={modalBackdropClassName}>
+    <ResponsiveDialog
+      bodyClassName="p-0"
+      className="min-[761px]:max-w-[760px]"
+      closeOnBackdrop={false}
+      description={description}
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">
+            Cancel
+          </Button>
+          <Button disabled={isSubmitting} form={formId} type="submit">
+            {isSubmitting ? "Saving..." : "Save user"}
+          </Button>
+        </>
+      }
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title={title}
+    >
       <form
-        aria-label={title}
-        aria-modal="true"
-        className={modalClassName}
+        className="grid gap-[18px] p-4 min-[481px]:p-6"
+        id={formId}
         onSubmit={handleSubmit}
-        role="dialog"
       >
-        <header className={modalHeaderClassName}>
-          <div>
-            <h2 className={modalTitleClassName}>{title}</h2>
-            <p className={modalDescriptionClassName}>{description}</p>
-          </div>
-          <Button
-            aria-label="Close"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-
-        <div className={modalBodyClassName}>
-            {formError && <div className={errorPanelClassName}>{formError}</div>}
+        {formError && <div className={errorPanelClassName}>{formError}</div>}
 
             <div className={formGridClassName}>
               <TextInput
@@ -759,18 +749,8 @@ function UserFormModal({
                 </div>
               </>
             )}
-          </div>
-
-        <footer className={modalFooterClassName}>
-          <Button onClick={onClose} variant="secondary">
-            Cancel
-          </Button>
-          <Button disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Saving..." : "Save user"}
-          </Button>
-        </footer>
       </form>
-    </div>
+    </ResponsiveDialog>
   );
 }
 
@@ -788,6 +768,7 @@ function ResetPasswordModal({
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formId = useId();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -810,49 +791,39 @@ function ResetPasswordModal({
   }
 
   return (
-    <div className={modalBackdropClassName}>
-      <form
-        aria-label="Reset password"
-        aria-modal="true"
-        className={cn(modalClassName, modalSmallClassName)}
-        onSubmit={handleSubmit}
-        role="dialog"
-      >
-        <header className={modalHeaderClassName}>
-          <div>
-            <h2 className={modalTitleClassName}>Reset password</h2>
-            <p className={modalDescriptionClassName}>
-              Set a temporary password for {getDisplayName(user)}.
-            </p>
-          </div>
-          <Button
-            aria-label="Close"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-        <div className={modalBodyClassName}>
-          {formError && <div className={errorPanelClassName}>{formError}</div>}
-          <TextInput
-            label="New password"
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="At least 6 characters"
-            type="password"
-            value={password}
-          />
-        </div>
-        <footer className={modalFooterClassName}>
+    <ResponsiveDialog
+      bodyClassName="p-0"
+      className="min-[761px]:max-w-[480px]"
+      closeOnBackdrop={false}
+      description={<>Set a temporary password for {getDisplayName(user)}.</>}
+      footer={
+        <>
           <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
-          <Button disabled={isSubmitting} type="submit">
+          <Button disabled={isSubmitting} form={formId} type="submit">
             {isSubmitting ? "Resetting..." : "Reset password"}
           </Button>
-        </footer>
+        </>
+      }
+      onClose={onClose}
+      title="Reset password"
+    >
+      <form
+        className="grid gap-[18px] p-4 min-[481px]:p-6"
+        id={formId}
+        onSubmit={handleSubmit}
+      >
+        {formError && <div className={errorPanelClassName}>{formError}</div>}
+        <TextInput
+          label="New password"
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="At least 6 characters"
+          type="password"
+          value={password}
+        />
       </form>
-    </div>
+    </ResponsiveDialog>
   );
 }
 
@@ -876,35 +847,19 @@ function UserDetailStateModal({
   variant,
 }: UserDetailStateModalProps) {
   return (
-    <div className={modalBackdropClassName}>
-      <div
-        aria-label={title}
-        aria-modal="true"
-        className={cn(modalClassName, modalSmallClassName)}
-        role="dialog"
-      >
-        <header className={modalHeaderClassName}>
-          <div>
-            <h2 className={modalTitleClassName}>{title}</h2>
-            <p className={modalDescriptionClassName}>{description}</p>
-          </div>
-          <Button
-            aria-label="Close"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-        <div className={modalBodyClassName}>
-          {variant === "loading" ? (
-            <LoadingState title="Loading user detail" />
-          ) : (
-            <div className={errorPanelClassName}>{description}</div>
-          )}
-        </div>
-      </div>
-    </div>
+    <ResponsiveDialog
+      className="min-[761px]:max-w-[480px]"
+      closeOnBackdrop={false}
+      description={description}
+      onClose={onClose}
+      title={title}
+    >
+      {variant === "loading" ? (
+        <LoadingState title="Loading user detail" />
+      ) : (
+        <div className={errorPanelClassName}>{description}</div>
+      )}
+    </ResponsiveDialog>
   );
 }
 
@@ -927,45 +882,38 @@ function DeleteUserModal({ onClose, onConfirm, user }: DeleteUserModalProps) {
   }
 
   return (
-    <div className={modalBackdropClassName}>
-      <div
-        aria-label="Delete user"
-        aria-modal="true"
-        className={cn(modalClassName, modalSmallClassName)}
-        role="dialog"
-      >
-        <header className={modalHeaderClassName}>
-          <div>
-            <h2 className={modalTitleClassName}>Delete user</h2>
-            <p className={modalDescriptionClassName}>
-              This will soft delete {getDisplayName(user)} and remove their
-              active access.
-            </p>
-          </div>
-          <Button
-            aria-label="Close"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-        <div className={modalBodyClassName}>
-          {formError && <div className={errorPanelClassName}>{formError}</div>}
-          <div className={errorPanelClassName}>
-            Confirm that you want to delete account {user.email}.
-          </div>
-        </div>
-        <footer className={modalFooterClassName}>
+    <ResponsiveDialog
+      bodyClassName="grid gap-[18px]"
+      className="min-[761px]:max-w-[480px]"
+      closeOnBackdrop={false}
+      description={
+        <>
+          This will soft delete {getDisplayName(user)} and remove their active
+          access.
+        </>
+      }
+      footer={
+        <>
           <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
-          <Button disabled={isSubmitting} onClick={handleDelete} variant="danger">
+          <Button
+            disabled={isSubmitting}
+            onClick={handleDelete}
+            variant="danger"
+          >
             {isSubmitting ? "Deleting..." : "Delete user"}
           </Button>
-        </footer>
+        </>
+      }
+      onClose={onClose}
+      title="Delete user"
+    >
+      {formError && <div className={errorPanelClassName}>{formError}</div>}
+      <div className={errorPanelClassName}>
+        Confirm that you want to delete account {user.email}.
       </div>
-    </div>
+    </ResponsiveDialog>
   );
 }
 
@@ -1183,6 +1131,91 @@ export function AdminUsersPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className={mobileListClassName}>
+              {users.map((user) => (
+                <article className={mobileCardClassName} key={user.id}>
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+                    <div className={userCellClassName}>
+                      <h3 className="m-0 min-w-0 break-words text-base font-bold text-foreground">
+                        {getDisplayName(user)}
+                      </h3>
+                      <span className={userEmailClassName}>{user.email}</span>
+                    </div>
+                    <Badge tone={getStatusTone(user.status)}>
+                      {user.status}
+                    </Badge>
+                  </div>
+
+                  <div className="flex min-w-0 flex-wrap gap-2">
+                    <Badge tone="neutral">{user.role}</Badge>
+                    {user.mustChangePassword ? (
+                      <Badge tone="warning">Must change password</Badge>
+                    ) : (
+                      <Badge tone="neutral">Password normal</Badge>
+                    )}
+                  </div>
+
+                  <dl className="m-0 grid min-w-0 grid-cols-2 gap-3 max-[480px]:grid-cols-1">
+                    <div className="grid min-w-0 gap-1">
+                      <dt className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+                        Code
+                      </dt>
+                      <dd className="m-0 break-all text-sm text-foreground">
+                        {user.code ?? "-"}
+                      </dd>
+                    </div>
+                    <div className="grid min-w-0 gap-1">
+                      <dt className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+                        Last login
+                      </dt>
+                      <dd className="m-0 break-words text-sm text-foreground">
+                        {formatDateTime(user.lastLoginAt)}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="grid min-w-0 gap-2 border-t border-border pt-3">
+                    <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+                      Group membership
+                    </span>
+                    <UserGroupMemberships
+                      memberships={user.groupMemberships}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 border-t border-border pt-3 max-[480px]:grid-cols-1 [&>button]:w-full">
+                    <Button
+                      icon={<Pencil size={15} />}
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setMode("edit");
+                      }}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      icon={<KeyRound size={15} />}
+                      onClick={() => setResetUser(user)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      icon={<Trash2 size={15} />}
+                      onClick={() => setDeleteUser(user)}
+                      size="sm"
+                      variant="danger"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </article>
+              ))}
             </div>
 
             <div className={paginationClassName}>

@@ -1,13 +1,10 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useId, useMemo, useState } from "react";
 import {
-  AlertTriangle,
   ExternalLink,
-  GraduationCap,
   Save,
   SlidersHorizontal,
-  X,
 } from "lucide-react";
 
 import { useInstructorGroups } from "@/modules/groups";
@@ -17,9 +14,9 @@ import {
   Card,
   CardContent,
   CardHeader,
-  EmptyState,
   LoadingState,
   PageHeader,
+  ResponsiveDialog,
   Select,
   TextInput,
 } from "@/shared/components";
@@ -33,12 +30,13 @@ import {
   useGradeSubmission,
   useInstructorSubmissions,
   useUpdateMilestoneGrade,
-} from "../hooks";
+} from "../../hooks";
 import type {
   CourseMilestoneDto,
   MilestoneGradeDto,
   MilestoneSubmissionDto,
-} from "../types";
+} from "../../types";
+import { SubmissionResults } from "./submission-results";
 
 type GradeModalProps = {
   milestone: CourseMilestoneDto | null;
@@ -80,19 +78,15 @@ function formatDateTime(value: string | null | undefined) {
   }).format(date);
 }
 
-function formatScore(value: number | null | undefined, maxScore?: number | null) {
-  if (typeof value !== "number") return "Not graded";
-  if (typeof maxScore === "number") return `${value} / ${maxScore}`;
-  return String(value);
-}
-
 function getSubmissionStatusTone(status: MilestoneSubmissionStatus) {
   if (status === "GRADED") return "success";
   if (status === "RESUBMITTED") return "warning";
   return "brand";
 }
 
-function getAverageValue(value: { averageGrade: number | null; average: number | null } | undefined) {
+function getAverageValue(
+  value: { averageGrade: number | null; average: number | null } | undefined,
+) {
   if (!value) return null;
   return value.averageGrade ?? value.average ?? null;
 }
@@ -108,6 +102,7 @@ function buildCourseOptions(courses: string[]) {
 }
 
 function GradeModal({ milestone, onClose, submission }: GradeModalProps) {
+  const formId = useId();
   const gradeQuery = useGradeForSubmission(submission.id);
   const gradeMutation = useGradeSubmission();
   const updateGradeMutation = useUpdateMilestoneGrade();
@@ -178,99 +173,99 @@ function GradeModal({ milestone, onClose, submission }: GradeModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6">
-      <div className="grid max-h-[92vh] w-[min(620px,100%)] grid-rows-[auto_1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal">
-        <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
-          <div className="grid gap-1">
-            <h2 className="m-0 text-lg font-bold text-foreground">
-              Grade submission
-            </h2>
-            <p className="m-0 text-sm text-muted">
-              Submission #{submission.id}
-              {milestone ? ` for ${milestone.title}` : ""}
-            </p>
-          </div>
-          <Button
-            aria-label="Close grade form"
-            className="size-8 rounded-lg p-0"
-            onClick={onClose}
-            variant="secondary"
-          >
-            <X className="size-4" />
+    <ResponsiveDialog
+      className="min-[761px]:max-w-[620px]"
+      closeLabel="Close grade form"
+      closeOnBackdrop={false}
+      description={`Submission #${submission.id}${
+        milestone ? ` for ${milestone.title}` : ""
+      }`}
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">
+            Cancel
           </Button>
+          <Button
+            disabled={isPending}
+            form={formId}
+            icon={<Save size={16} />}
+            type="submit"
+          >
+            {isPending
+              ? "Saving..."
+              : existingGrade
+                ? "Update grade"
+                : "Save grade"}
+          </Button>
+        </>
+      }
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title="Grade submission"
+    >
+      <form className="grid min-w-0 gap-5" id={formId} onSubmit={handleSubmit}>
+        <div className="grid gap-2 rounded-xl border border-border bg-background p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={getSubmissionStatusTone(submission.status)}>
+              {submission.status}
+            </Badge>
+            {submission.late && <Badge tone="danger">Late</Badge>}
+            <span className="text-xs text-muted">
+              Submitted {formatDateTime(submission.submittedAt)}
+            </span>
+          </div>
+          <a
+            className="inline-flex min-h-11 min-w-0 items-center gap-2 break-all text-sm font-medium text-brand-primary hover:underline"
+            href={submission.fileUrl}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <ExternalLink className="size-4" />
+            <span className="min-w-0 break-all">{submission.fileUrl}</span>
+          </a>
+          {submission.comments && (
+            <p className="m-0 break-words text-sm leading-6 text-muted">
+              {submission.comments}
+            </p>
+          )}
         </div>
 
-        <form className="grid gap-5 overflow-y-auto p-6" onSubmit={handleSubmit}>
-          <div className="grid gap-2 rounded-xl border border-border bg-background p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tone={getSubmissionStatusTone(submission.status)}>
-                {submission.status}
-              </Badge>
-              {submission.late && <Badge tone="danger">Late</Badge>}
-              <span className="text-xs text-muted">
-                Submitted {formatDateTime(submission.submittedAt)}
-              </span>
-            </div>
-            <a
-              className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-brand-primary hover:underline"
-              href={submission.fileUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <ExternalLink className="size-4" />
-              <span className="truncate">{submission.fileUrl}</span>
-            </a>
-            {submission.comments && (
-              <p className="m-0 text-sm leading-6 text-muted">
-                {submission.comments}
-              </p>
-            )}
-          </div>
+        {gradeQuery.isLoading && (
+          <LoadingState className="min-h-20" title="Checking existing grade" />
+        )}
 
-          {gradeQuery.isLoading && (
-            <LoadingState className="min-h-20" title="Checking existing grade" />
-          )}
+        <TextInput
+          label={
+            typeof maxScore === "number" ? `Score out of ${maxScore}` : "Score"
+          }
+          min={0}
+          onChange={(event) => setScore(event.target.value)}
+          placeholder="8.5"
+          required
+          step="0.01"
+          type="number"
+          value={score}
+        />
 
-          <TextInput
-            label={typeof maxScore === "number" ? `Score out of ${maxScore}` : "Score"}
-            min={0}
-            onChange={(event) => setScore(event.target.value)}
-            placeholder="8.5"
-            required
-            step="0.01"
-            type="number"
-            value={score}
+        <label className="grid gap-[7px]">
+          <span className="text-[13px] font-medium text-foreground">
+            Feedback
+          </span>
+          <textarea
+            className="min-h-28 min-w-0 rounded-xl border border-border bg-surface px-3.5 py-3 text-base text-foreground outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(106,0,255,0.12)] min-[761px]:text-sm"
+            onChange={(event) => setFeedback(event.target.value)}
+            placeholder="Feedback for the group"
+            value={feedback}
           />
+        </label>
 
-          <label className="grid gap-[7px]">
-            <span className="text-[13px] font-medium text-foreground">
-              Feedback
-            </span>
-            <textarea
-              className="min-h-28 rounded-xl border border-border bg-surface px-3.5 py-3 text-sm text-foreground outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(106,0,255,0.12)]"
-              onChange={(event) => setFeedback(event.target.value)}
-              placeholder="Feedback for the group"
-              value={feedback}
-            />
-          </label>
-
-          {(error || mutationError) && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error || getErrorMessage(mutationError)}
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 border-t border-border pt-5">
-            <Button onClick={onClose} type="button" variant="secondary">
-              Cancel
-            </Button>
-            <Button disabled={isPending} icon={<Save size={16} />} type="submit">
-              {isPending ? "Saving..." : existingGrade ? "Update grade" : "Save grade"}
-            </Button>
+        {(error || mutationError) && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error || getErrorMessage(mutationError)}
           </div>
-        </form>
-      </div>
-    </div>
+        )}
+      </form>
+    </ResponsiveDialog>
   );
 }
 
@@ -312,25 +307,30 @@ export function InstructorSubmissionsPage() {
   );
   const submissions = submissionsQuery.data?.data ?? [];
   const averageGrade = getAverageValue(averageGradeQuery.data?.data);
+  const hasFilters = Boolean(
+    term || courseCode || groupId || milestoneId || status || late,
+  );
 
   const milestonesById = useMemo(
     () => new Map(milestones.map((milestone) => [milestone.id, milestone])),
     [milestones],
   );
-  const groupsById = useMemo(
-    () => new Map(groups.map((group) => [group.id, group])),
-    [groups],
-  );
   const selectedSubmissionMilestone = activeSubmission
-    ? milestonesById.get(activeSubmission.milestoneId) ?? null
+    ? (milestonesById.get(activeSubmission.milestoneId) ?? null)
     : null;
 
   const uniqueTerms = useMemo(
-    () => Array.from(new Set(groups.map((group) => group.term).filter(Boolean))).sort(),
+    () =>
+      Array.from(
+        new Set(groups.map((group) => group.term).filter(Boolean)),
+      ).sort(),
     [groups],
   );
   const courseOptions = useMemo(
-    () => buildCourseOptions(groups.map((group) => group.courseCode).filter(Boolean)),
+    () =>
+      buildCourseOptions(
+        groups.map((group) => group.courseCode).filter(Boolean),
+      ),
     [groups],
   );
 
@@ -427,6 +427,24 @@ export function InstructorSubmissionsPage() {
             </Select>
           </div>
 
+          {hasFilters && (
+            <div className="flex justify-end max-[760px]:grid">
+              <Button
+                onClick={() => {
+                  setTerm("");
+                  setCourseCode("");
+                  setGroupId("");
+                  setMilestoneId("");
+                  setStatus("");
+                  setLate("");
+                }}
+                variant="secondary"
+              >
+                Clear filters
+              </Button>
+            </div>
+          )}
+
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-xl border border-border bg-background p-4 max-[760px]:grid-cols-1">
             <div className="grid gap-1">
               <span className="text-sm font-bold text-foreground">
@@ -450,122 +468,14 @@ export function InstructorSubmissionsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader
-          actions={<Badge tone="neutral">{submissions.length} submissions</Badge>}
-          description="Open a submission to create or update its grade."
-          title="Assigned group submissions"
-        />
-        <CardContent>
-          {submissionsQuery.isLoading ? (
-            <LoadingState title="Loading submissions" />
-          ) : submissionsQuery.error ? (
-            <EmptyState
-              className="border-red-200 bg-red-50"
-              description={getErrorMessage(submissionsQuery.error)}
-              icon={<AlertTriangle size={22} />}
-              title="Unable to load submissions"
-            />
-          ) : submissions.length === 0 ? (
-            <EmptyState
-              icon={<GraduationCap size={22} />}
-              title="No submissions found"
-              description="Try a different filter set or wait for group leaders to submit deliverables."
-            />
-          ) : (
-            <div className="overflow-x-auto rounded-xl border border-border">
-              <table className="w-full min-w-[920px] border-collapse text-left">
-                <thead>
-                  <tr className="border-b border-border bg-background">
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-muted">
-                      Group
-                    </th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-muted">
-                      Milestone
-                    </th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-muted">
-                      Status
-                    </th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-muted">
-                      Submitted
-                    </th>
-                    <th className="px-5 py-3 text-xs font-bold uppercase tracking-wide text-muted">
-                      Score
-                    </th>
-                    <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wide text-muted">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border bg-surface text-sm">
-                  {submissions.map((submission) => {
-                    const milestone = milestonesById.get(submission.milestoneId);
-                    const group = groupsById.get(submission.groupId);
-
-                    return (
-                      <tr className="transition-colors hover:bg-background" key={submission.id}>
-                        <td className="px-5 py-4">
-                          <div className="grid gap-1">
-                            <span className="font-bold text-foreground">
-                              {group?.groupNo ?? `Group #${submission.groupId}`}
-                            </span>
-                            <span className="text-xs text-muted">
-                              {group?.name ?? "Assigned group"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="grid gap-1">
-                            <span className="font-medium text-foreground">
-                              {milestone?.title ?? `Milestone #${submission.milestoneId}`}
-                            </span>
-                            <span className="text-xs text-muted">
-                              Max {submission.maxScore ?? milestone?.maxScore ?? "N/A"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <Badge tone={getSubmissionStatusTone(submission.status)}>
-                              {submission.status}
-                            </Badge>
-                            {submission.late && <Badge tone="danger">Late</Badge>}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-sm text-muted">
-                          {formatDateTime(submission.submittedAt)}
-                        </td>
-                        <td className="px-5 py-4 font-medium text-foreground">
-                          {formatScore(submission.score, submission.maxScore)}
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              icon={<ExternalLink size={15} />}
-                              onClick={() => window.open(submission.fileUrl, "_blank", "noreferrer")}
-                              size="sm"
-                              variant="secondary"
-                            >
-                              File
-                            </Button>
-                            <Button
-                              icon={<GraduationCap size={15} />}
-                              onClick={() => setActiveSubmission(submission)}
-                              size="sm"
-                            >
-                              Grade
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <SubmissionResults
+        error={submissionsQuery.error}
+        groups={groups}
+        isLoading={submissionsQuery.isLoading}
+        milestones={milestones}
+        onGrade={setActiveSubmission}
+        submissions={submissions}
+      />
 
       {activeSubmission && (
         <GradeModal

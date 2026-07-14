@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { MessageSquareText, Star, UserRoundCheck, X } from "lucide-react";
+import { FormEvent, useId, useState } from "react";
+import { MessageSquareText, Star, UserRoundCheck } from "lucide-react";
 
 import {
   Badge,
@@ -12,6 +12,7 @@ import {
   EmptyState,
   LoadingState,
   PageHeader,
+  ResponsiveDialog,
   Select,
   TextInput,
 } from "@/shared/components";
@@ -20,23 +21,12 @@ import type { FeedbackStatus } from "@/shared/types";
 
 import { useMyFeedback, useSubmitFeedback } from "../hooks";
 import type { SubmitFeedbackRequest, TermFeedbackDto } from "../types";
-import { useDialogAccessibility } from "./use-dialog-accessibility";
 
 const pageClassName = "grid min-w-0 gap-6";
 const filterClassName =
   "grid grid-cols-[minmax(220px,1fr)_minmax(180px,220px)_auto] items-end gap-3 max-[760px]:grid-cols-[minmax(0,1fr)]";
 const cardsClassName =
   "grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] gap-4";
-const modalBackdropClassName =
-  "fixed inset-0 z-40 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6 max-[680px]:p-3";
-const modalClassName =
-  "grid w-[min(620px,100%)] max-h-[calc(100svh-48px)] grid-rows-[auto_1fr_auto] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal max-[680px]:max-h-[calc(100svh-24px)]";
-const modalHeaderClassName =
-  "flex items-start justify-between gap-4 border-b border-border px-6 py-5 max-[680px]:px-[18px]";
-const modalBodyClassName =
-  "grid gap-4 overflow-y-auto p-6 max-[680px]:px-[18px]";
-const modalFooterClassName =
-  "flex justify-end gap-2.5 border-t border-border px-6 py-4 max-[680px]:px-[18px]";
 const errorClassName =
   "rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700";
 
@@ -92,7 +82,7 @@ type FeedbackEditorModalProps = {
 };
 
 function FeedbackEditorModal({ feedback, onClose }: FeedbackEditorModalProps) {
-  const dialogRef = useDialogAccessibility<HTMLFormElement>(onClose);
+  const formId = useId();
   const submitMutation = useSubmitFeedback();
   const [rating, setRating] = useState(
     feedback.rating ? String(feedback.rating) : "",
@@ -124,35 +114,37 @@ function FeedbackEditorModal({ feedback, onClose }: FeedbackEditorModalProps) {
   }
 
   return (
-    <div className={modalBackdropClassName}>
+    <ResponsiveDialog
+      closeLabel="Close feedback form"
+      description={
+        <>
+          {getTargetName(feedback)} · {feedback.groupName}
+        </>
+      }
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">
+            Cancel
+          </Button>
+          <Button
+            disabled={submitMutation.isPending}
+            form={formId}
+            type="submit"
+          >
+            {submitMutation.isPending ? "Saving..." : "Save feedback"}
+          </Button>
+        </>
+      }
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title={feedback.status === "PENDING" ? "Submit feedback" : "Update feedback"}
+    >
       <form
         aria-label={`${feedback.status === "PENDING" ? "Submit" : "Update"} feedback`}
-        aria-modal="true"
-        className={modalClassName}
+        className="grid min-w-0 gap-4"
+        id={formId}
         onSubmit={handleSubmit}
-        ref={dialogRef}
-        role="dialog"
-        tabIndex={-1}
       >
-        <header className={modalHeaderClassName}>
-          <div className="grid min-w-0 gap-1">
-            <h2 className="m-0 text-xl font-bold text-foreground">
-              {feedback.status === "PENDING" ? "Submit feedback" : "Update feedback"}
-            </h2>
-            <p className="m-0 text-sm text-muted">
-              {getTargetName(feedback)} · {feedback.groupName}
-            </p>
-          </div>
-          <Button
-            aria-label="Close feedback form"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-
-        <div className={modalBodyClassName}>
           {formError && <div className={errorClassName}>{formError}</div>}
 
           <Select
@@ -175,25 +167,15 @@ function FeedbackEditorModal({ feedback, onClose }: FeedbackEditorModalProps) {
               <span className="text-xs text-muted">{comment.length}/2000</span>
             </span>
             <textarea
-              className="min-h-36 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-sm leading-relaxed text-foreground outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(106,0,255,0.12)]"
+              className="min-h-36 min-w-0 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-base leading-relaxed text-foreground outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(106,0,255,0.12)] min-[761px]:text-sm"
               maxLength={2000}
               onChange={(event) => setComment(event.target.value)}
               placeholder="Share specific, constructive feedback (optional)."
               value={comment}
             />
           </label>
-        </div>
-
-        <footer className={modalFooterClassName}>
-          <Button onClick={onClose} variant="secondary">
-            Cancel
-          </Button>
-          <Button disabled={submitMutation.isPending} type="submit">
-            {submitMutation.isPending ? "Saving..." : "Save feedback"}
-          </Button>
-        </footer>
       </form>
-    </div>
+    </ResponsiveDialog>
   );
 }
 
@@ -219,7 +201,9 @@ function FeedbackCard({
       />
       <CardContent className="grid gap-4">
         <div className="grid gap-1 text-sm">
-          <span className="font-medium text-foreground">{feedback.groupName}</span>
+          <span className="break-words font-medium text-foreground">
+            {feedback.groupName}
+          </span>
           <span className="text-muted">
             Term status: {feedback.academicTermStatus}
           </span>
@@ -228,7 +212,7 @@ function FeedbackCard({
         {feedback.status === "SUBMITTED" && feedback.rating ? (
           <div className="grid gap-2 rounded-xl border border-border bg-background p-4">
             <RatingDisplay value={feedback.rating} />
-            <p className="m-0 text-sm leading-relaxed text-foreground">
+            <p className="m-0 break-words text-sm leading-relaxed text-foreground">
               {feedback.comment || "No comment provided."}
             </p>
             {submittedAt && (
@@ -299,7 +283,9 @@ export function StudentFeedbackPage() {
               <option value="PENDING">Pending</option>
               <option value="SUBMITTED">Submitted</option>
             </Select>
-            <Button type="submit">Apply filters</Button>
+            <Button className="max-[760px]:w-full" type="submit">
+              Apply filters
+            </Button>
           </form>
         </CardContent>
       </Card>

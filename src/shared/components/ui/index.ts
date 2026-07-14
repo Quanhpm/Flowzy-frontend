@@ -6,4 +6,6 @@ export { EmptyState } from "./empty-state";
 export { TextInput } from "./input";
 export { LoadingState } from "./loading-state";
 export { PageHeader } from "./page-header";
+export { ResponsiveDialog } from "./responsive-dialog";
+export type { ResponsiveDialogProps } from "./responsive-dialog";
 export { Select } from "./select";

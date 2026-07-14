@@ -9,6 +9,7 @@ import {
   EmptyState,
   LoadingState,
 } from "@/shared/components";
+import { useDialogAccessibility } from "@/shared/hooks";
 
 import {
   useMarkAllNotificationsRead,
@@ -46,6 +47,9 @@ export function NotificationBell() {
   const notifications = notificationsQuery.data?.data.content ?? [];
   const unreadCount = unreadCountQuery.data?.data ?? 0;
   const isMutating = markReadMutation.isPending || markAllMutation.isPending;
+  const dialogRef = useDialogAccessibility<HTMLElement>(() => setIsOpen(false), {
+    active: isOpen,
+  });
 
   async function activateNotification(notification: NotificationDto) {
     setActionError("");
@@ -103,32 +107,40 @@ export function NotificationBell() {
       )}
 
       {isOpen && (
-        <section
-          aria-label="Recent unread notifications"
-          className="absolute top-12 right-0 z-50 grid w-[min(420px,calc(100vw-2rem))] gap-4 rounded-2xl border border-border bg-surface p-4 shadow-card"
-          id={popoverId}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") setIsOpen(false);
-          }}
-          role="dialog"
-        >
-          <header className="flex items-start justify-between gap-3">
-            <div className="grid gap-1">
-              <h2 className="m-0 text-base font-bold text-foreground">
-                Notifications
-              </h2>
-              <p className="m-0 text-sm text-muted">
-                Your latest unread updates.
-              </p>
-            </div>
-            <Button
-              aria-label="Close notifications"
-              icon={<X size={16} />}
-              onClick={() => setIsOpen(false)}
-              size="sm"
-              variant="ghost"
-            />
-          </header>
+        <>
+          <button
+            aria-label="Close notifications"
+            className="fixed inset-0 z-40 cursor-default border-0 bg-foreground/30 backdrop-blur-sm min-[761px]:hidden"
+            onClick={() => setIsOpen(false)}
+            tabIndex={-1}
+            type="button"
+          />
+          <section
+            aria-label="Recent unread notifications"
+            aria-modal="true"
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100dvh-env(safe-area-inset-top))] min-w-0 flex-col gap-4 overflow-hidden rounded-t-2xl border border-b-0 border-border bg-surface px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-modal min-[761px]:absolute min-[761px]:inset-auto min-[761px]:top-12 min-[761px]:right-0 min-[761px]:max-h-[calc(100dvh-5rem)] min-[761px]:w-[min(420px,calc(100vw-2rem))] min-[761px]:rounded-2xl min-[761px]:border-b min-[761px]:p-4 min-[761px]:shadow-card"
+            id={popoverId}
+            ref={dialogRef}
+            role="dialog"
+            tabIndex={-1}
+          >
+            <header className="flex items-start justify-between gap-3">
+              <div className="grid min-w-0 gap-1">
+                <h2 className="m-0 text-base font-bold text-foreground">
+                  Notifications
+                </h2>
+                <p className="m-0 text-sm text-muted">
+                  Your latest unread updates.
+                </p>
+              </div>
+              <Button
+                aria-label="Close notifications"
+                icon={<X size={16} />}
+                onClick={() => setIsOpen(false)}
+                size="sm"
+                variant="ghost"
+              />
+            </header>
 
           {actionError && (
             <p className="m-0 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -156,7 +168,7 @@ export function NotificationBell() {
               title="All caught up"
             />
           ) : (
-            <div className="grid max-h-96 gap-3 overflow-y-auto pr-1">
+            <div className="grid min-h-0 max-h-96 gap-3 overflow-y-auto overscroll-contain pr-1">
               {notifications.map((notification) => (
                 <NotificationListItem
                   disabled={isMutating}
@@ -168,7 +180,7 @@ export function NotificationBell() {
             </div>
           )}
 
-          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 max-[480px]:grid max-[480px]:[&>button]:w-full">
             {unreadCountQuery.isError ? (
               <span className="text-xs text-red-700" role="status">
                 {getNotificationErrorMessage(unreadCountQuery.error)}
@@ -186,7 +198,8 @@ export function NotificationBell() {
               {markAllMutation.isPending ? "Marking..." : "Mark all read"}
             </Button>
           </footer>
-        </section>
+          </section>
+        </>
       )}
     </div>
   );

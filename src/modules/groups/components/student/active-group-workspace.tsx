@@ -78,7 +78,7 @@ function InfoItem({
       <dt className="text-xs font-bold tracking-[0.04em] text-muted uppercase">
         {label}
       </dt>
-      <dd className="m-0 mt-1 text-sm leading-relaxed text-foreground">
+      <dd className="m-0 mt-1 break-words text-sm leading-relaxed text-foreground">
         {formatNullable(value)}
       </dd>
     </div>
@@ -207,7 +207,7 @@ export function ActiveGroupWorkspace({
               ))}
             </Select>
 
-            <div className="flex flex-wrap justify-end gap-2 max-[760px]:justify-start">
+            <div className="flex flex-wrap justify-end gap-2 max-[760px]:justify-start max-[480px]:grid max-[480px]:[&>button]:w-full">
               {isLeader && (
                 <>
                   <Button
@@ -220,7 +220,9 @@ export function ActiveGroupWorkspace({
                   <Button
                     icon={<UserPlus size={16} />}
                     disabled={group.isLock}
-                    onClick={() => router.push("/student/groups/invite")}
+                    onClick={() =>
+                      router.push(`/student/groups/invite?groupId=${group.id}`)
+                    }
                   >
                     Invite member
                   </Button>
@@ -273,7 +275,7 @@ export function ActiveGroupWorkspace({
         />
         <CardContent>
           <div className="grid gap-5">
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3 max-[480px]:grid-cols-1">
               <InfoItem label="Project" value={group.projectName} />
               <InfoItem label="Research domain" value={group.researchDomain} />
               <InfoItem label="Required GPA" value={group.requiredGpa} />
@@ -282,10 +284,10 @@ export function ActiveGroupWorkspace({
               <InfoItem label="Mentor" value={group.mentor?.fullName} />
             </div>
             <div className="rounded-xl border border-border bg-background p-4">
-              <h3 className="m-0 text-sm font-bold text-foreground">
+              <h3 className="m-0 break-words text-sm font-bold text-foreground">
                 Idea description
               </h3>
-              <p className="m-0 mt-2 text-sm leading-relaxed text-muted">
+              <p className="m-0 mt-2 break-words text-sm leading-relaxed text-muted">
                 {group.ideaDescription ?? "No idea description yet."}
               </p>
             </div>

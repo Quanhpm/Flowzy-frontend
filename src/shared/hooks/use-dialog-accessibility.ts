@@ -23,7 +23,15 @@ function getFocusableElements(container: HTMLElement) {
   );
 }
 
-export function useDialogAccessibility<T extends HTMLElement>(onClose: () => void) {
+type DialogAccessibilityOptions = {
+  active?: boolean;
+  closeOnEscape?: boolean;
+};
+
+export function useDialogAccessibility<T extends HTMLElement>(
+  onClose: () => void,
+  { active = true, closeOnEscape = true }: DialogAccessibilityOptions = {},
+) {
   const dialogRef = useRef<T | null>(null);
   const onCloseRef = useRef(onClose);
 
@@ -32,6 +40,8 @@ export function useDialogAccessibility<T extends HTMLElement>(onClose: () => voi
   }, [onClose]);
 
   useEffect(() => {
+    if (!active) return;
+
     const dialog = dialogRef.current;
     const previouslyFocused =
       document.activeElement instanceof HTMLElement
@@ -40,13 +50,20 @@ export function useDialogAccessibility<T extends HTMLElement>(onClose: () => voi
 
     if (!dialog) return;
 
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyOverscrollBehavior =
+      document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
     const focusFrame = window.requestAnimationFrame(() => {
       const [firstFocusable] = getFocusableElements(dialog);
       (firstFocusable ?? dialog).focus();
     });
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && closeOnEscape) {
         event.preventDefault();
         onCloseRef.current();
         return;
@@ -86,12 +103,14 @@ export function useDialogAccessibility<T extends HTMLElement>(onClose: () => voi
     return () => {
       window.cancelAnimationFrame(focusFrame);
       document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.overscrollBehavior = previousBodyOverscrollBehavior;
 
       if (previouslyFocused?.isConnected) {
         previouslyFocused.focus();
       }
     };
-  }, []);
+  }, [active, closeOnEscape]);
 
   return dialogRef;
 }

@@ -1,10 +1,11 @@
-import { apiGet, apiPatch, apiPut } from "@/shared/lib";
+import { apiGet, apiPatch, apiPost, apiPut } from "@/shared/lib";
 import type { ApiResponse, PageResponse } from "@/shared/types";
 
 import type {
   AdminFeedbackQuery,
   AdminFeedbackResponseDto,
   AcademicTermResponseDto,
+  CreateAcademicTermRequest,
   FeedbackReceivedSummaryDto,
   MyFeedbackQuery,
   ReceivedFeedbackQuery,
@@ -44,6 +45,19 @@ export function listAdminFeedback(query: AdminFeedbackQuery = {}) {
 
 export function listAcademicTerms() {
   return apiGet<ApiResponse<AcademicTermResponseDto[]>>("/api/admin/terms");
+}
+
+export function createAcademicTerm(payload: CreateAcademicTermRequest) {
+  return apiPost<ApiResponse<AcademicTermResponseDto>>(
+    "/api/admin/terms",
+    payload,
+  );
+}
+
+export function listAvailableAcademicTerms() {
+  return apiGet<ApiResponse<AcademicTermResponseDto[]>>(
+    "/api/terms/available",
+  );
 }
 
 export function closeAcademicTerm(term: string) {

@@ -95,7 +95,7 @@ export function NotificationsPage() {
 
       <Card>
         <CardContent className="grid gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-4 max-[480px]:grid max-[480px]:items-stretch">
             <Select
               label="Show"
               onChange={(event) => {
@@ -107,7 +107,7 @@ export function NotificationsPage() {
               <option value="all">All notifications</option>
               <option value="unread">Unread only</option>
             </Select>
-            <span className="text-sm text-muted">
+            <span className="break-words text-sm text-muted">
               {unreadCountQuery.isError
                 ? "Unread count unavailable"
                 : `${unreadCount} unread`}
@@ -158,12 +158,12 @@ export function NotificationsPage() {
           {notificationPage && notificationPage.totalPages > 1 && (
             <nav
               aria-label="Notification pagination"
-              className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4"
+              className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 max-[480px]:grid"
             >
               <span className="text-sm text-muted">
                 Page {currentPage + 1} of {notificationPage.totalPages}
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 max-[480px]:grid max-[480px]:grid-cols-2 [&>button]:min-w-0">
                 <Button
                   disabled={!notificationPage.hasPrevious || isMutating}
                   icon={<ChevronLeft size={16} />}

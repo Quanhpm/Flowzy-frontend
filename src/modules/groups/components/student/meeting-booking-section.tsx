@@ -83,12 +83,12 @@ function MeetingCard({
 }) {
   return (
     <article className="grid gap-2 rounded-xl border border-border bg-surface p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="grid gap-1">
-          <strong className="text-sm text-foreground">
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="grid min-w-0 gap-1">
+          <strong className="break-words text-sm text-foreground">
             {formatDateTime(meeting.startAt)}
           </strong>
-          <span className="text-xs text-muted">
+          <span className="break-words text-xs text-muted">
             {formatTime(meeting.startAt)} - {formatTime(meeting.endAt)}
           </span>
         </div>
@@ -96,10 +96,10 @@ function MeetingCard({
           {meeting.status}
         </Badge>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 max-[480px]:grid">
         {meeting.meetLink && (
           <a
-            className="inline-flex items-center gap-1 text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
+            className="inline-flex min-h-11 min-w-0 items-center gap-1 break-all text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
             href={meeting.meetLink}
             rel="noreferrer"
             target="_blank"
@@ -110,6 +110,7 @@ function MeetingCard({
         )}
         {canCancel && meeting.status === "SCHEDULED" && (
           <Button
+            className="max-[480px]:w-full"
             disabled={isCanceling}
             icon={<XCircle size={15} />}
             onClick={() => onCancel(meeting)}
@@ -236,13 +237,13 @@ export function MeetingBookingSection({
                             className="grid gap-2 rounded-xl border border-border bg-surface p-4"
                             key={slot.id}
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="grid gap-1">
-                                <strong className="text-sm text-foreground">
+                            <div className="flex min-w-0 items-start justify-between gap-3">
+                              <div className="grid min-w-0 gap-1">
+                                <strong className="break-words text-sm text-foreground">
                                   {formatTime(slot.startAt)} -{" "}
                                   {formatTime(slot.endAt)}
                                 </strong>
-                                <span className="text-xs text-muted">
+                                <span className="break-words text-xs text-muted">
                                   {slot.note ?? "No note"}
                                 </span>
                               </div>
@@ -250,6 +251,7 @@ export function MeetingBookingSection({
                             </div>
                             {canBook && slot.status === "AVAILABLE" && (
                               <Button
+                                className="max-[480px]:min-h-11 max-[480px]:w-full"
                                 onClick={() => setSlotToBook(slot)}
                                 size="sm"
                               >

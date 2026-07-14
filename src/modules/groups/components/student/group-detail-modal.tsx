@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Send, X } from "lucide-react";
+import { Send } from "lucide-react";
 
 import {
   Badge,
   Button,
   LoadingState,
+  ResponsiveDialog,
 } from "@/shared/components";
 import { ApiError, cn } from "@/shared/lib";
 
@@ -45,7 +46,7 @@ function InfoItem({
       <dt className="text-xs font-bold tracking-[0.04em] text-muted uppercase">
         {label}
       </dt>
-      <dd className="m-0 mt-1 text-sm leading-relaxed text-foreground">
+      <dd className="m-0 mt-1 break-words text-sm leading-relaxed text-foreground">
         {formatNullable(value)}
       </dd>
     </div>
@@ -121,27 +122,15 @@ export function GroupDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm">
-      <div className="w-[min(860px,100%)] overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
-        <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
-          <div className="grid gap-1">
-            <h2 className="m-0 text-lg font-bold text-foreground">
-              {group?.name ?? "Group details"}
-            </h2>
-            <p className="m-0 text-sm leading-relaxed text-muted">
-              Review group information before sending a request.
-            </p>
-          </div>
-          <Button
-            aria-label="Close group details"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-
-        <div className="grid max-h-[72vh] gap-5 overflow-y-auto px-6 py-5">
+    <ResponsiveDialog
+      bodyClassName="grid gap-5"
+      className="min-[761px]:max-w-[860px]"
+      closeLabel="Close group details"
+      description="Review group information before sending a request."
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title={group?.name ?? "Group details"}
+    >
           {groupQuery.isLoading ? (
             <LoadingState className="min-h-48" title="Loading group" />
           ) : !group ? (
@@ -150,7 +139,7 @@ export function GroupDetailModal({
             </p>
           ) : (
             <>
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3 max-[480px]:grid-cols-1">
                 <InfoItem label="Term" value={group.term} />
                 <InfoItem label="Course" value={group.courseCode} />
                 <InfoItem label="Group No" value={group.groupNo} />
@@ -172,14 +161,14 @@ export function GroupDetailModal({
                     </Badge>
                   </div>
                 </div>
-                <p className="m-0 text-sm leading-relaxed text-muted">
+                <p className="m-0 break-words text-sm leading-relaxed text-muted">
                   {group.projectName ?? "No project name yet."}
                 </p>
-                <p className="m-0 text-sm leading-relaxed text-muted">
+                <p className="m-0 break-words text-sm leading-relaxed text-muted">
                   {group.ideaDescription ?? "No idea description yet."}
                 </p>
                 {group.researchDomain && (
-                  <span className="text-sm text-muted">
+                  <span className="break-words text-sm text-muted">
                     Domain: {group.researchDomain}
                   </span>
                 )}
@@ -198,13 +187,14 @@ export function GroupDetailModal({
                     )}
                   </div>
                   {pendingRequest ? (
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="m-0 text-sm text-muted">
+                    <div className="flex flex-wrap items-center justify-between gap-3 max-[480px]:grid">
+                      <p className="m-0 break-words text-sm text-muted">
                         Your request is pending. You can cancel it while it has
                         not been reviewed.
                       </p>
                       {onCancelRequest && (
                         <Button
+                          className="max-[480px]:w-full"
                           disabled={isSubmitting}
                           onClick={cancelRequest}
                           variant="secondary"
@@ -214,7 +204,7 @@ export function GroupDetailModal({
                       )}
                     </div>
                   ) : group.isLock ? (
-                    <p className="m-0 text-sm leading-relaxed text-muted">
+                    <p className="m-0 break-words text-sm leading-relaxed text-muted">
                       This group has locked membership and is not accepting join
                       requests.
                     </p>
@@ -222,14 +212,14 @@ export function GroupDetailModal({
                     <>
                       <textarea
                         className={cn(
-                          "min-h-24 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-sm text-foreground outline-0 transition-[border-color,box-shadow] duration-[160ms]",
+                          "min-h-24 min-w-0 resize-y rounded-xl border border-border bg-surface px-3.5 py-3 font-sans text-base text-foreground outline-0 transition-[border-color,box-shadow] duration-[160ms] min-[761px]:text-sm",
                           "focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(106,0,255,0.12)]",
                         )}
                         onChange={(event) => setMessage(event.target.value)}
                         placeholder="Optional message to the leader."
                         value={message}
                       />
-                      <div className="flex justify-end">
+                      <div className="flex justify-end max-[480px]:grid max-[480px]:[&>button]:w-full">
                         <Button
                           disabled={isSubmitting}
                           icon={<Send size={16} />}
@@ -250,8 +240,6 @@ export function GroupDetailModal({
               )}
             </>
           )}
-        </div>
-      </div>
-    </div>
+    </ResponsiveDialog>
   );
 }

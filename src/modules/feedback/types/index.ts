@@ -43,6 +43,10 @@ export type SubmitFeedbackVariables = {
   payload: SubmitFeedbackRequest;
 };
 
+export type CreateAcademicTermRequest = {
+  code: string;
+};
+
 export type ReceivedFeedbackQuery = {
   term?: string;
   courseCode?: string;

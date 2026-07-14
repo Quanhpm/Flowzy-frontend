@@ -25,7 +25,11 @@ const PAGE_SIZE = 20;
 const pageClassName = "grid min-w-0 gap-6";
 const filterClassName =
   "grid grid-cols-[repeat(3,minmax(0,1fr))] items-end gap-3 max-[860px]:grid-cols-[minmax(0,1fr)]";
-const tableWrapClassName = "w-full overflow-x-auto";
+const tableWrapClassName = "w-full overflow-x-auto max-[760px]:hidden";
+const mobileListClassName =
+  "hidden min-w-0 gap-3 p-4 max-[760px]:grid max-[480px]:p-3";
+const mobileCardClassName =
+  "grid min-w-0 gap-4 rounded-xl border border-border bg-background p-4";
 const tableClassName = "w-full min-w-[1180px] border-collapse";
 const tableHeadCellClassName =
   "border-b border-border px-4 py-3 text-left text-xs font-bold tracking-[0.04em] text-muted uppercase";
@@ -124,6 +128,13 @@ export function AdminFeedbackPage() {
     });
   }
 
+  function resetFilters() {
+    setDraft(EMPTY_FILTERS);
+    setAppliedFilters(EMPTY_FILTERS);
+    setFilterError("");
+    setPage(0);
+  }
+
   return (
     <div className={pageClassName}>
       <PageHeader
@@ -177,7 +188,12 @@ export function AdminFeedbackPage() {
               <option value="PENDING">Pending</option>
               <option value="SUBMITTED">Submitted</option>
             </Select>
-            <Button type="submit">Apply filters</Button>
+            <div className="flex flex-wrap gap-2 max-[480px]:grid max-[480px]:grid-cols-1 max-[480px]:[&>button]:w-full">
+              <Button type="submit">Apply filters</Button>
+              <Button onClick={resetFilters} variant="secondary">
+                Reset
+              </Button>
+            </div>
           </form>
           {filterError && <p className="mt-3 mb-0 text-sm text-red-700">{filterError}</p>}
         </CardContent>
@@ -259,12 +275,77 @@ export function AdminFeedbackPage() {
               </tbody>
             </table>
           </div>
+          <div className={mobileListClassName}>
+            {feedbackItems.map((item) => (
+              <article className={mobileCardClassName} key={item.id}>
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+                  <div className="grid min-w-0 gap-1">
+                    <h3 className="m-0 break-words text-base font-bold text-foreground">
+                      {item.student.fullName}
+                    </h3>
+                    <span className="break-all text-xs text-muted">
+                      {item.student.studentCode} · {item.student.email}
+                    </span>
+                  </div>
+                  <Badge
+                    tone={item.status === "SUBMITTED" ? "success" : "warning"}
+                  >
+                    {item.status}
+                  </Badge>
+                </div>
+
+                <dl className="m-0 grid min-w-0 grid-cols-2 gap-3 max-[480px]:grid-cols-1">
+                  <div className="grid min-w-0 gap-1">
+                    <dt className="text-[11px] font-bold text-muted uppercase">
+                      Group / term
+                    </dt>
+                    <dd className="m-0 break-words text-sm text-foreground">
+                      {item.group.name}
+                    </dd>
+                    <dd className="m-0 break-words text-xs text-muted">
+                      {item.group.groupNo} · {item.academicTerm.code} ·{" "}
+                      {item.group.courseCode}
+                    </dd>
+                  </div>
+                  <div className="grid min-w-0 gap-1">
+                    <dt className="text-[11px] font-bold text-muted uppercase">
+                      Target
+                    </dt>
+                    <dd className="m-0 flex min-w-0 flex-wrap items-center gap-2">
+                      <Badge tone="neutral">{item.targetType}</Badge>
+                      <span className="break-words text-sm text-foreground">
+                        {getTargetName(item)}
+                      </span>
+                    </dd>
+                    <dd className="m-0 break-all text-xs text-muted">
+                      {getTargetCode(item)}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="grid min-w-0 gap-2 border-t border-border pt-3">
+                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold text-muted uppercase">
+                      Rating
+                    </span>
+                    <FeedbackRating value={item.rating} />
+                  </div>
+                  <p className="m-0 break-words text-sm leading-relaxed text-muted">
+                    {item.comment || "-"}
+                  </p>
+                  <span className="break-words text-xs text-muted">
+                    Submitted {formatDateTime(item.submittedAt)}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
           {pageData && pageData.totalPages > 1 && (
-            <div className="flex items-center justify-between gap-4 border-t border-border px-6 py-4 max-[680px]:flex-col max-[680px]:items-start">
+            <div className="flex min-w-0 items-center justify-between gap-4 border-t border-border px-6 py-4 max-[680px]:flex-col max-[680px]:items-stretch max-[480px]:px-4">
               <span className="text-sm text-muted">
                 Page {pageData.page + 1} of {pageData.totalPages} ({pageData.totalElements} records)
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 max-[480px]:grid max-[480px]:grid-cols-2 max-[480px]:[&>button]:w-full">
                 <Button
                   disabled={!pageData.hasPrevious}
                   onClick={() => setPage((current) => Math.max(0, current - 1))}
