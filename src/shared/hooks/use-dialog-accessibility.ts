@@ -23,7 +23,14 @@ function getFocusableElements(container: HTMLElement) {
   );
 }
 
-export function useDialogAccessibility<T extends HTMLElement>(onClose: () => void) {
+type DialogAccessibilityOptions = {
+  closeOnEscape?: boolean;
+};
+
+export function useDialogAccessibility<T extends HTMLElement>(
+  onClose: () => void,
+  { closeOnEscape = true }: DialogAccessibilityOptions = {},
+) {
   const dialogRef = useRef<T | null>(null);
   const onCloseRef = useRef(onClose);
 
@@ -40,13 +47,20 @@ export function useDialogAccessibility<T extends HTMLElement>(onClose: () => voi
 
     if (!dialog) return;
 
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyOverscrollBehavior =
+      document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
     const focusFrame = window.requestAnimationFrame(() => {
       const [firstFocusable] = getFocusableElements(dialog);
       (firstFocusable ?? dialog).focus();
     });
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && closeOnEscape) {
         event.preventDefault();
         onCloseRef.current();
         return;
@@ -86,12 +100,14 @@ export function useDialogAccessibility<T extends HTMLElement>(onClose: () => voi
     return () => {
       window.cancelAnimationFrame(focusFrame);
       document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.overscrollBehavior = previousBodyOverscrollBehavior;
 
       if (previouslyFocused?.isConnected) {
         previouslyFocused.focus();
       }
     };
-  }, []);
+  }, [closeOnEscape]);
 
   return dialogRef;
 }

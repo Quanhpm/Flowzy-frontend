@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LockKeyhole, X } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
 
 import {
   Badge,
@@ -10,12 +10,12 @@ import {
   EmptyState,
   LoadingState,
   PageHeader,
+  ResponsiveDialog,
 } from "@/shared/components";
 import { ApiError, cn } from "@/shared/lib";
 
 import { useAcademicTerms, useCloseAcademicTerm } from "../hooks";
 import type { AcademicTermResponseDto } from "../types";
-import { useDialogAccessibility } from "./use-dialog-accessibility";
 
 const pageClassName = "grid min-w-0 gap-6";
 const tableWrapClassName = "w-full overflow-x-auto";
@@ -24,14 +24,6 @@ const tableHeadCellClassName =
   "border-b border-border px-4 py-3 text-left text-xs font-bold tracking-[0.04em] text-muted uppercase";
 const tableCellClassName =
   "border-b border-border px-4 py-4 align-middle text-sm text-foreground";
-const modalBackdropClassName =
-  "fixed inset-0 z-40 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6 max-[680px]:p-3";
-const modalClassName =
-  "grid w-[min(510px,100%)] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal";
-const modalHeaderClassName =
-  "flex items-start justify-between gap-4 border-b border-border px-6 py-5 max-[680px]:px-[18px]";
-const modalFooterClassName =
-  "flex justify-end gap-2.5 border-t border-border px-6 py-4 max-[680px]:px-[18px]";
 
 function getLoadErrorMessage(error: unknown) {
   return error instanceof ApiError
@@ -67,7 +59,6 @@ type CloseTermModalProps = {
 };
 
 function CloseTermModal({ onClose, term }: CloseTermModalProps) {
-  const dialogRef = useDialogAccessibility<HTMLDivElement>(onClose);
   const closeTermMutation = useCloseAcademicTerm();
   const [error, setError] = useState("");
 
@@ -83,44 +74,19 @@ function CloseTermModal({ onClose, term }: CloseTermModalProps) {
   }
 
   return (
-    <div className={modalBackdropClassName}>
-      <div
-        aria-label={`Close ${term.code}`}
-        aria-modal="true"
-        className={modalClassName}
-        ref={dialogRef}
-        role="dialog"
-        tabIndex={-1}
-      >
-        <header className={modalHeaderClassName}>
-          <div className="grid gap-1">
-            <h2 className="m-0 text-xl font-bold text-foreground">Close academic term</h2>
-            <p className="m-0 text-sm leading-relaxed text-muted">
-              Close {term.code} and finalize the current term snapshot.
-            </p>
-          </div>
-          <Button
-            aria-label="Close confirmation dialog"
-            icon={<X size={16} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-        <div className="grid gap-3 px-6 py-5 text-sm leading-relaxed text-foreground max-[680px]:px-[18px]">
-          <p className="m-0">
-            This action closes the term. It cannot be undone from the frontend.
-          </p>
-          <div className="rounded-xl border border-border bg-background p-4">
-            <span className="block text-xs font-bold text-muted uppercase">Feedback progress</span>
-            <strong className="mt-1 block text-lg text-foreground">
-              {term.totalSubmittedFeedbacks}/{term.totalExpectedFeedbacks} submitted
-            </strong>
-          </div>
-          {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-red-700">{error}</div>}
-        </div>
-        <footer className={modalFooterClassName}>
-          <Button onClick={onClose} variant="secondary">Cancel</Button>
+    <ResponsiveDialog
+      bodyClassName="grid gap-3 text-sm leading-relaxed text-foreground"
+      className="min-[481px]:max-w-[510px]"
+      closeLabel="Close confirmation dialog"
+      closeOnBackdrop={false}
+      description={
+        <>Close {term.code} and finalize the current term snapshot.</>
+      }
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">
+            Cancel
+          </Button>
           <Button
             disabled={closeTermMutation.isPending}
             icon={<LockKeyhole size={16} />}
@@ -129,9 +95,29 @@ function CloseTermModal({ onClose, term }: CloseTermModalProps) {
           >
             {closeTermMutation.isPending ? "Closing..." : "Close term"}
           </Button>
-        </footer>
+        </>
+      }
+      onClose={onClose}
+      title="Close academic term"
+    >
+      <p className="m-0">
+        This action closes the term. It cannot be undone from the frontend.
+      </p>
+      <div className="rounded-xl border border-border bg-background p-4">
+        <span className="block text-xs font-bold text-muted uppercase">
+          Feedback progress
+        </span>
+        <strong className="mt-1 block text-lg text-foreground">
+          {term.totalSubmittedFeedbacks}/{term.totalExpectedFeedbacks}{" "}
+          submitted
+        </strong>
       </div>
-    </div>
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-red-700">
+          {error}
+        </div>
+      )}
+    </ResponsiveDialog>
   );
 }
 

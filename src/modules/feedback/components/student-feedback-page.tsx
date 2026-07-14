@@ -15,12 +15,12 @@ import {
   Select,
   TextInput,
 } from "@/shared/components";
+import { useDialogAccessibility } from "@/shared/hooks";
 import { ApiError, cn } from "@/shared/lib";
 import type { FeedbackStatus } from "@/shared/types";
 
 import { useMyFeedback, useSubmitFeedback } from "../hooks";
 import type { SubmitFeedbackRequest, TermFeedbackDto } from "../types";
-import { useDialogAccessibility } from "./use-dialog-accessibility";
 
 const pageClassName = "grid min-w-0 gap-6";
 const filterClassName =
