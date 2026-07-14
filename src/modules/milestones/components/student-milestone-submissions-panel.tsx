@@ -1,13 +1,12 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useId, useMemo, useState } from "react";
 import {
   AlertTriangle,
   CalendarClock,
   ExternalLink,
   Send,
   Upload,
-  X,
 } from "lucide-react";
 
 import {
@@ -18,6 +17,7 @@ import {
   CardHeader,
   EmptyState,
   LoadingState,
+  ResponsiveDialog,
   Select,
   TextInput,
 } from "@/shared/components";
@@ -81,7 +81,10 @@ function formatDateTime(value: string | null | undefined) {
   }).format(date);
 }
 
-function formatScore(value: number | null | undefined, maxScore?: number | null) {
+function formatScore(
+  value: number | null | undefined,
+  maxScore?: number | null,
+) {
   if (typeof value !== "number") return "Not graded";
   if (typeof maxScore === "number") return `${value} / ${maxScore}`;
   return String(value);
@@ -100,14 +103,14 @@ function getSubmissionStatusTone(status: MilestoneSubmissionStatus) {
   return "brand";
 }
 
-function getAverageValue(value: { averageGrade: number | null; average: number | null } | undefined) {
+function getAverageValue(
+  value: { averageGrade: number | null; average: number | null } | undefined,
+) {
   if (!value) return null;
   return value.averageGrade ?? value.average ?? null;
 }
 
-function getLatestSubmissionByMilestone(
-  submissions: MilestoneSubmissionDto[],
-) {
+function getLatestSubmissionByMilestone(submissions: MilestoneSubmissionDto[]) {
   const latestByMilestone = new Map<EntityId, MilestoneSubmissionDto>();
 
   submissions.forEach((submission) => {
@@ -138,6 +141,7 @@ function SubmissionModal({
   milestone,
   onClose,
 }: SubmissionModalProps) {
+  const formId = useId();
   const submitMutation = useSubmitMilestone();
   const updateMutation = useUpdateMilestoneSubmission();
   const [fileUrl, setFileUrl] = useState(existingSubmission?.fileUrl ?? "");
@@ -190,73 +194,77 @@ function SubmissionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6">
-      <div className="grid max-h-[92vh] w-[min(620px,100%)] grid-rows-[auto_1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal">
-        <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
-          <div className="grid gap-1">
-            <h2 className="m-0 text-lg font-bold text-foreground">
-              {existingSubmission ? "Resubmit deliverable" : "Submit deliverable"}
-            </h2>
-            <p className="m-0 text-sm text-muted">{milestone.title}</p>
-          </div>
-          <Button
-            aria-label="Close submission form"
-            className="size-8 rounded-lg p-0"
-            onClick={onClose}
-            variant="secondary"
-          >
-            <X className="size-4" />
+    <ResponsiveDialog
+      className="min-[761px]:max-w-[620px]"
+      closeLabel="Close submission form"
+      closeOnBackdrop={false}
+      description={milestone.title}
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">
+            Cancel
           </Button>
+          <Button
+            disabled={isPending}
+            form={formId}
+            icon={<Send size={16} />}
+            type="submit"
+          >
+            {isPending
+              ? "Submitting..."
+              : existingSubmission
+                ? "Resubmit"
+                : "Submit"}
+          </Button>
+        </>
+      }
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title={existingSubmission ? "Resubmit deliverable" : "Submit deliverable"}
+    >
+      <form className="grid min-w-0 gap-5" id={formId} onSubmit={handleSubmit}>
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-background p-4 text-sm text-muted">
+          <Badge tone={getMilestoneStatusTone(milestone.status)}>
+            {milestone.status}
+          </Badge>
+          <span>Deadline {formatDateTime(milestone.deadlineAt)}</span>
+          <span>Weight {milestone.weight ?? "N/A"}%</span>
+          <span>Max {milestone.maxScore ?? "N/A"}</span>
         </div>
 
-        <form className="grid gap-5 overflow-y-auto p-6" onSubmit={handleSubmit}>
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-background p-4 text-sm text-muted">
-            <Badge tone={getMilestoneStatusTone(milestone.status)}>
-              {milestone.status}
-            </Badge>
-            <span>Deadline {formatDateTime(milestone.deadlineAt)}</span>
-            <span>Weight {milestone.weight ?? "N/A"}%</span>
-            <span>Max {milestone.maxScore ?? "N/A"}</span>
-          </div>
+        <TextInput
+          icon={<Upload size={16} />}
+          label="Deliverable URL"
+          onChange={(event) => setFileUrl(event.target.value)}
+          placeholder="https://drive.google.com/..."
+          required
+          value={fileUrl}
+        />
+        {fileUrl && (
+          <p className="-mt-3 m-0 break-all text-xs leading-5 text-muted">
+            {fileUrl}
+          </p>
+        )}
 
-          <TextInput
-            icon={<Upload size={16} />}
-            label="Deliverable URL"
-            onChange={(event) => setFileUrl(event.target.value)}
-            placeholder="https://drive.google.com/..."
-            required
-            value={fileUrl}
+        <label className="grid gap-[7px]">
+          <span className="text-[13px] font-medium text-foreground">
+            Comments
+          </span>
+          <textarea
+            className="min-h-28 min-w-0 rounded-xl border border-border bg-surface px-3.5 py-3 text-base text-foreground outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)] min-[761px]:text-sm"
+            onChange={(event) => setComments(event.target.value)}
+            placeholder="Notes for the instructor"
+            value={comments}
           />
+        </label>
 
-          <label className="grid gap-[7px]">
-            <span className="text-[13px] font-medium text-foreground">
-              Comments
-            </span>
-            <textarea
-              className="min-h-28 rounded-xl border border-border bg-surface px-3.5 py-3 text-sm text-foreground outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]"
-              onChange={(event) => setComments(event.target.value)}
-              placeholder="Notes for the instructor"
-              value={comments}
-            />
-          </label>
-
-          {(error || mutationError) && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error || getErrorMessage(mutationError)}
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 border-t border-border pt-5">
-            <Button onClick={onClose} type="button" variant="secondary">
-              Cancel
-            </Button>
-            <Button disabled={isPending} icon={<Send size={16} />} type="submit">
-              {isPending ? "Submitting..." : "Submit"}
-            </Button>
+        {(error || mutationError) && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error || getErrorMessage(mutationError)}
           </div>
-        </form>
-      </div>
-    </div>
+        )}
+      </form>
+    </ResponsiveDialog>
   );
 }
 
@@ -271,7 +279,9 @@ export function StudentMilestoneSubmissionsPanel({
     useState<CourseMilestoneDto | null>(null);
 
   const effectiveGroupId =
-    selectedGroupId || !groups[0] ? Number(selectedGroupId) || null : groups[0].id;
+    selectedGroupId || !groups[0]
+      ? Number(selectedGroupId) || null
+      : groups[0].id;
   const activeGroup =
     groups.find((group) => Number(group.id) === Number(effectiveGroupId)) ??
     null;
@@ -338,10 +348,12 @@ export function StudentMilestoneSubmissionsPanel({
             </Select>
 
             <div className="grid content-center gap-1 rounded-xl border border-border bg-background px-4 py-3">
-              <span className="text-sm font-bold text-foreground">
-                {activeGroup?.projectName ?? activeGroup?.name ?? "Selected group"}
+              <span className="break-words text-sm font-bold text-foreground">
+                {activeGroup?.projectName ??
+                  activeGroup?.name ??
+                  "Selected group"}
               </span>
-              <span className="text-sm text-muted">
+              <span className="break-words text-sm text-muted">
                 {activeGroup
                   ? `${activeGroup.term} / ${activeGroup.courseCode}`
                   : "Group scope"}
@@ -385,7 +397,9 @@ export function StudentMilestoneSubmissionsPanel({
                           {milestone.status}
                         </Badge>
                         {submission ? (
-                          <Badge tone={getSubmissionStatusTone(submission.status)}>
+                          <Badge
+                            tone={getSubmissionStatusTone(submission.status)}
+                          >
                             {submission.status}
                           </Badge>
                         ) : (
@@ -393,12 +407,12 @@ export function StudentMilestoneSubmissionsPanel({
                         )}
                         {submission?.late && <Badge tone="danger">Late</Badge>}
                       </div>
-                      <div className="grid gap-1">
-                        <h3 className="m-0 text-base font-bold text-foreground">
+                      <div className="grid min-w-0 gap-1">
+                        <h3 className="m-0 break-words text-base font-bold text-foreground">
                           {milestone.title}
                         </h3>
                         {milestone.description && (
-                          <p className="m-0 text-sm leading-6 text-muted">
+                          <p className="m-0 break-words text-sm leading-6 text-muted">
                             {milestone.description}
                           </p>
                         )}
@@ -419,18 +433,22 @@ export function StudentMilestoneSubmissionsPanel({
                         </span>
                       </div>
                       {submission?.feedback && (
-                        <p className="m-0 rounded-xl border border-border bg-background px-4 py-3 text-sm leading-6 text-muted">
+                        <p className="m-0 break-words rounded-xl border border-border bg-background px-4 py-3 text-sm leading-6 text-muted">
                           {submission.feedback}
                         </p>
                       )}
                     </div>
 
-                    <div className="flex items-start justify-end gap-2">
+                    <div className="flex items-start justify-end gap-2 max-[860px]:grid max-[860px]:grid-cols-2 max-[430px]:grid-cols-1">
                       {submission?.fileUrl && (
                         <Button
                           icon={<ExternalLink size={15} />}
                           onClick={() =>
-                            window.open(submission.fileUrl, "_blank", "noreferrer")
+                            window.open(
+                              submission.fileUrl,
+                              "_blank",
+                              "noreferrer",
+                            )
                           }
                           size="sm"
                           variant="secondary"
