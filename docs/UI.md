@@ -413,10 +413,24 @@ Do not hand-draw SVG icons if a Lucide icon exists.
 ## 11. Responsive Rules
 
 - App shell owns sidebar/topbar responsiveness.
+- Use the shared breakpoint contract: desktop above `960px`, tablet from
+  `761px` to `960px`, phone from `481px` to `760px`, and compact phone at
+  `480px` or below. Always verify the hard minimum at `320px`.
 - Pages should use CSS Grid with `minmax(0, 1fr)` and wrap controls naturally.
 - Toolbar controls should stack on mobile.
-- Avoid viewport-width font scaling. Use fixed sizes or `clamp` only for true page headings.
-- Text must not overflow buttons, cards, or table cells. Use `min-width: 0`, wrapping, or ellipsis where appropriate.
+- Shared cards use `16px` mobile padding and `24px` desktop padding. Headers
+  with actions stack below `761px`; do not force every action to full width.
+- Interactive controls must provide at least a `44px` touch target on mobile.
+  Icon-only actions still need an accessible name and the same touch target.
+- Editable controls use at least `16px` text on mobile to avoid browser auto
+  zoom, then may return to the standard `14px` scale above `760px`.
+- Avoid viewport-width font scaling. Use fixed sizes or `clamp` only for true
+  page headings.
+- Text must not overflow buttons, cards, badges, or table cells. Use
+  `min-width: 0`, wrapping, word breaking, or ellipsis where appropriate.
+- Do not allow horizontal scrolling at the page/body level. Data-management
+  tables keep their table layout on desktop and use a mobile card-list below
+  `761px`; Kanban is the intentional horizontally scrolling exception.
 
 Example toolbar:
 

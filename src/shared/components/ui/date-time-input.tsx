@@ -50,7 +50,7 @@ export function DateTimeInput({
       )}
       <span
         className={cn(
-          "flex h-10 min-w-0 cursor-pointer items-center rounded-xl border border-border bg-surface px-3 transition-[border-color,box-shadow] duration-[160ms] ease-in-out focus-within:border-brand-secondary focus-within:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]",
+          "flex h-[50px] min-w-0 cursor-pointer items-center rounded-xl border border-border bg-surface px-3.5 transition-[border-color,box-shadow] duration-[160ms] ease-in-out focus-within:border-brand-secondary focus-within:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]",
           shellClassName,
         )}
         onClick={(event) => {
@@ -59,7 +59,7 @@ export function DateTimeInput({
       >
         <input
           className={cn(
-            "h-full min-w-0 flex-1 cursor-pointer border-0 bg-transparent font-sans text-sm text-foreground outline-0",
+            "h-full min-w-0 flex-1 cursor-pointer border-0 bg-transparent font-sans text-base text-foreground outline-0 min-[761px]:text-sm",
             className,
           )}
           onClick={(event) => {
