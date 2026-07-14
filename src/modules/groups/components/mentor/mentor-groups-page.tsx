@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   CalendarClock,
   Eye,
   Users,
-  X,
   XCircle,
 } from "lucide-react";
 
@@ -24,6 +23,7 @@ import {
   EmptyState,
   LoadingState,
   PageHeader,
+  ResponsiveDialog,
 } from "@/shared/components";
 import { ApiError } from "@/shared/lib";
 import type { GroupStatus } from "@/shared/types";
@@ -38,9 +38,9 @@ const gridClassName =
 const errorPanelClassName =
   "rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm leading-normal text-red-700";
 const detailGridClassName =
-  "grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3";
+  "grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3 max-[480px]:grid-cols-1";
 const labelClassName = "text-xs font-bold tracking-[0.04em] text-muted uppercase";
-const valueClassName = "mt-1 text-sm leading-[1.5] text-foreground";
+const valueClassName = "mt-1 break-words text-sm leading-[1.5] text-foreground";
 
 function getErrorMessage(error: unknown) {
   return error instanceof ApiError
@@ -92,8 +92,8 @@ function ProgressSummary({
 
   return (
     <div className="grid gap-2 rounded-xl border border-border bg-background px-4 py-3">
-      <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <span className="min-w-0 break-words text-muted">
           Tasks: {progress.completedTasks}/{progress.totalTasks} done
         </span>
         <strong className="text-foreground">
@@ -132,7 +132,7 @@ function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
       </div>
 
       {group.ideaDescription && (
-        <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm leading-[1.55] text-foreground">
+        <div className="break-words rounded-xl border border-border bg-background px-4 py-3 text-sm leading-[1.55] text-foreground">
           {group.ideaDescription}
         </div>
       )}
@@ -141,12 +141,14 @@ function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
         <h3 className="m-0 text-sm font-bold text-foreground">Members</h3>
         {group.members.map((member) => (
           <div
-            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4"
+            className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4 max-[480px]:grid"
             key={member.studentId}
           >
             <div className="min-w-0">
-              <div className="font-bold text-foreground">{member.fullName}</div>
-              <p className="mt-1 mb-0 text-[13px] text-muted">
+              <div className="break-words font-bold text-foreground">
+                {member.fullName}
+              </div>
+              <p className="mt-1 mb-0 break-all text-[13px] text-muted">
                 {member.studentCode} - {member.email}
               </p>
             </div>
@@ -181,18 +183,18 @@ function MentorGroupDetail({ group }: { group: GroupDetailDto }) {
           <div className="grid gap-3">
             {meetings.map((meeting) => (
               <div
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4"
+                className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4 max-[480px]:grid"
                 key={meeting.id}
               >
                 <div className="min-w-0">
-                  <div className="font-bold text-foreground">
+                  <div className="break-words font-bold text-foreground">
                     {formatDateTime(meeting.startAt)}
                   </div>
-                  <p className="mt-1 mb-0 text-[13px] text-muted">
+                  <p className="mt-1 mb-0 break-words text-[13px] text-muted">
                     Booked by {meeting.bookedByStudentName}
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center justify-end gap-2">
+                <div className="flex flex-wrap items-center justify-end gap-2 max-[480px]:grid max-[480px]:[&>button]:min-h-11 max-[480px]:[&>button]:w-full">
                   <Badge
                     tone={
                       meeting.status === "SCHEDULED" ? "success" : "danger"
@@ -260,68 +262,20 @@ function MentorGroupDetailModal({
 }) {
   const groupDetailQuery = useGroup(groupId);
   const group = groupDetailQuery.data?.data;
-  const dialogTitleRef = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => {
-    const activeElement = document.activeElement as HTMLElement | null;
-
-    dialogTitleRef.current?.focus();
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      activeElement?.focus();
-    };
-  }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-foreground/30 p-4 backdrop-blur-sm"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+    <ResponsiveDialog
+      className="min-[761px]:max-w-[920px]"
+      closeLabel="Close group details"
+      description={
+        group
+          ? `${group.groupNo} · ${group.term} · ${group.courseCode}`
+          : "Review group members, project context, and meetings."
+      }
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title={group?.name ?? "Group details"}
     >
-      <section
-        aria-describedby="mentor-group-detail-description"
-        aria-labelledby="mentor-group-detail-title"
-        aria-modal="true"
-        className="grid max-h-[calc(100svh-2rem)] w-[min(920px,100%)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-2xl border border-border bg-surface shadow-card"
-        role="dialog"
-      >
-        <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
-          <div className="grid min-w-0 gap-1">
-            <h2
-              className="m-0 overflow-hidden text-ellipsis whitespace-nowrap text-lg font-bold text-foreground"
-              id="mentor-group-detail-title"
-              ref={dialogTitleRef}
-              tabIndex={-1}
-            >
-              {group?.name ?? "Group details"}
-            </h2>
-            <p
-              className="m-0 text-sm leading-relaxed text-muted"
-              id="mentor-group-detail-description"
-            >
-              {group
-                ? `${group.groupNo} · ${group.term} · ${group.courseCode}`
-                : "Review group members, project context, and meetings."}
-            </p>
-          </div>
-          <Button
-            aria-label="Close group details"
-            icon={<X size={17} />}
-            onClick={onClose}
-            size="sm"
-            variant="ghost"
-          />
-        </header>
-
-        <div className="min-h-0 overflow-y-auto px-6 py-5 max-[640px]:px-4">
           {groupDetailQuery.isLoading ? (
             <LoadingState title="Loading group detail" />
           ) : groupDetailQuery.isError ? (
@@ -336,9 +290,7 @@ function MentorGroupDetailModal({
               title="Group detail unavailable"
             />
           )}
-        </div>
-      </section>
-    </div>
+    </ResponsiveDialog>
   );
 }
 
@@ -356,10 +308,10 @@ function MentorGroupCard({
       <CardContent className="flex h-full flex-1 flex-col gap-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="m-0 text-[17px] leading-tight font-bold text-foreground">
+            <h2 className="m-0 break-words text-[17px] leading-tight font-bold text-foreground">
               {group.name}
             </h2>
-            <p className="mt-1 mb-0 text-sm text-muted">
+            <p className="mt-1 mb-0 break-words text-sm text-muted">
               {group.groupNo} - {group.term} - {group.courseCode}
             </p>
           </div>
@@ -375,7 +327,7 @@ function MentorGroupCard({
         <ProgressSummary progress={progress} />
 
         {group.selectedProblem && (
-          <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm leading-[1.55] text-muted">
+          <div className="break-words rounded-xl border border-border bg-background px-4 py-3 text-sm leading-[1.55] text-muted">
             <span className="font-medium text-foreground">
               {group.selectedProblem.code}
             </span>{" "}
@@ -383,7 +335,7 @@ function MentorGroupCard({
           </div>
         )}
 
-        <div className="mt-auto flex justify-end pt-2">
+        <div className="mt-auto flex justify-end pt-2 max-[480px]:grid max-[480px]:[&>button]:min-h-11 max-[480px]:[&>button]:w-full">
           <Button
             icon={<Eye size={16} />}
             onClick={(event) => onViewDetails(event.currentTarget)}

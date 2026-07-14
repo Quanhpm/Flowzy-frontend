@@ -59,10 +59,10 @@ function MeetingCard({ meeting }: { meeting: DashboardMeetingDto }) {
     <article className="grid gap-2 rounded-xl border border-border bg-surface p-4">
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="grid min-w-0 gap-1">
-          <h3 className="m-0 text-sm leading-snug font-bold text-foreground">
+          <h3 className="m-0 break-words text-sm leading-snug font-bold text-foreground">
             {meeting.groupName}
           </h3>
-          <p className="m-0 text-xs text-muted">
+          <p className="m-0 break-words text-xs text-muted">
             {meeting.groupNo} - {meeting.mentorName}
           </p>
         </div>
@@ -70,12 +70,12 @@ function MeetingCard({ meeting }: { meeting: DashboardMeetingDto }) {
           {meeting.status}
         </Badge>
       </div>
-      <span className="text-sm text-muted">
+      <span className="break-words text-sm text-muted">
         {formatDateTime(meeting.startAt)} - {formatDateTime(meeting.endAt)}
       </span>
       {meeting.meetLink && (
         <a
-          className="text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
+          className="inline-flex min-h-11 items-center break-words text-sm font-medium text-brand-primary hover:text-brand-primary-hover"
           href={meeting.meetLink}
           rel="noreferrer"
           target="_blank"
@@ -185,10 +185,10 @@ export function MentorDashboardSection() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="grid min-w-0 gap-1">
-                      <strong className="text-sm text-foreground">
+                      <strong className="break-words text-sm text-foreground">
                         {group.groupName}
                       </strong>
-                      <span className="text-xs text-muted">
+                      <span className="break-words text-xs text-muted">
                         {group.completedTasks}/{group.totalTasks} tasks done
                       </span>
                     </div>
