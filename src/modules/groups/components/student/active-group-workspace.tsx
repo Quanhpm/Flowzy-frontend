@@ -220,7 +220,9 @@ export function ActiveGroupWorkspace({
                   <Button
                     icon={<UserPlus size={16} />}
                     disabled={group.isLock}
-                    onClick={() => router.push("/student/groups/invite")}
+                    onClick={() =>
+                      router.push(`/student/groups/invite?groupId=${group.id}`)
+                    }
                   >
                     Invite member
                   </Button>
