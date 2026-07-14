@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useId, useMemo, useState } from "react";
 import {
   AlertTriangle,
   CalendarClock,
@@ -8,7 +8,6 @@ import {
   Plus,
   Save,
   Trash2,
-  X,
 } from "lucide-react";
 
 import { useInstructorGroups } from "@/modules/groups";
@@ -21,10 +20,11 @@ import {
   EmptyState,
   LoadingState,
   PageHeader,
+  ResponsiveDialog,
   Select,
   TextInput,
 } from "@/shared/components";
-import { ApiError, cn } from "@/shared/lib";
+import { ApiError } from "@/shared/lib";
 import type { CourseMilestoneStatus } from "@/shared/types";
 
 import {
@@ -129,6 +129,7 @@ function buildCourseOptions(courses: string[]) {
 }
 
 function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
+  const formId = useId();
   const isEditing = Boolean(milestone);
   const createMutation = useCreateCourseMilestone();
   const updateMutation = useUpdateCourseMilestone();
@@ -247,28 +248,31 @@ function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(26,26,26,0.36)] p-6">
-      <div className="grid max-h-[92vh] w-[min(720px,100%)] grid-rows-[auto_1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-modal">
-        <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
-          <div className="grid gap-1">
-            <h2 className="m-0 text-lg font-bold text-foreground">
-              {isEditing ? "Edit milestone" : "Create milestone"}
-            </h2>
-            <p className="m-0 text-sm text-muted">
-              Manage the instructor timeline used by assigned project groups.
-            </p>
-          </div>
-          <Button
-            aria-label="Close milestone form"
-            className="size-8 rounded-lg p-0"
-            onClick={onClose}
-            variant="secondary"
-          >
-            <X className="size-4" />
+    <ResponsiveDialog
+      className="min-[761px]:max-w-[720px]"
+      closeLabel="Close milestone form"
+      closeOnBackdrop={false}
+      description="Manage the instructor timeline used by assigned project groups."
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">
+            Cancel
           </Button>
-        </div>
-
-        <form className="grid gap-5 overflow-y-auto p-6" onSubmit={handleSubmit}>
+          <Button
+            disabled={isPending}
+            form={formId}
+            icon={<Save size={16} />}
+            type="submit"
+          >
+            {isPending ? "Saving..." : "Save milestone"}
+          </Button>
+        </>
+      }
+      mobileMode="fullscreen"
+      onClose={onClose}
+      title={isEditing ? "Edit milestone" : "Create milestone"}
+    >
+        <form className="grid min-w-0 gap-5" id={formId} onSubmit={handleSubmit}>
           {!isEditing && (
             <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
               <TextInput
@@ -307,7 +311,7 @@ function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
               Description
             </span>
             <textarea
-              className="min-h-28 rounded-xl border border-border bg-surface px-3.5 py-3 text-sm text-foreground outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]"
+              className="min-h-28 min-w-0 rounded-xl border border-border bg-surface px-3.5 py-3 text-base text-foreground outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)] min-[761px]:text-sm"
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Submission expectation, review focus, or grading note"
               value={description}
@@ -363,7 +367,7 @@ function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
               Deadline
             </span>
             <input
-              className="h-[50px] rounded-xl border border-border bg-surface px-3.5 text-sm outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)]"
+              className="h-[50px] min-w-0 rounded-xl border border-border bg-surface px-3.5 text-base outline-0 transition-[border-color,box-shadow] focus:border-brand-secondary focus:shadow-[0_0_0_4px_rgba(237,161,47,0.12)] min-[761px]:text-sm"
               onChange={(event) => setDeadlineAt(event.target.value)}
               type="datetime-local"
               value={deadlineAt}
@@ -376,17 +380,8 @@ function MilestoneForm({ filters, milestone, onClose }: MilestoneFormProps) {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 border-t border-border pt-5">
-            <Button onClick={onClose} type="button" variant="secondary">
-              Cancel
-            </Button>
-            <Button disabled={isPending} icon={<Save size={16} />} type="submit">
-              {isPending ? "Saving..." : "Save milestone"}
-            </Button>
-          </div>
         </form>
-      </div>
-    </div>
+    </ResponsiveDialog>
   );
 }
 
@@ -446,7 +441,11 @@ export function InstructorMilestonesPage() {
     <div className="grid min-w-0 gap-6">
       <PageHeader
         actions={
-          <Button icon={<Plus size={16} />} onClick={() => setIsCreating(true)}>
+          <Button
+            className="max-[480px]:w-full"
+            icon={<Plus size={16} />}
+            onClick={() => setIsCreating(true)}
+          >
             New milestone
           </Button>
         }
@@ -483,7 +482,7 @@ export function InstructorMilestonesPage() {
               ))}
             </Select>
             <Button
-              className="w-fit justify-self-end border-neutral-200 bg-neutral-100 px-4 text-muted [&:hover:not(:disabled)]:border-neutral-300 [&:hover:not(:disabled)]:bg-neutral-200 max-[760px]:justify-self-start"
+              className="w-fit justify-self-end border-neutral-200 bg-neutral-100 px-4 text-muted [&:hover:not(:disabled)]:border-neutral-300 [&:hover:not(:disabled)]:bg-neutral-200 max-[760px]:w-full max-[760px]:justify-self-stretch"
               onClick={() => {
                 setTerm("");
                 setCourseCode("");
@@ -499,7 +498,7 @@ export function InstructorMilestonesPage() {
               <span className="text-sm font-bold text-foreground">
                 Assigned group scope
               </span>
-              <span className="text-sm text-muted">
+              <span className="break-words text-sm text-muted">
                 Use one of your assigned groups to choose the term and course
                 before loading milestones.
               </span>
@@ -511,7 +510,7 @@ export function InstructorMilestonesPage() {
               <div className="col-span-full flex flex-wrap gap-2">
                 {assignedGroups.map((group) => (
                   <button
-                    className="inline-flex min-w-0 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left text-xs font-medium text-muted transition-colors hover:border-brand-secondary hover:text-foreground"
+                    className="inline-flex min-h-11 min-w-0 flex-wrap items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-left text-xs font-medium text-muted transition-colors hover:border-brand-secondary hover:text-foreground"
                     key={group.id}
                     onClick={() => {
                       setTerm(group.term);
@@ -589,11 +588,11 @@ export function InstructorMilestonesPage() {
                       </span>
                     </div>
                     <div className="grid min-w-0 gap-1">
-                      <h3 className="m-0 text-base font-bold text-foreground">
+                      <h3 className="m-0 break-words text-base font-bold text-foreground">
                         {milestone.title}
                       </h3>
                       {milestone.description && (
-                        <p className="m-0 text-sm leading-6 text-muted">
+                        <p className="m-0 break-words text-sm leading-6 text-muted">
                           {milestone.description}
                         </p>
                       )}
@@ -611,7 +610,7 @@ export function InstructorMilestonesPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start justify-end gap-2">
+                  <div className="flex items-start justify-end gap-2 max-[480px]:grid max-[480px]:[&>button]:min-h-11 max-[480px]:[&>button]:w-full">
                     <Button
                       icon={<Pencil size={15} />}
                       onClick={() => setActiveMilestone(milestone)}
@@ -621,9 +620,7 @@ export function InstructorMilestonesPage() {
                       Edit
                     </Button>
                     <Button
-                      className={cn(
-                        deleteMutation.isPending && "pointer-events-none",
-                      )}
+                      disabled={deleteMutation.isPending}
                       icon={<Trash2 size={15} />}
                       onClick={() => handleArchive(milestone)}
                       size="sm"
