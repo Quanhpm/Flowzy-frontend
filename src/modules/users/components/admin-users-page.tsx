@@ -444,7 +444,7 @@ function UserFormModal({
   return (
     <ResponsiveDialog
       bodyClassName="p-0"
-      className="min-[481px]:max-w-[760px]"
+      className="min-[761px]:max-w-[760px]"
       closeOnBackdrop={false}
       description={description}
       footer={
@@ -793,7 +793,7 @@ function ResetPasswordModal({
   return (
     <ResponsiveDialog
       bodyClassName="p-0"
-      className="min-[481px]:max-w-[480px]"
+      className="min-[761px]:max-w-[480px]"
       closeOnBackdrop={false}
       description={<>Set a temporary password for {getDisplayName(user)}.</>}
       footer={
@@ -848,7 +848,7 @@ function UserDetailStateModal({
 }: UserDetailStateModalProps) {
   return (
     <ResponsiveDialog
-      className="min-[481px]:max-w-[480px]"
+      className="min-[761px]:max-w-[480px]"
       closeOnBackdrop={false}
       description={description}
       onClose={onClose}
@@ -884,7 +884,7 @@ function DeleteUserModal({ onClose, onConfirm, user }: DeleteUserModalProps) {
   return (
     <ResponsiveDialog
       bodyClassName="grid gap-[18px]"
-      className="min-[481px]:max-w-[480px]"
+      className="min-[761px]:max-w-[480px]"
       closeOnBackdrop={false}
       description={
         <>

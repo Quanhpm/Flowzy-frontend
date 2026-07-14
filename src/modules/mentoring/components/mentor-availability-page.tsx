@@ -175,7 +175,7 @@ function ConfirmDialog({
   return (
     <ResponsiveDialog
       bodyClassName="grid gap-4"
-      className="min-[481px]:max-w-[500px]"
+      className="min-[761px]:max-w-[500px]"
       closeOnBackdrop={false}
       description={action.description}
       footer={

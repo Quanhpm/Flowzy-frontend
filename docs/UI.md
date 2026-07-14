@@ -431,6 +431,16 @@ Do not hand-draw SVG icons if a Lucide icon exists.
 - Do not allow horizontal scrolling at the page/body level. Data-management
   tables keep their table layout on desktop and use a mobile card-list below
   `761px`; Kanban is the intentional horizontally scrolling exception.
+- Use `ResponsiveDialog` for module dialogs instead of recreating fixed
+  overlays. It owns focus trapping/restoration, Escape handling, body scroll
+  lock, `dvh` sizing, scrollable content, mobile action stacking, and safe-area
+  padding. Full-screen mode is used for long forms below `761px`.
+- Mobile shell links, drawer links, notification controls, and footer links are
+  interactive controls too; their clickable box must meet the same `44px`
+  minimum as buttons.
+- Final responsive regression covers `320x568`, `360x800`, `375x667`,
+  `390x844`, `430x932`, `768x1024`, `1024x768`, `1440x900`, and landscape
+  `844x390`, including continuous checks around `640px`, `760px`, and `960px`.
 
 Example toolbar:
 

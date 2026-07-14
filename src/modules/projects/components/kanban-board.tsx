@@ -806,7 +806,7 @@ export function KanbanBoard({ groupId }: KanbanBoardProps) {
 
       {isCreateBoardOpen && (
         <ResponsiveDialog
-          className="min-[481px]:max-w-[520px]"
+          className="min-[761px]:max-w-[520px]"
           closeLabel="Close board form"
           closeOnBackdrop={false}
           description="Add a custom task board for this group."

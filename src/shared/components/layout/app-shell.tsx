@@ -258,7 +258,7 @@ export function AppShell({ children, role }: AppShellProps) {
         <header className="flex min-h-16 items-center justify-end border-b border-border bg-surface px-7 max-[960px]:hidden">
           <NotificationBell />
         </header>
-        <header className="sticky top-0 z-40 grid min-h-16 grid-cols-[44px_minmax(0,1fr)_48px] items-center gap-2 border-b border-border bg-surface/95 px-4 backdrop-blur min-[961px]:hidden max-[480px]:px-3">
+        <header className="sticky top-0 z-40 grid min-h-16 grid-cols-[44px_minmax(0,1fr)_48px] items-center gap-2 border-b border-border bg-surface/95 px-4 min-[961px]:hidden max-[480px]:px-3">
           <Button
             aria-controls="mobile-workspace-navigation"
             aria-expanded={isNavigationOpen}
@@ -272,7 +272,7 @@ export function AppShell({ children, role }: AppShellProps) {
           </Button>
 
           <Link
-            className="flex min-w-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+            className="flex min-h-11 min-w-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
             href={activeNavItem.href}
           >
             <BrandLogo
@@ -311,7 +311,7 @@ export function AppShell({ children, role }: AppShellProps) {
           >
             <div className="flex min-w-0 items-center justify-between gap-3">
               <Link
-                className="inline-flex min-w-0 items-center px-1"
+                className="inline-flex min-h-11 min-w-0 items-center px-1"
                 href={navItems[0].href}
                 onClick={() => setNavigationOpenedAtPath(null)}
               >

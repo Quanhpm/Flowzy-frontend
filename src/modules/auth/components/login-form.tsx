@@ -283,11 +283,17 @@ export function LoginForm() {
       <footer className="flex w-full min-w-0 flex-wrap items-center justify-between gap-3 text-xs text-muted max-[600px]:grid max-[600px]:justify-items-center max-[600px]:gap-[9px] max-[600px]:text-center">
         <span>&copy; 2026 F-Spark. All rights reserved.</span>
         <div className="flex gap-3 max-[600px]:flex-wrap max-[600px]:justify-center">
-          <a className="hover:text-brand-primary" href="#privacy">
+          <a
+            className="inline-flex min-h-11 items-center rounded-lg hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary min-[601px]:min-h-0"
+            href="#privacy"
+          >
             Privacy Policy
           </a>
           <span>&bull;</span>
-          <a className="hover:text-brand-primary" href="#terms">
+          <a
+            className="inline-flex min-h-11 items-center rounded-lg hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary min-[601px]:min-h-0"
+            href="#terms"
+          >
             Terms of Use
           </a>
         </div>

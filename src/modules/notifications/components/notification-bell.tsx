@@ -110,7 +110,7 @@ export function NotificationBell() {
         <>
           <button
             aria-label="Close notifications"
-            className="fixed inset-0 z-40 cursor-default border-0 bg-foreground/30 backdrop-blur-sm min-[481px]:hidden"
+            className="fixed inset-0 z-40 cursor-default border-0 bg-foreground/30 backdrop-blur-sm min-[761px]:hidden"
             onClick={() => setIsOpen(false)}
             tabIndex={-1}
             type="button"
@@ -118,7 +118,7 @@ export function NotificationBell() {
           <section
             aria-label="Recent unread notifications"
             aria-modal="true"
-            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100dvh-env(safe-area-inset-top))] min-w-0 flex-col gap-4 overflow-hidden rounded-t-2xl border border-b-0 border-border bg-surface px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-modal min-[481px]:absolute min-[481px]:inset-auto min-[481px]:top-12 min-[481px]:right-0 min-[481px]:max-h-[calc(100dvh-5rem)] min-[481px]:w-[min(420px,calc(100vw-2rem))] min-[481px]:rounded-2xl min-[481px]:border-b min-[481px]:p-4 min-[481px]:shadow-card"
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[calc(100dvh-env(safe-area-inset-top))] min-w-0 flex-col gap-4 overflow-hidden rounded-t-2xl border border-b-0 border-border bg-surface px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-modal min-[761px]:absolute min-[761px]:inset-auto min-[761px]:top-12 min-[761px]:right-0 min-[761px]:max-h-[calc(100dvh-5rem)] min-[761px]:w-[min(420px,calc(100vw-2rem))] min-[761px]:rounded-2xl min-[761px]:border-b min-[761px]:p-4 min-[761px]:shadow-card"
             id={popoverId}
             ref={dialogRef}
             role="dialog"

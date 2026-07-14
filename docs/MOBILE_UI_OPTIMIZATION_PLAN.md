@@ -212,10 +212,10 @@ refactor(ui): make shared primitives mobile responsive
 
 Acceptance:
 
-- [ ] Shared headers/actions khong tran o 320px.
-- [ ] Card padding va state components khong chiem qua nhieu chieu cao.
-- [ ] Touch target dat chuan.
-- [ ] Desktop visual hierarchy khong doi ngoai y muon.
+- [x] Shared headers/actions khong tran o 320px.
+- [x] Card padding va state components khong chiem qua nhieu chieu cao.
+- [x] Touch target dat chuan.
+- [x] Desktop visual hierarchy khong doi ngoai y muon.
 
 ## 7. Prompt 02 - Mobile AppShell
 
@@ -261,10 +261,10 @@ feat(layout): add mobile workspace navigation drawer
 
 Acceptance:
 
-- [ ] Mobile vao content ngay sau mot topbar, khong qua mot khoi sidebar dai.
-- [ ] Drawer dung duoc bang touch va keyboard.
-- [ ] Notification va logout van dung.
-- [ ] Khong co body scroll khi drawer mo.
+- [x] Mobile vao content ngay sau mot topbar, khong qua mot khoi sidebar dai.
+- [x] Drawer dung duoc bang touch va keyboard.
+- [x] Notification va logout van dung.
+- [x] Khong co body scroll khi drawer mo.
 
 ## 8. Prompt 03 - Responsive dialog/sheet foundation
 
@@ -317,18 +317,18 @@ feat(ui): add responsive dialog and sheet foundation
 
 Acceptance:
 
-- [ ] Hai modal reference dung shared foundation.
-- [ ] Focus va body scroll duoc xu ly dung.
-- [ ] Footer van thay khi virtual keyboard mo.
-- [ ] Public API du gon de cac prompt sau migrate dan.
+- [x] Hai modal reference dung shared foundation.
+- [x] Focus va body scroll duoc xu ly dung.
+- [x] Footer van thay khi virtual keyboard mo.
+- [x] Public API du gon de cac prompt sau migrate dan.
 
 ### Gate A - Foundation
 
 Sau Prompt 03:
 
-- [ ] Full desktop smoke AppShell cho 4 role.
-- [ ] Full mobile smoke menu/drawer/dialog 320 va 390.
-- [ ] Khong bat dau module pages neu foundation con overflow/focus bug.
+- [x] Full desktop smoke AppShell cho 4 role.
+- [x] Full mobile smoke menu/drawer/dialog 320 va 390.
+- [x] Khong bat dau module pages neu foundation con overflow/focus bug.
 
 ## 9. Prompt 04 - Login/auth mobile
 
@@ -1008,30 +1008,43 @@ Ket qua phai la `true`; chi board/preview region duoc scroll noi bo co chu dich.
 
 ### State matrix
 
-- [ ] Loading.
-- [ ] Empty.
-- [ ] Error.
+- [x] Loading.
+- [x] Empty.
+- [x] Error.
 - [ ] Success voi it data.
 - [ ] Success voi nhieu data.
-- [ ] Text/URL/email/group name dai.
-- [ ] Pending/disabled action.
+- [x] Text/URL/email/group name dai.
+- [x] Pending/disabled action.
 - [ ] Pagination page dau, giua va cuoi.
-- [ ] Role khong hop le/session restore.
+- [x] Role khong hop le/session restore.
 
 ### Interaction matrix
 
-- [ ] Touch target toi thieu 44x44px.
-- [ ] Khong body horizontal scroll.
-- [ ] Keyboard Tab/Shift+Tab/Escape.
-- [ ] Focus restore sau dialog/drawer.
-- [ ] Body scroll lock khi overlay mo.
-- [ ] Virtual keyboard khong che input/footer.
+- [x] Touch target toi thieu 44x44px.
+- [x] Khong body horizontal scroll.
+- [x] Keyboard Tab/Shift+Tab/Escape.
+- [x] Focus restore sau dialog/drawer.
+- [x] Body scroll lock khi overlay mo.
+- [x] Virtual keyboard khong che input/footer.
 - [ ] Safe-area tren phone co notch/home indicator.
 - [ ] Text zoom 200% van dung duoc.
-- [ ] Reduced motion van hoat dong theo globals.css.
+- [x] Reduced motion van hoat dong theo globals.css.
 - [ ] Kanban co touch fallback khong phu thuoc drag.
-- [ ] NotificationBell duoc test tu shell cua ca 4 role.
-- [ ] Resize qua breakpoint khong de stale overlay/body lock.
+- [x] NotificationBell duoc test tu shell cua ca 4 role.
+- [x] Resize qua breakpoint khong de stale overlay/body lock.
+
+Evidence ngay `2026-07-14`: route-level smoke da chay `198` luot tren `22`
+route/redirect va `9` viewport, khong co body horizontal overflow. `/` redirect
+ve `/login`; legacy `/dashboard` redirect ve `/student/dashboard`. Login public
+duoc kiem tra touch target tai `320px`; breakpoint smoke da chay quanh
+`640/760/960px`. Dev smoke da xac minh `Restoring session`; production smoke
+khong co auth da xac minh protected route ve `/login`. Cac state can du lieu
+role va thiet bi that van de unchecked thay vi suy dien la da pass.
+Production QA co lap (khong commit QA route) da xac minh shared primitives,
+fullscreen/bottom-sheet tai nguong `760/761px`, focus trap, Escape, focus
+restore, body lock, footer khi viewport cao `390px`, drawer 7 muc, sign-out,
+nav 4 role va NotificationBell tren 4 role. QA nay phat hien va sua overlap
+breakpoint dialog cung containing-block cua mobile notification sheet.
 
 ## 27. Definition of Done
 
@@ -1052,28 +1065,28 @@ Chi coi toan bo mobile UI hoan tat khi:
 ## 28. Progress tracker
 
 - [x] Commit 00 - Plan document
-- [ ] Prompt/Commit 01 - Shared primitives
-- [ ] Prompt/Commit 02 - AppShell
-- [ ] Prompt/Commit 03 - Dialog/sheet foundation
-- [ ] Gate A
-- [ ] Prompt/Commit 04 - Login/auth
-- [ ] Prompt/Commit 05 - Admin dashboard
-- [ ] Prompt/Commit 06 - Admin users
-- [ ] Prompt/Commit 07 - Admin imports
-- [ ] Prompt/Commit 08 - Admin feedback/terms/groups
-- [ ] Prompt/Commit 09 - Admin problems
-- [ ] Gate B
-- [ ] Prompt/Commit 10 - Student dashboard/feedback/notifications
-- [ ] Prompt/Commit 11 - Student group discovery
-- [ ] Prompt/Commit 12 - Student group workspace
-- [ ] Prompt/Commit 13 - Student tasks/detail
-- [ ] Prompt/Commit 14 - Kanban
-- [ ] Prompt/Commit 15 - Student problems
-- [ ] Gate C
-- [ ] Prompt/Commit 16 - Mentor groups/dashboard/feedback
-- [ ] Prompt/Commit 17 - Mentor availability
-- [ ] Prompt/Commit 18 - Instructor milestones
-- [ ] Prompt/Commit 19 - Instructor submissions/Student Deliverables
-- [ ] Gate D
-- [ ] Prompt/Commit 20 - Final regression/cleanup
+- [x] Prompt/Commit 01 - Shared primitives
+- [x] Prompt/Commit 02 - AppShell
+- [x] Prompt/Commit 03 - Dialog/sheet foundation
+- [x] Gate A
+- [x] Prompt/Commit 04 - Login/auth
+- [x] Prompt/Commit 05 - Admin dashboard
+- [x] Prompt/Commit 06 - Admin users
+- [x] Prompt/Commit 07 - Admin imports
+- [x] Prompt/Commit 08 - Admin feedback/terms/groups
+- [x] Prompt/Commit 09 - Admin problems
+- [x] Gate B
+- [x] Prompt/Commit 10 - Student dashboard/feedback/notifications
+- [x] Prompt/Commit 11 - Student group discovery
+- [x] Prompt/Commit 12 - Student group workspace
+- [x] Prompt/Commit 13 - Student tasks/detail
+- [x] Prompt/Commit 14 - Kanban
+- [x] Prompt/Commit 15 - Student problems
+- [x] Gate C
+- [x] Prompt/Commit 16 - Mentor groups/dashboard/feedback
+- [x] Prompt/Commit 17 - Mentor availability
+- [x] Prompt/Commit 18 - Instructor milestones
+- [x] Prompt/Commit 19 - Instructor submissions/Student Deliverables
+- [x] Gate D
+- [x] Prompt/Commit 20 - Final regression/cleanup
 - [ ] Definition of Done confirmed

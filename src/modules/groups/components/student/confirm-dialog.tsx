@@ -51,7 +51,7 @@ export function ConfirmDialog({
   return (
     <ResponsiveDialog
       bodyClassName="grid gap-4"
-      className="min-[481px]:max-w-[520px]"
+      className="min-[761px]:max-w-[520px]"
       closeOnBackdrop={false}
       description={description}
       footer={

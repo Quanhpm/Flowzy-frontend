@@ -80,7 +80,7 @@ function CloseTermModal({ onClose, term }: CloseTermModalProps) {
   return (
     <ResponsiveDialog
       bodyClassName="grid gap-3 text-sm leading-relaxed text-foreground"
-      className="min-[481px]:max-w-[510px]"
+      className="min-[761px]:max-w-[510px]"
       closeLabel="Close confirmation dialog"
       closeOnBackdrop={false}
       description={
