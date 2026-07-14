@@ -18,7 +18,11 @@ import { useAcademicTerms, useCloseAcademicTerm } from "../hooks";
 import type { AcademicTermResponseDto } from "../types";
 
 const pageClassName = "grid min-w-0 gap-6";
-const tableWrapClassName = "w-full overflow-x-auto";
+const tableWrapClassName = "w-full overflow-x-auto max-[760px]:hidden";
+const mobileListClassName =
+  "hidden min-w-0 gap-3 p-4 max-[760px]:grid max-[480px]:p-3";
+const mobileCardClassName =
+  "grid min-w-0 gap-4 rounded-xl border border-border bg-background p-4";
 const tableClassName = "w-full min-w-[900px] border-collapse";
 const tableHeadCellClassName =
   "border-b border-border px-4 py-3 text-left text-xs font-bold tracking-[0.04em] text-muted uppercase";
@@ -214,6 +218,71 @@ export function AdminTermsPage() {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className={mobileListClassName}>
+            {terms.map((term) => {
+              const progress = getFeedbackProgress(term);
+
+              return (
+                <article className={mobileCardClassName} key={term.id}>
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+                    <div className="grid min-w-0 gap-1">
+                      <h3 className="m-0 break-all text-base font-bold text-foreground">
+                        {term.code}
+                      </h3>
+                      <span className="text-sm text-muted">
+                        {term.groupCount} groups
+                      </span>
+                    </div>
+                    <Badge
+                      tone={term.status === "OPEN" ? "success" : "neutral"}
+                    >
+                      {term.status}
+                    </Badge>
+                  </div>
+
+                  <div className="grid min-w-0 gap-2">
+                    <div className="flex min-w-0 flex-wrap justify-between gap-2 text-xs text-muted">
+                      <span className="break-words">
+                        {term.totalSubmittedFeedbacks}/
+                        {term.totalExpectedFeedbacks} submitted
+                      </span>
+                      <span>{progress}%</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-surface-warm">
+                      <div
+                        className="h-full rounded-full bg-brand-primary"
+                        style={{ width: `${Math.min(100, progress)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid min-w-0 gap-1 border-t border-border pt-3">
+                    <span className="text-[11px] font-bold text-muted uppercase">
+                      Closed by
+                    </span>
+                    <span className="break-all text-sm text-foreground">
+                      {term.closedByEmail ?? "-"}
+                    </span>
+                    <span className="text-xs text-muted">
+                      {formatDateTime(term.closedAt)}
+                    </span>
+                  </div>
+
+                  {term.status === "OPEN" && (
+                    <Button
+                      className="w-full"
+                      icon={<LockKeyhole size={15} />}
+                      onClick={() => setTermToClose(term)}
+                      size="sm"
+                      variant="danger"
+                    >
+                      Close term
+                    </Button>
+                  )}
+                </article>
+              );
+            })}
           </div>
         </Card>
       )}
