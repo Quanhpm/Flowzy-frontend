@@ -24,12 +24,13 @@ function getFocusableElements(container: HTMLElement) {
 }
 
 type DialogAccessibilityOptions = {
+  active?: boolean;
   closeOnEscape?: boolean;
 };
 
 export function useDialogAccessibility<T extends HTMLElement>(
   onClose: () => void,
-  { closeOnEscape = true }: DialogAccessibilityOptions = {},
+  { active = true, closeOnEscape = true }: DialogAccessibilityOptions = {},
 ) {
   const dialogRef = useRef<T | null>(null);
   const onCloseRef = useRef(onClose);
@@ -39,6 +40,8 @@ export function useDialogAccessibility<T extends HTMLElement>(
   }, [onClose]);
 
   useEffect(() => {
+    if (!active) return;
+
     const dialog = dialogRef.current;
     const previouslyFocused =
       document.activeElement instanceof HTMLElement
@@ -107,7 +110,7 @@ export function useDialogAccessibility<T extends HTMLElement>(
         previouslyFocused.focus();
       }
     };
-  }, [closeOnEscape]);
+  }, [active, closeOnEscape]);
 
   return dialogRef;
 }

@@ -26,8 +26,8 @@ export function NotificationListItem({
     <article
       className={
         notification.read
-          ? "rounded-xl border border-border bg-surface p-4"
-          : "rounded-xl border border-border-warm bg-surface-warm p-4"
+          ? "min-w-0 rounded-xl border border-border bg-surface p-4"
+          : "min-w-0 rounded-xl border border-border-warm bg-surface-warm p-4"
       }
     >
       <button
@@ -42,7 +42,7 @@ export function NotificationListItem({
         type="button"
       >
         <span className="flex min-w-0 items-start justify-between gap-3">
-          <span className="min-w-0 text-sm font-bold leading-snug text-foreground">
+          <span className="min-w-0 break-words text-sm leading-snug font-bold text-foreground">
             {notification.title}
           </span>
           <Badge size="sm" tone={notification.read ? "neutral" : "brand"}>
@@ -51,13 +51,15 @@ export function NotificationListItem({
         </span>
 
         {notification.body && (
-          <span className="text-sm leading-relaxed text-muted">
+          <span className="min-w-0 break-words text-sm leading-relaxed text-muted">
             {notification.body}
           </span>
         )}
 
-        <span className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
-          <span>{formatNotificationDate(notification.createdAt)}</span>
+        <span className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+          <span className="break-words">
+            {formatNotificationDate(notification.createdAt)}
+          </span>
           {hasAction && (
             <span className="inline-flex items-center gap-1 font-medium text-brand-primary">
               Open <ArrowUpRight size={14} />
