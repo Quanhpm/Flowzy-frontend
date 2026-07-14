@@ -21,6 +21,7 @@ export function GoogleSignInButton({
 }: GoogleSignInButtonProps) {
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const initializeGoogle = useCallback(() => {
     if (!GOOGLE_CLIENT_ID) {
@@ -45,7 +46,7 @@ export function GoogleSignInButton({
         cancel_on_tap_outside: true,
         hd: GOOGLE_HOSTED_DOMAIN || undefined,
         ux_mode: "popup",
-        use_fedcm_for_button: true,
+        use_fedcm_for_button: false,
       });
       window.__fsparkGoogleInitialized = true;
     }
@@ -85,6 +86,19 @@ export function GoogleSignInButton({
     );
   }
 
+  if (loadFailed) {
+    return (
+      <button
+        className="flex min-h-[50px] w-full items-center justify-center gap-[11px] rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 transition-colors duration-[160ms] hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        type="button"
+        onClick={() => window.location.reload()}
+      >
+        <span className="text-[17px] font-bold text-red-600">!</span>
+        Google Blocked (Click to retry)
+      </button>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -97,11 +111,12 @@ export function GoogleSignInButton({
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
         onReady={initializeGoogle}
-        onError={() =>
+        onError={() => {
+          setLoadFailed(true);
           onConfigurationError(
-            "Google sign-in could not be loaded. Check your connection and try again.",
-          )
-        }
+            "Google Sign-In was blocked. If you are using Brave or an ad-blocker, please disable Shields/blockers for this site.",
+          );
+        }}
       />
       <div
         ref={buttonContainerRef}
